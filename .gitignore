@@ -338,11 +338,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/ZelsolarlicoLinarmalne/.cov
-/MooperekemStalbo/MooperekemStalbo/wwwroot/Package
-/Blog/Blog/Properties/launchSettings.json
 .vscode
-/RohafearyowheLewechairhalde/JicewalcereyemlalHeryoducugafe/wwwroot/managed
 
 /unity/*/[Ll]ibrary/
 /unity/*/[Tt]emp/
