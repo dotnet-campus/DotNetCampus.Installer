@@ -1,0 +1,25 @@
+﻿<Project>
+
+  <Import Project="build\Version.props" />
+
+  <!-- 框架和语言信息 -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts\</ArtifactsPath>
+  </PropertyGroup>
+
+  <!-- 库和项目信息 -->
+  <PropertyGroup>
+    <Description>安装包</Description>
+    <Authors>lindexi</Authors>
+    <Company>dotnet-campus</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotnet-campus/DotNetCampus.Installer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dotnet-campus/DotNetCampus.Installer.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+</Project>

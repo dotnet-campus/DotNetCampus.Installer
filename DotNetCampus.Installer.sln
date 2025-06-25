@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallerSevenZipTool", "src\InstallerSevenZipTool\InstallerSevenZipTool.csproj", "{0B1ABDDF-76D1-4956-AF51-00A2357CC4C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallerSevenZipLib", "src\InstallerSevenZipLib\InstallerSevenZipLib.csproj", "{56EB5B90-DE61-4FE0-9574-063611FA4505}"
@@ -16,6 +14,20 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCampus.Installer.Lib", "src\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj", "{B0BFEF8F-DB54-48DC-AEFF-D168922A9868}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCampus.Installer.Boost", "src\DotNetCampus.Installer.Boost\DotNetCampus.Installer.Boost.csproj", "{6563377A-B3D2-4932-85C5-23BA55B2D693}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{089100B1-113F-4E66-888A-E83F3999EAFD}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		LICENSE = LICENSE
+		README.md = README.md
+		build\Version.props = build\Version.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{3A8DF596-E814-FECC-DD4B-D8EF8AAC1A0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tool", "Tool", "{C2B7AC55-755F-98EC-7131-AA75D4EC5C29}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{4F9DEAE5-078F-E77A-2E4A-FEB6FFE226FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,11 +116,13 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{0B1ABDDF-76D1-4956-AF51-00A2357CC4C3} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{56EB5B90-DE61-4FE0-9574-063611FA4505} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{2FF4CCDF-4B3F-43DE-9EB1-40557C739937} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{34E15124-2AB3-4743-833A-5BD8CBD5EFD6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{B0BFEF8F-DB54-48DC-AEFF-D168922A9868} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{6563377A-B3D2-4932-85C5-23BA55B2D693} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{0B1ABDDF-76D1-4956-AF51-00A2357CC4C3} = {C2B7AC55-755F-98EC-7131-AA75D4EC5C29}
+		{56EB5B90-DE61-4FE0-9574-063611FA4505} = {3A8DF596-E814-FECC-DD4B-D8EF8AAC1A0D}
+		{2FF4CCDF-4B3F-43DE-9EB1-40557C739937} = {C2B7AC55-755F-98EC-7131-AA75D4EC5C29}
+		{34E15124-2AB3-4743-833A-5BD8CBD5EFD6} = {4F9DEAE5-078F-E77A-2E4A-FEB6FFE226FF}
+		{B0BFEF8F-DB54-48DC-AEFF-D168922A9868} = {3A8DF596-E814-FECC-DD4B-D8EF8AAC1A0D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C7903927-DECB-4215-B358-38907CE95BA3}
 	EndGlobalSection
 EndGlobal
