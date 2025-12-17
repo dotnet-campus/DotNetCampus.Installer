@@ -18,6 +18,11 @@ public class InstallContext
     public required DirectoryInfo WorkingFolder { get; init; }
 
     /// <summary>
+    /// 安装内容的资源信息
+    /// </summary>
+    public required AssemblyManifestResourceInfo? ContentResourceAssetsInfo { get; init; }
+
+    /// <summary>
     /// 关闭欢迎界面
     /// </summary>
     public void CloseSplashScreenWindow()

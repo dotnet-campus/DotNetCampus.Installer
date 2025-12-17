@@ -82,7 +82,8 @@ public class InstallerHost
         return new InstallContext()
         {
             SplashScreenWindowHandler = splashScreenWindowHandler,
-            WorkingFolder = _configuration.WorkingFolder
+            WorkingFolder = _configuration.WorkingFolder,
+            ContentResourceAssetsInfo = _configuration.ContentResourceAssetsInfo,
         };
     }
 

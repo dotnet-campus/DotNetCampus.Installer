@@ -31,5 +31,8 @@ public readonly record struct InstallerHostConfiguration
     /// </summary>
     public Action<ProcessStartInfoConfigurationContext>? InstallerProcessStartConfigAction { get; init; }
 
-
+    /// <summary>
+    /// 安装内容的资源信息
+    /// </summary>
+    public required AssemblyManifestResourceInfo? ContentResourceAssetsInfo { get; init; }
 }

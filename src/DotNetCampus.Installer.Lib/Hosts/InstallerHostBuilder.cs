@@ -49,6 +49,7 @@ public class InstallerHostBuilder
             InstallerResourceAssetsInfo = assemblyManifestResourceInfo,
             InstallerRelativePath = _installerRelativePath,
             InstallerProcessStartConfigAction = _installerProcessStartConfigAction,
+            ContentResourceAssetsInfo = _contentResourceAssetsInfo
         };
 
         if (InstallerHostCreator is { } creator)
@@ -115,6 +116,20 @@ public class InstallerHostBuilder
     }
 
     private AssemblyManifestResourceInfo? _installerResourceAssetsInfo;
+
+    /// <summary>
+    /// 配置安装内容的所在资源包
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <param name="manifestResourceName"></param>
+    /// <returns></returns>
+    public InstallerHostBuilder ConfigContentResourceAssets(Assembly assembly, string manifestResourceName)
+    {
+        _contentResourceAssetsInfo = new AssemblyManifestResourceInfo(assembly, manifestResourceName);
+        return this;
+    }
+
+    private AssemblyManifestResourceInfo? _contentResourceAssetsInfo;
 
     /// <summary>
     /// 配置安装器的 Installer.exe 文件的相对路径，可用于自定义里层带界面的安装器的文件名
