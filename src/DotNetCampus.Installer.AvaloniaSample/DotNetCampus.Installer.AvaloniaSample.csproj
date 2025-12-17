@@ -11,6 +11,15 @@
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- 这里存放的是用 InstallerSevenZipTool 工具压缩的 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件的资源。比直接嵌入程序集 7MB 多，能节省一半 -->
+    <SkiaResourceAssetsPath>C:\lindexi\Work\SkiaX86.assets</SkiaResourceAssetsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(SkiaResourceAssetsPath)" Condition="Exists('$(SkiaResourceAssetsPath)')" Link="Assets\SkiaX86.assets" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.9" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
