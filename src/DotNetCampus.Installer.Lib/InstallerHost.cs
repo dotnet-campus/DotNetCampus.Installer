@@ -133,6 +133,15 @@ public class InstallerHost
     /// <param name="context"></param>
     protected virtual void Install(InstallContext context)
     {
+        InstallByIndependentInstallerProcess(context);
+    }
+
+    /// <summary>
+    /// 通过独立的安装器进程来安装
+    /// </summary>
+    /// <param name="context"></param>
+    protected void InstallByIndependentInstallerProcess(InstallContext context)
+    {
         var workingFolder = _configuration.WorkingFolder;
         string installerApplicationFile;
 
