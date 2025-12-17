@@ -28,7 +28,7 @@ public class InstallerHost
 {
     public static InstallerHostBuilder CreateBuilder()
     {
-        return new InstallerHostBuilder();
+       return new InstallerHostBuilder();
     }
 
     /// <summary>
@@ -70,11 +70,20 @@ public class InstallerHost
         }
         else
         {
-            var context = new InstallContext(_configuration, IntPtr.Zero);
+            var context = CreateInstallContext(IntPtr.Zero);
             Install(context);
         }
 
         return 0;
+    }
+
+    private InstallContext CreateInstallContext(IntPtr splashScreenWindowHandler)
+    {
+        return new InstallContext()
+        {
+            SplashScreenWindowHandler = splashScreenWindowHandler,
+            WorkingFolder = _configuration.WorkingFolder
+        };
     }
 
     /// <summary>
@@ -124,7 +133,7 @@ public class InstallerHost
             {
                 try
                 {
-                    var context = new InstallContext(_configuration, eventArgs.SplashScreenWindowHandler);
+                    var context = CreateInstallContext(eventArgs.SplashScreenWindowHandler);
                     Install(context);
                 }
                 catch (Exception e)
