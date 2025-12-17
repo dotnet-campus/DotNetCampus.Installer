@@ -97,19 +97,21 @@ public static class DirectoryArchive
         }
     }
 
-    public static void Decompress(FileInfo archiveFileInfo, DirectoryInfo outputFolder)
+    public static void Decompress(FileInfo archiveFileInfo, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var archiveFileStream = archiveFileInfo.OpenRead();
-        Decompress(archiveFileStream, outputFolder);
+        Decompress(archiveFileStream, outputFolder, progress);
     }
 
-    public static void Decompress(Stream archiveFileStream, DirectoryInfo outputFolder)
+    public static void Decompress(Stream archiveFileStream, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var directoryArchiveProxyOutputStream = new DirectoryArchiveProxyOutputStream(outputFolder);
 
+        progress ??= new Progress<ProgressReport>();
+
         // 解压缩 130MB 只需 5 秒
         var stopwatch = Stopwatch.StartNew();
-        CompressionUtility.Decompress(archiveFileStream, directoryArchiveProxyOutputStream, new Progress<ProgressReport>());
+        CompressionUtility.Decompress(archiveFileStream, directoryArchiveProxyOutputStream, progress);
         Console.WriteLine($"Elapsed={stopwatch.Elapsed.Minutes}m,{stopwatch.Elapsed.Seconds}s,{stopwatch.Elapsed.Milliseconds}ms");
     }
 }

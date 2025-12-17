@@ -1,4 +1,7 @@
 ﻿using DotNetCampus.Installer.Lib.SplashScreens;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
+
+using Microsoft.DotNet.Archive;
 
 namespace DotNetCampus.Installer.Lib.Hosts.Contexts;
 
@@ -31,5 +34,19 @@ public class InstallContext
         {
             SplashScreen.CloseSplashScreenWindow(SplashScreenWindowHandler);
         }
+    }
+
+    /// <summary>
+    /// 解压缩安装内容资源
+    /// </summary>
+    public void DecompressContentResource(DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
+    {
+        if (ContentResourceAssetsInfo is null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        using var manifestResourceStream = ContentResourceAssetsInfo.Value.GetManifestResourceStream();
+        DirectoryArchive.Decompress(manifestResourceStream, outputFolder, progress);
     }
 }
