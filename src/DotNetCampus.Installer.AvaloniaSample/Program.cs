@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Shapes;
 using Path = System.IO.Path;
 
@@ -32,7 +33,11 @@ internal class Program
 
             DirectoryArchive.Decompress(stream, Directory.CreateDirectory(libFolder));
 
+            var libSkiaSharpFile = Path.Join(libFolder, "libSkiaSharp.dll");
+            var libHarfBuzzSharpFile = Path.Join(libFolder, "libHarfBuzzSharp.dll");
 
+            NativeLibrary.Load(libSkiaSharpFile);
+            NativeLibrary.Load(libHarfBuzzSharpFile);
         }
 
         RunAvalonia(args);
