@@ -18,6 +18,7 @@ public readonly record struct InstallerHostConfiguration
     /// <summary>
     /// 里层带界面的安装器所在的嵌入程序集的压缩包资源
     /// </summary>
+    /// 可以没有安装器，表示不需要运行里层安装器，可以换成自定义的安装器逻辑
     public required AssemblyManifestResourceInfo? InstallerResourceAssetsInfo { get; init; }
 
     /// <summary>
@@ -29,4 +30,6 @@ public readonly record struct InstallerHostConfiguration
     /// 启动里层带界面的安装器时的配置
     /// </summary>
     public Action<ProcessStartInfoConfigurationContext>? InstallerProcessStartConfigAction { get; init; }
+
+
 }
