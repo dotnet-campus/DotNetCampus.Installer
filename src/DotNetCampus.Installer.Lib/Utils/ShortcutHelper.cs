@@ -10,7 +10,7 @@ public static class ShortcutHelper
     /// <param name="lnkFilePath">快捷方式的完全限定路径。</param>
     /// <param name="workDir"></param>
     /// <param name="args">快捷方式启动程序时需要使用的参数。</param>
-    /// <param name="targetPath"></param>
+    /// <param name="targetPath">快捷方式指向的目标路径。</param>
     public static unsafe void CreateShortcut(string lnkFilePath, string targetPath, string workDir, string args = "")
     {
         var shellLinkW = ShellLinkProvider.CreateShellLink();

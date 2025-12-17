@@ -1,4 +1,5 @@
 ﻿using DotNetCampus.Installer.Lib.SplashScreens;
+using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using Microsoft.DotNet.Archive;
@@ -48,5 +49,17 @@ public class InstallContext
 
         using var manifestResourceStream = ContentResourceAssetsInfo.Value.GetManifestResourceStream();
         DirectoryArchive.Decompress(manifestResourceStream, outputFolder, progress);
+    }
+
+    /// <summary>
+    /// 创建一个快捷方式
+    /// </summary>
+    /// <param name="lnkFilePath">快捷方式的完全限定路径。</param>
+    /// <param name="targetPath">快捷方式指向的目标路径。</param>
+    /// <param name="workDir"></param>
+    /// <param name="args">快捷方式启动程序时需要使用的参数。</param>
+    public void CreateShortcut(string lnkFilePath, string targetPath, string workDir, string args = "")
+    {
+        ShortcutHelper.CreateShortcut(lnkFilePath, targetPath, workDir, args);
     }
 }
