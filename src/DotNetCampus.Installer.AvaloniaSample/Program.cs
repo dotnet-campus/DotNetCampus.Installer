@@ -21,6 +21,7 @@ internal class Program
             {
                 RenderingMode =
                 [
+                    // 明确设置使用软渲染，这样可以不加载 5MB 的 av_libglesv2.dll 库
                     Win32RenderingMode.Software
                 ]
             })
