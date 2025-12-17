@@ -41,19 +41,25 @@ public class InstallerHostBuilder
         }
 
         var assemblyManifestResourceInfo = _installerResourceAssetsInfo;
-        if (assemblyManifestResourceInfo is null)
-        {
-            throw new InvalidOperationException();
-        }
 
         var configuration = new InstallerHostConfiguration()
         {
             WorkingFolder = workingFolder,
             SplashScreenFile = splashScreenFile,
-            InstallerResourceAssetsInfo = assemblyManifestResourceInfo.Value,
+            InstallerResourceAssetsInfo = assemblyManifestResourceInfo,
             InstallerRelativePath = _installerRelativePath,
             InstallerProcessStartConfigAction = _installerProcessStartConfigAction,
         };
+
+        if (InstallerHostCreator is { } creator)
+        {
+            return creator(configuration);
+        }
+
+        if (assemblyManifestResourceInfo is null)
+        {
+            throw new InvalidOperationException();
+        }
 
         return new InstallerHost(configuration);
     }
@@ -135,4 +141,12 @@ public class InstallerHostBuilder
     }
 
     private Action<ProcessStartInfoConfigurationContext>? _installerProcessStartConfigAction;
+
+    private Func<InstallerHostConfiguration, InstallerHost>? InstallerHostCreator { get; set; }
+
+    public InstallerHostBuilder UseCustomInstallerHost(Func<InstallerHostConfiguration, InstallerHost> creator)
+    {
+        InstallerHostCreator = creator;
+        return this;
+    }
 }

@@ -122,7 +122,11 @@ public class InstallerHost
         splashScreen.Show();
     }
 
-    private void Install(IntPtr splashScreenWindowHandler)
+    /// <summary>
+    /// 开始安装
+    /// </summary>
+    /// <param name="splashScreenWindowHandler"></param>
+    protected virtual void Install(IntPtr splashScreenWindowHandler)
     {
         var workingFolder = _configuration.WorkingFolder;
         string installerApplicationFile;
@@ -177,8 +181,13 @@ public class InstallerHost
 
     private string ExtractInstallerAssets()
     {
+        if (_configuration.InstallerResourceAssetsInfo is null)
+        {
+            throw new InvalidOperationException();
+        }
+
         var workingFolder = _configuration.WorkingFolder;
-        var installerResourceAssetsInfo = _configuration.InstallerResourceAssetsInfo;
+        var installerResourceAssetsInfo = _configuration.InstallerResourceAssetsInfo.Value;
         using var assetsStream = installerResourceAssetsInfo.GetManifestResourceStream();
         var resourceAssetsFolder = Directory.CreateDirectory(Path.Join(workingFolder.FullName, installerResourceAssetsInfo.ManifestResourceName));
         DirectoryArchive.Decompress(assetsStream, resourceAssetsFolder);
