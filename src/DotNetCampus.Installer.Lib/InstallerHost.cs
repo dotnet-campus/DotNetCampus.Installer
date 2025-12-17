@@ -32,6 +32,9 @@ public class InstallerHost
         return new InstallerHostBuilder();
     }
 
+    /// <summary>
+    /// 创建安装器主机
+    /// </summary>
     public InstallerHost(InstallerHostConfiguration configuration)
     {
         _configuration = configuration;
@@ -39,6 +42,11 @@ public class InstallerHost
 
     private readonly InstallerHostConfiguration _configuration;
 
+    /// <summary>
+    /// 运行安装器主机
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public int Run()
     {
         if (!OperatingSystem.IsWindows())

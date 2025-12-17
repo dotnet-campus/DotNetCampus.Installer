@@ -1,3 +1,8 @@
 ﻿LoadLibrary
 GetProcAddress
 MessageBox
+
+IShellLinkW
+IPersistFile
+
+CoCreateInstance
