@@ -1,10 +1,13 @@
 ﻿using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+
 using Windows.Win32;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 
 namespace DotNetCampus.Installer.Lib.Utils;
 
+[SupportedOSPlatform("windows5.1.2600")]
 internal static class ShellLinkProvider
 {
     public static unsafe IShellLinkW* CreateShellLink()

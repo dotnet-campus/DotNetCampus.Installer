@@ -1,4 +1,6 @@
-﻿using Windows.Win32.System.Com;
+﻿using System.Runtime.Versioning;
+
+using Windows.Win32.System.Com;
 
 namespace DotNetCampus.Installer.Lib.Utils;
 
@@ -11,6 +13,7 @@ public static class ShortcutHelper
     /// <param name="workDir"></param>
     /// <param name="args">快捷方式启动程序时需要使用的参数。</param>
     /// <param name="targetPath">快捷方式指向的目标路径。</param>
+    [SupportedOSPlatform("windows5.1.2600")]
     public static unsafe void CreateShortcut(string lnkFilePath, string targetPath, string workDir, string args = "")
     {
         var shellLinkW = ShellLinkProvider.CreateShellLink();

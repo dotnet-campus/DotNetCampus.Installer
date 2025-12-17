@@ -1,4 +1,5 @@
-﻿using DotNetCampus.Installer.Lib.SplashScreens;
+﻿using System.Runtime.Versioning;
+using DotNetCampus.Installer.Lib.SplashScreens;
 using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -58,6 +59,7 @@ public class InstallContext
     /// <param name="targetPath">快捷方式指向的目标路径。</param>
     /// <param name="workDir"></param>
     /// <param name="args">快捷方式启动程序时需要使用的参数。</param>
+    [SupportedOSPlatform("windows5.1.2600")]
     public void CreateShortcut(string lnkFilePath, string targetPath, string workDir, string args = "")
     {
         ShortcutHelper.CreateShortcut(lnkFilePath, targetPath, workDir, args);
