@@ -1,22 +1,20 @@
-﻿using DotNetCampus.Installer.Lib.Commandlines;
-using DotNetCampus.Installer.Lib.EnvironmentCheckers;
-using DotNetCampus.Installer.Lib.Hosts;
-using DotNetCampus.Installer.Lib.SplashScreens;
-using DotNetCampus.Installer.Lib.Utils;
-using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using DotNetCampus.Installer.Lib.Commandlines;
+using DotNetCampus.Installer.Lib.EnvironmentCheckers;
+using DotNetCampus.Installer.Lib.Hosts;
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
+using DotNetCampus.Installer.Lib.SplashScreens;
+using DotNetCampus.Installer.Lib.Utils;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib;
 
@@ -40,6 +38,11 @@ public class InstallerHost
     {
         _configuration = configuration;
     }
+
+    /// <summary>
+    /// 安装器的配置
+    /// </summary>
+    public InstallerHostConfiguration Configuration => _configuration;
 
     private readonly InstallerHostConfiguration _configuration;
 
@@ -83,7 +86,8 @@ public class InstallerHost
         }
         else
         {
-            Install(IntPtr.Zero);
+            var context = new InstallContext(_configuration, IntPtr.Zero);
+            Install(context);
         }
 
         return 0;
@@ -105,7 +109,8 @@ public class InstallerHost
             {
                 try
                 {
-                    Install(eventArgs.SplashScreenWindowHandler);
+                    var context = new InstallContext(_configuration, eventArgs.SplashScreenWindowHandler);
+                    Install(context);
                 }
                 catch (Exception e)
                 {
@@ -125,8 +130,8 @@ public class InstallerHost
     /// <summary>
     /// 开始安装
     /// </summary>
-    /// <param name="splashScreenWindowHandler"></param>
-    protected virtual void Install(IntPtr splashScreenWindowHandler)
+    /// <param name="context"></param>
+    protected virtual void Install(InstallContext context)
     {
         var workingFolder = _configuration.WorkingFolder;
         string installerApplicationFile;
@@ -154,6 +159,7 @@ public class InstallerHost
             Environment.ProcessId.ToString(),
         ];
 
+        var splashScreenWindowHandler = context.SplashScreenWindowHandler;
         if (splashScreenWindowHandler != IntPtr.Zero)
         {
             // 传入欢迎界面的句柄，安装包会在安装界面开始时欢迎界面
@@ -162,13 +168,13 @@ public class InstallerHost
         }
 
         var processStartInfo = new ProcessStartInfo(installerApplicationFile, argumentList);
-        var context = new ProcessStartInfoConfigurationContext()
+        var processContext = new ProcessStartInfoConfigurationContext()
         {
             ProcessStartInfo = processStartInfo,
             WorkingFolder = workingFolder,
             SplashScreenWindowHandler = splashScreenWindowHandler
         };
-        _configuration.InstallerProcessStartConfigAction?.Invoke(context);
+        _configuration.InstallerProcessStartConfigAction?.Invoke(processContext);
 
         var process = Process.Start(processStartInfo)!;
         process.WaitForExit();
