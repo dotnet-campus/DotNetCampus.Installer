@@ -4,5 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl">
-  Welcome to Avalonia!
+	<Grid>
+		<Grid>
+			<Button HorizontalAlignment="Center">快速安装</Button>
+			<Button HorizontalAlignment="Right">自定义安装</Button>
+        </Grid>
+    </Grid>
 </UserControl>
