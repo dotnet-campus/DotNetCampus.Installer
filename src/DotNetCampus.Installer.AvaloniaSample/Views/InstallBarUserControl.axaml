@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl">
+             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl"
+             d:DataContext="{d:DesignInstance viewModels:MainViewModel}">
 	<Grid>
 		<Grid>
 			<Button HorizontalAlignment="Center">快速安装</Button>
