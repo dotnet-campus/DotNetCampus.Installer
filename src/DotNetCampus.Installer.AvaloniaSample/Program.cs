@@ -41,6 +41,8 @@ internal class Program
         }
 
         RunAvalonia(args);
+
+        // 尝试删除垃圾文件
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
