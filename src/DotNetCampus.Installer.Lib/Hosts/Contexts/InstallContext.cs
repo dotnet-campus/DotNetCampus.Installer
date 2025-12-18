@@ -18,7 +18,7 @@ public class InstallContext
     public required IntPtr SplashScreenWindowHandler { get; init; }
 
     /// <summary>
-    /// 工作路径
+    /// 工作路径，一般是临时文件夹
     /// </summary>
     public required DirectoryInfo WorkingFolder { get; init; }
 
