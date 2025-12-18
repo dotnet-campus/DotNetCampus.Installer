@@ -15,6 +15,8 @@ public partial class MainWindow : Window
         DataContext = ViewModel;
      
         InitializeComponent();
+
+        InstallBar.RequestInstallStart += InstallBar_RequestInstallStart;
     }
 
     public MainViewModel ViewModel { get; }
@@ -26,4 +28,11 @@ public partial class MainWindow : Window
     }
 
     public InstallerProgram InstallerProgram { get; }
+
+    private void InstallBar_RequestInstallStart(object? sender, System.EventArgs e)
+    {
+        // 点击了开始安装的按钮，现在开始安装
+        // 需要切换一下界面
+
+    }
 }

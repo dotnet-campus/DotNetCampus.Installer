@@ -5,11 +5,24 @@
              xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl"
-             d:DataContext="{d:DesignInstance viewModels:MainViewModel}">
-	<Grid>
-		<Grid>
-			<Button HorizontalAlignment="Center">快速安装</Button>
-			<Button HorizontalAlignment="Right">自定义安装</Button>
+             x:DataType="viewModels:MainViewModel">
+	<Grid Height="62">
+		<Grid x:Name="MainInstallGrid" VerticalAlignment="Center">
+			<Button x:Name="InstallButton" HorizontalAlignment="Center" Click="InstallButton_OnClick">快速安装</Button>
+			<Button x:Name="CustomInstallPathButton" HorizontalAlignment="Right" Click="CustomInstallPathButton_OnClick">自定义安装</Button>
+        </Grid>
+		
+		<Grid x:Name="SelectInstallPathGrid" IsVisible="False" RowDefinitions="Auto,Auto">
+			<Grid ColumnDefinitions="Auto,*,Auto">
+				<TextBlock>安装路径：</TextBlock>
+				<TextBlock Grid.Column="1" Margin="5,0,5,0" Text="{Binding InstallPath,Mode=TwoWay}"/>
+				<Button x:Name="PickFolderButton" Grid.Column="2" Click="PickFolderButton_OnClick">浏览...</Button>
+            </Grid>
+			<Grid Grid.Row="1">
+				<Button x:Name="BackToMainInstallGridButton" Click="BackToMainInstallGridButton_OnClick">返回</Button>
+
+				<Button x:Name="StartInstallButton" HorizontalAlignment="Right" Click="StartInstallButton_OnClick">开始安装</Button>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

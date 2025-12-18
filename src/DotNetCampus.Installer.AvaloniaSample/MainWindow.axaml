@@ -28,7 +28,7 @@
             </Border>
 
 			<!-- 安装条 -->
-			<views:InstallBarUserControl Grid.Row="2"/>
+			<views:InstallBarUserControl x:Name="InstallBar" Grid.Row="2"/>
         </Grid>
     </Grid>
 </Window>

@@ -68,20 +68,30 @@ public record StandardInstallContext
     /// <summary>
     /// 安装路径
     /// </summary>
-    public string InstallPath
+    public string InstallRootPath
     {
         get
         {
-            if (_installPath is null)
+            if (_installRootPath is null)
             {
                 var programFile = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-                _installPath = Path.Join(programFile, ProductFamily, ProductName, $"{ProductName}_{AppVersion}");
+                _installRootPath = Path.Join(programFile, ProductFamily, ProductName);
             }
 
-            return _installPath;
+            return _installRootPath;
         }
-        set => _installPath = value;
+        set => _installRootPath = value;
     }
 
-    private string? _installPath;
+    private string? _installRootPath;
+
+    /// <summary>
+    /// 主安装路径，即为 <see cref="InstallRootPath"/> 下的具体安装目录，带上版本号的路径
+    /// </summary>
+    public string MainInstallPath
+    {
+        get => _mainInstallPath ??= Path.Join(InstallRootPath, $"{ProductName}_{AppVersion}");
+        set => _mainInstallPath = value;
+    }
+    private string? _mainInstallPath;
 }
