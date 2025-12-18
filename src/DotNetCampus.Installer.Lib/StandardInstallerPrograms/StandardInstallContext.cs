@@ -20,6 +20,15 @@ public record StandardInstallContext
     public required string ProductFamily { get; init; }
 
     /// <summary>
+    /// 软件内部对用户显示的产品名称
+    /// </summary>
+    public string DisplayProductName
+    {
+        get => _displayProductName ?? ProductFamily;
+        init => _displayProductName  = value;
+    }
+
+    /// <summary>
     /// 应用版本号
     /// </summary>
     public string AppVersion { get; set; } = "1.0.0.0";
@@ -44,9 +53,15 @@ public record StandardInstallContext
     }
 
     private DirectoryInfo? _workingFolder;
+    private readonly string? _displayProductName;
 
     /// <summary>
     /// 安装内容的资源信息
     /// </summary>
     public required AssemblyManifestResourceInfo? ContentResourceAssetsInfo { get; init; }
+
+    /// <summary>
+    /// 启动图的资源信息。可为空，为空表示不使用启动图
+    /// </summary>
+    public required AssemblyManifestResourceInfo? SplashScreenResourceAssetsInfo { get; init; }
 }
