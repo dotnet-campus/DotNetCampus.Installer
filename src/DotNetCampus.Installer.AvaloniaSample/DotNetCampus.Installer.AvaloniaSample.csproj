@@ -15,10 +15,13 @@
   <PropertyGroup>
     <!-- 这里存放的是用 InstallerSevenZipTool 工具压缩的 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件的资源。比直接嵌入程序集 7MB 多，能节省一半 -->
     <SkiaResourceAssetsPath>C:\lindexi\Work\SkiaX86.assets</SkiaResourceAssetsPath>
+    <ContentResourceAssetsPath>C:\lindexi\Work\Resource.assets</ContentResourceAssetsPath>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="$(SkiaResourceAssetsPath)" Condition="Exists('$(SkiaResourceAssetsPath)')" Link="Assets\SkiaX86.assets" />
+
+    <EmbeddedResource Include="$(ContentResourceAssetsPath)" Condition="Exists('$(ContentResourceAssetsPath)')" Link="Assets\ContentResource.assets" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,14 +1,15 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
-using DotNetCampus.Installer.AvaloniaSample.Foundation;
+
+using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.Lib.Hosts;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
 public partial class MainWindow : Window
 {
-    public MainWindow(AppInfo appInfo)
+    public MainWindow(InstallerProgram installerProgram)
     {
-        AppInfo = appInfo;
+        InstallerProgram = installerProgram;
         InitializeComponent();
 
      
@@ -20,5 +21,5 @@ public partial class MainWindow : Window
         base.OnPointerPressed(e);
     }
 
-    public AppInfo AppInfo { get; }
+    public InstallerProgram InstallerProgram { get; }
 }

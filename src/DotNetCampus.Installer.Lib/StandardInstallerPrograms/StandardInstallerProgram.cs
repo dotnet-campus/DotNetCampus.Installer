@@ -47,4 +47,6 @@ public abstract class StandardInstallerProgram
     /// 关闭欢迎界面
     /// </summary>
     public void CloseSplashScreen() => _splashScreen?.Close();
+
+
 }

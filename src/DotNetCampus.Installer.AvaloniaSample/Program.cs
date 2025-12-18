@@ -1,6 +1,6 @@
 ﻿using Avalonia;
 
-using DotNetCampus.Installer.AvaloniaSample.Foundation;
+using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
 using Path = System.IO.Path;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
@@ -26,14 +27,14 @@ internal class Program
     {
         // 先解压缩资产文件，确保在 Avalonia 初始化前完成
         // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
-        
-        var appInfo = new AppInfo();
-        var appPath = appInfo.AppPath;
 
+        var installerProgram = new InstallerProgram();
+
+        var context = installerProgram.StandardInstallContext;
         var assemblyManifestResourceInfo = new AssemblyManifestResourceInfo(Assembly.GetExecutingAssembly(), "DotNetCampus.Installer.AvaloniaSample.Assets.SkiaX86.assets");
         using (var stream = assemblyManifestResourceInfo.GetManifestResourceStream())
         {
-            var libFolder = Path.Join(appPath.WorkingFolder.FullName, "Lib");
+            var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
 
             DirectoryArchive.Decompress(stream, Directory.CreateDirectory(libFolder));
 
@@ -44,12 +45,12 @@ internal class Program
             NativeLibrary.Load(libHarfBuzzSharpFile);
         }
 
-        var returnResult = RunAvalonia(args, appInfo);
+        var returnResult = RunAvalonia(args, installerProgram);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static int RunAvalonia(string[] args, AppInfo? appInfo = null)
+        static int RunAvalonia(string[] args, InstallerProgram? installerProgram = null)
         {
-            return BuildAvaloniaAppInner(appInfo)
+            return BuildAvaloniaAppInner(installerProgram)
                  .StartWithClassicDesktopLifetime(args);
         }
 
@@ -61,9 +62,9 @@ internal class Program
     public static AppBuilder BuildAvaloniaApp()
         => BuildAvaloniaAppInner();
 
-    private static AppBuilder BuildAvaloniaAppInner(AppInfo? appInfo = null)
+    private static AppBuilder BuildAvaloniaAppInner(InstallerProgram? installerProgram = null)
     {
-        return AppBuilder.Configure<App>(() => new App(appInfo))
+        return AppBuilder.Configure<App>(() => new App(installerProgram))
             .UsePlatformDetect()
             .WithInterFont()
             .With(new Win32PlatformOptions()

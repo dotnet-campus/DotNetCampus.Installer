@@ -64,4 +64,24 @@ public record StandardInstallContext
     /// 启动图的资源信息。可为空，为空表示不使用启动图
     /// </summary>
     public required AssemblyManifestResourceInfo? SplashScreenResourceAssetsInfo { get; init; }
+
+    /// <summary>
+    /// 安装路径
+    /// </summary>
+    public string InstallPath
+    {
+        get
+        {
+            if (_installPath is null)
+            {
+                var programFile = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                _installPath = Path.Join(programFile, ProductFamily, ProductName, $"{ProductName}_{AppVersion}");
+            }
+
+            return _installPath;
+        }
+        set => _installPath = value;
+    }
+
+    private string? _installPath;
 }
