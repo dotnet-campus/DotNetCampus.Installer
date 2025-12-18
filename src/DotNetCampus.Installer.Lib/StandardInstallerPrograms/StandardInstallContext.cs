@@ -40,7 +40,7 @@ public record StandardInstallContext
     /// </summary>
     public string DisplayProductName
     {
-        get => _displayProductName ?? ProductFamily;
+        get => _displayProductName ?? ProductName;
         init => _displayProductName  = value;
     }
     private readonly string? _displayProductName;
@@ -80,6 +80,18 @@ public record StandardInstallContext
     /// 启动图的资源信息。可为空，为空表示不使用启动图
     /// </summary>
     public required AssemblyManifestResourceInfo? SplashScreenResourceAssetsInfo { get; init; }
+
+    /// <summary>
+    /// 启动器相对于 <see cref="MainInstallPath"/> 的路径
+    /// </summary>
+    /// <returns>
+    /// 如无启动器，则保持空
+    /// </returns>
+    public string? LauncherExeRelativePath
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// 安装路径

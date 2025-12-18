@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using DotNetCampus.Installer.Lib.SplashScreens;
+
 using Microsoft.Win32;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
@@ -65,10 +66,29 @@ public abstract class StandardInstallerProgram
     {
         // 注册表安装项路径
         // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node
-        var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")!;
+        var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", writable: true)!;
 
         var productFamilyKey =
             softwareKey.CreateSubKey(StandardInstallContext.ProductFamily);
+        var productNameKey = productFamilyKey.CreateSubKey(StandardInstallContext.ProductName);
+
+        var launcherExeRelativePath = StandardInstallContext.LauncherExeRelativePath;
+        if (!string.IsNullOrEmpty(launcherExeRelativePath))
+        {
+            var launcherFullPath = Path.Join(StandardInstallContext.MainInstallPath, launcherExeRelativePath);
+            productNameKey.SetValue("ActualExePath", launcherFullPath, RegistryValueKind.String);
+
+            productNameKey.SetValue("ExePath", launcherFullPath, RegistryValueKind.String);
+        }
+
+        var code = StandardInstallContext.ProductCodeGuid.ToString("B");
+        productNameKey.SetValue("code", code, RegistryValueKind.String);
+
+        productNameKey.SetValue("path", StandardInstallContext.InstallRootPath, RegistryValueKind.String);
+
+        productNameKey.SetValue("version", StandardInstallContext.AppVersion, RegistryValueKind.String);
+
+        productNameKey.SetValue("VersionPath", StandardInstallContext.MainInstallPath, RegistryValueKind.String);
     }
 
     /// <summary>
@@ -78,5 +98,41 @@ public abstract class StandardInstallerProgram
     {
         // 注册表卸载项路径
         // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
+        var uninstallKey =
+            Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+                writable: true)!;
+        var code = StandardInstallContext.ProductCodeGuid.ToString("B");
+        var productUninstallKey = uninstallKey.CreateSubKey(code);
+
+        var icon = StandardInstallContext.UninstallDisplayIconRelativePath;
+        if (!string.IsNullOrEmpty(icon))
+        {
+            var iconFullPath = Path.Join(StandardInstallContext.MainInstallPath, icon);
+            productUninstallKey.SetValue("DisplayIcon", iconFullPath, RegistryValueKind.String);
+        }
+
+        productUninstallKey.SetValue("DisplayName", StandardInstallContext.DisplayProductName, RegistryValueKind.String);
+
+        productUninstallKey.SetValue("DisplayVersion", StandardInstallContext.UninstallDisplayVersion, RegistryValueKind.String);
+
+        var size = StandardInstallContext.UninstallEstimatedSize;
+        if (size is null)
+        {
+
+        }
+
+        if (size is not null)
+        {
+            productUninstallKey.SetValue("EstimatedSize", size,RegistryValueKind.DWord);
+        }
+
+        productUninstallKey.SetValue("Publisher", StandardInstallContext.UninstallDisplayPublisher, RegistryValueKind.String);
+
+        var uninstaller = StandardInstallContext.UninstallerRelativePath;
+        if (!string.IsNullOrEmpty(uninstaller))
+        {
+            var uninstallerFullPath = Path.Join(StandardInstallContext.MainInstallPath, uninstaller);
+            productUninstallKey.SetValue("UninstallString", uninstallerFullPath, RegistryValueKind.String);
+        }
     }
 }

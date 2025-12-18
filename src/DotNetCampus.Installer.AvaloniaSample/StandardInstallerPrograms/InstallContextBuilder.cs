@@ -34,6 +34,8 @@ class InstallContextBuilder
 
             // 示例采用程序集版本号作为安装的版本号。实际使用可以采用更多定制
             AppVersion = version,
+
+            LauncherExeRelativePath = "Launcher.exe",
         };
 
         return standardInstallContext;
