@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using DotNetCampus.Installer.Lib.SplashScreens;
+using Microsoft.Win32;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -48,5 +49,34 @@ public abstract class StandardInstallerProgram
     /// </summary>
     public void CloseSplashScreen() => _splashScreen?.Close();
 
+    /// <summary>
+    /// 写注册表
+    /// </summary>
+    public virtual void WriteRegister()
+    {
+        WriteInstallRegister();
+        WriteUninstallRegister();
+    }
 
+    /// <summary>
+    /// 写安装注册表
+    /// </summary>
+    protected virtual void WriteInstallRegister()
+    {
+        // 注册表安装项路径
+        // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node
+        var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE")!;
+
+        var productFamilyKey =
+            softwareKey.CreateSubKey(StandardInstallContext.ProductFamily);
+    }
+
+    /// <summary>
+    /// 写卸载注册表
+    /// </summary>
+    private void WriteUninstallRegister()
+    {
+        // 注册表卸载项路径
+        // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
+    }
 }

@@ -33,6 +33,6 @@ public partial class MainWindow : Window
     {
         // 点击了开始安装的按钮，现在开始安装
         // 需要切换一下界面
-
+        InstallerProgram.WriteRegister();
     }
 }

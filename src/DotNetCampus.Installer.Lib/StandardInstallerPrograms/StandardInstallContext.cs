@@ -1,4 +1,5 @@
-﻿using DotNetCampus.Installer.Lib.Hosts.Contexts;
+﻿using System.Dynamic;
+using DotNetCampus.Installer.Lib.Hosts.Contexts;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -7,6 +8,21 @@ namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 /// </summary>
 public record StandardInstallContext
 {
+    /// <summary>
+    /// 安装包单例所用的互斥锁名称。默认使用 <see cref="ProductCodeGuid"/> 的无连接符字符串形式
+    /// </summary>
+    public string SingletonMutexName
+    {
+        get => _singletonMutexName ??= ProductCodeGuid.ToString("N");
+        set => _singletonMutexName = value;
+    }
+    private string? _singletonMutexName;
+
+    /// <summary>
+    /// 应用程序唯一标识符。用于写入到注册表和创建互斥锁等场景
+    /// </summary>
+    public required Guid ProductCodeGuid { get; init; }
+
     /// <summary>
     /// 产品名称，如 VisualStudio.exe 。其大小关系为：
     ///   公司名 -> 品牌名(产品族名称) -> 产品名
@@ -27,6 +43,7 @@ public record StandardInstallContext
         get => _displayProductName ?? ProductFamily;
         init => _displayProductName  = value;
     }
+    private readonly string? _displayProductName;
 
     /// <summary>
     /// 应用版本号
@@ -53,7 +70,6 @@ public record StandardInstallContext
     }
 
     private DirectoryInfo? _workingFolder;
-    private readonly string? _displayProductName;
 
     /// <summary>
     /// 安装内容的资源信息
@@ -94,4 +110,61 @@ public record StandardInstallContext
         set => _mainInstallPath = value;
     }
     private string? _mainInstallPath;
+
+    /// <summary>
+    /// 控制面板卸载器显示的图标。相对于 <see cref="MainInstallPath"/> 的卸载图标路径
+    /// </summary>
+    public string? UninstallDisplayIconRelativePath
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// 控制面板卸载器显示的名称。默认使用 <see cref="DisplayProductName"/>
+    /// </summary>
+    public string UninstallDisplayName
+    {
+        get => _uninstallDisplayName ??= DisplayProductName;
+        set => _uninstallDisplayName = value;
+    }
+    private string? _uninstallDisplayName;
+
+    /// <summary>
+    /// 控制面板卸载器显示的版本号。默认使用 <see cref="AppVersion"/>
+    /// </summary>
+    public string UninstallDisplayVersion
+    {
+        get => _uninstallDisplayVersion ??= AppVersion;
+        set => _uninstallDisplayVersion = value;
+    }
+    private string? _uninstallDisplayVersion;
+
+    /// <summary>
+    /// 控制面板卸载器显示的软件大小。为空将在安装之后自动计算。可以手动制定大小，单位为 KB
+    /// </summary>
+    public int? UninstallEstimatedSize
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// 控制面板卸载器显示的发布者。默认使用 <see cref="ProductFamily"/>
+    /// </summary>
+    public string UninstallDisplayPublisher
+    {
+        get => _uninstallDisplayPublisher ?? ProductFamily;
+        set => _uninstallDisplayPublisher = value;
+    }
+    private string? _uninstallDisplayPublisher;
+
+    /// <summary>
+    /// 卸载器相对于 <see cref="MainInstallPath"/> 的路径
+    /// </summary>
+    public string? UninstallerRelativePath
+    {
+        get;
+        set;
+    }
 }

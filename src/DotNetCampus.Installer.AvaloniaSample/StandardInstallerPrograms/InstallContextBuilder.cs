@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
@@ -22,6 +23,9 @@ class InstallContextBuilder
 
         var standardInstallContext = new StandardInstallContext()
         {
+            // 这里不能采用 Guid.NewGuid 哦，因为写一个固定的常量，且确保和其他软件不相同
+            ProductCodeGuid = Guid.Parse("{924C2305-0A44-4610-906B-E202892E82DA}"),
+
             SplashScreenResourceAssetsInfo = null,
             ContentResourceAssetsInfo = new AssemblyManifestResourceInfo(assembly, "DotNetCampus.Installer.AvaloniaSample.Assets.ContentResource.assets"),
             
