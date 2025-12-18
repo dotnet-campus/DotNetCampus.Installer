@@ -13,6 +13,9 @@ using Path = System.IO.Path;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
 
+// 可作为 AOT Lib 被使用，这样可以进行二次压缩，将 14MB 的空安装器，压缩到 6MB 左右
+// 但一旦作为 AOT Lib 被使用，就需要有一定的通讯才能实现 Content Resource 的传递。但额外好处是不需要管 libSkiaSharp.dll 和 libHarfBuzzSharp.dll 的加载问题
+
 internal class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
