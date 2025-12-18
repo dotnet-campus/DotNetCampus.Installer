@@ -9,18 +9,12 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Shapes;
-using DotNetCampus.Installer.Lib;
 using Path = System.IO.Path;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
 
-internal class Program : InstallerHost
+internal class Program
 {
-    public Program(InstallerHostConfiguration configuration) : base(configuration)
-    {
-    }
-
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
@@ -30,14 +24,6 @@ internal class Program : InstallerHost
         // 先解压缩资产文件，确保在 Avalonia 初始化前完成
         // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
 
-        var builder = InstallerHost.CreateBuilder();
-        builder.UseCustomInstallerHost(configuration => new Program(configuration));
-        InstallerHost installerHost = builder.Build();
-        return installerHost.Run();
-    }
-
-    protected override void Install(InstallContext context)
-    {
         var appInfo = new AppInfo();
         var appPath = appInfo.AppPath;
 
@@ -55,15 +41,17 @@ internal class Program : InstallerHost
             NativeLibrary.Load(libHarfBuzzSharpFile);
         }
 
-        RunAvalonia(appInfo);
+        var returnResult = RunAvalonia(args, appInfo);
+
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void RunAvalonia(AppInfo? appInfo = null)
+        static int RunAvalonia(string[] args, AppInfo? appInfo = null)
         {
-            BuildAvaloniaAppInner(appInfo)
-                .StartWithClassicDesktopLifetime([]);
+            return BuildAvaloniaAppInner(appInfo)
+                 .StartWithClassicDesktopLifetime(args);
         }
 
         // 尝试删除垃圾文件
+        return returnResult;
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
