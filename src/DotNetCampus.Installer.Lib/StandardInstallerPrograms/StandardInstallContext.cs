@@ -16,6 +16,7 @@ public record StandardInstallContext
         get => _singletonMutexName ??= ProductCodeGuid.ToString("N");
         set => _singletonMutexName = value;
     }
+
     private string? _singletonMutexName;
 
     /// <summary>

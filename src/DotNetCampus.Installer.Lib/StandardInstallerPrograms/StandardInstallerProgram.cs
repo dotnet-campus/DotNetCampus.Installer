@@ -1,12 +1,13 @@
-﻿using System;
+﻿using DotNetCampus.Installer.Lib.EnvironmentCheckers;
+using DotNetCampus.Installer.Lib.SplashScreens;
+
+using Microsoft.Win32;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using DotNetCampus.Installer.Lib.SplashScreens;
-
-using Microsoft.Win32;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -16,6 +17,15 @@ namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 public abstract class StandardInstallerProgram
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
+
+    /// <summary>
+    /// 检测环境和弹出提示
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool CheckEnvironment()
+    {
+        return EnvironmentChecker.CheckEnvironmentAndShowMessageBox();
+    }
 
     /// <summary>
     /// 显示欢迎界面

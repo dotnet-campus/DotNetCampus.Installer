@@ -25,10 +25,16 @@ internal class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        var installerProgram = new InstallerProgram();
+        var checkEnvironmentSuccess = installerProgram.CheckEnvironment();
+        if (!checkEnvironmentSuccess)
+        {
+            // 环境不满足安装要求，直接退出
+            return -1;
+        }
+
         // 先解压缩资产文件，确保在 Avalonia 初始化前完成
         // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
-
-        var installerProgram = new InstallerProgram();
 
         var context = installerProgram.StandardInstallContext;
         var assemblyManifestResourceInfo = new AssemblyManifestResourceInfo(Assembly.GetExecutingAssembly(), "DotNetCampus.Installer.AvaloniaSample.Assets.SkiaX86.assets");
