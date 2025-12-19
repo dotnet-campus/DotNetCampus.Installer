@@ -1,11 +1,13 @@
 ﻿using DotNetCampus.Installer.Lib.EnvironmentCheckers;
 using DotNetCampus.Installer.Lib.SplashScreens;
+using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using Microsoft.Win32;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
@@ -141,13 +143,74 @@ public abstract class StandardInstallerProgram : IDisposable
             else
             {
                 // 如果能作为版本判断的话，用版本判断
-                if (Version.TryParse(oldVersion,out var oldVersionValue) && Version.TryParse(currentVersion,out var currentVersionValue))
+                if (Version.TryParse(oldVersion, out var oldVersionValue) && Version.TryParse(currentVersion, out var currentVersionValue))
                 {
                     if (currentVersionValue < oldVersionValue)
                     {
                         PInvoke.MessageBox(GetMessageOwner(), $"检测到系统中已安装更新版本 {oldVersion} 的程序，安装程序将降级已安装版本。", StandardInstallContext.DisplayProductName,
                             MESSAGEBOX_STYLE.MB_ICONWARNING);
                     }
+                }
+            }
+
+            // 尝试调用旧版本的卸载功能
+            var oldVersionUninstaller = GetOldVersionUninstaller();
+            if (oldVersionUninstaller != null)
+            {
+                var process = Process.Start(oldVersionUninstaller);
+                process.WaitForExit();
+            }
+        }
+
+        var installRootPath = StandardInstallContext.InstallRootPath;
+        if (Directory.Exists(installRootPath))
+        {
+            // 结束旧版本进程和清理
+            KillProcessInInstallPath();
+
+            // 删除安装路径
+            FolderDeleteHelper.DeleteFolder(installRootPath);
+        }
+    }
+
+    /// <summary>
+    /// 杀掉所有在安装路径下运行的进程
+    /// </summary>
+    protected void KillProcessInInstallPath()
+    {
+        // 重复杀3次，防止进程相互拉起
+        for (int i = 0; i < 3; i++)
+        {
+            try
+            {
+                KillCore();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+
+        void KillCore()
+        {
+            var installRootPath = StandardInstallContext.InstallRootPath;
+
+            foreach (var process in Process.GetProcesses())
+            {
+                try
+                {
+                    var fileName = process.MainModule?.FileName;
+                    if (!string.IsNullOrEmpty(fileName) &&
+                        fileName.StartsWith(installRootPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // 进程包含在安装路径下，结束它
+                        process.Kill();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
                 }
             }
         }
@@ -225,6 +288,21 @@ public abstract class StandardInstallerProgram : IDisposable
         if (productNameKey != null)
         {
             return productNameKey.GetValue("version") as string;
+        }
+
+        return null;
+    }
+
+    private string? GetOldVersionUninstaller()
+    {
+        // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
+        var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", writable: false)!;
+        var code = StandardInstallContext.ProductCodeGuid.ToString("B");
+        var uninstallKey = softwareKey.OpenSubKey($@"Microsoft\Windows\CurrentVersion\Uninstall\{code}");
+
+        if (uninstallKey != null)
+        {
+            return uninstallKey.GetValue("UninstallString") as string;
         }
 
         return null;

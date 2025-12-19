@@ -1,6 +1,6 @@
 ﻿namespace DotNetCampus.Installer.Lib.Utils;
 
-public class FolderDeleteHelper
+public static class FolderDeleteHelper
 {
     /// <summary>
     /// 递归删除文件夹，包括其中的所有文件和文件夹。
@@ -12,7 +12,7 @@ public class FolderDeleteHelper
     /// <param name="directoryPath"></param>
     /// <param name="throwException">是否把异常抛出由业务方处理</param>
     /// <param name="onlyDeleteContent">删除文件夹中所有的文件和文件夹，但不删除文件夹本身</param>
-    public static void DeleteFolder(string directoryPath, bool throwException = false,bool onlyDeleteContent=false)
+    public static void DeleteFolder(string directoryPath, bool throwException = false, bool onlyDeleteContent = false)
     {
         if (!Directory.Exists(directoryPath))
         {
