@@ -4,8 +4,17 @@ using Microsoft.DotNet.Archive;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
+/// <summary>
+/// 文件夹存档
+/// </summary>
 public static class DirectoryArchive
 {
+    /// <summary>
+    /// 压缩文件夹为存档文件
+    /// </summary>
+    /// <param name="inputDirectoryInfo"></param>
+    /// <param name="outputFileInfo"></param>
+    /// <exception cref="Exception"></exception>
     public static void Compress(DirectoryInfo inputDirectoryInfo, FileInfo outputFileInfo)
     {
         using var outputFileStream = new FileStream(outputFileInfo.FullName, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
@@ -97,12 +106,24 @@ public static class DirectoryArchive
         }
     }
 
+    /// <summary>
+    /// 解压缩存档文件到文件夹
+    /// </summary>
+    /// <param name="archiveFileInfo"></param>
+    /// <param name="outputFolder"></param>
+    /// <param name="progress"></param>
     public static void Decompress(FileInfo archiveFileInfo, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var archiveFileStream = archiveFileInfo.OpenRead();
         Decompress(archiveFileStream, outputFolder, progress);
     }
 
+    /// <summary>
+    /// 解压缩存档文件到文件夹
+    /// </summary>
+    /// <param name="archiveFileStream"></param>
+    /// <param name="outputFolder"></param>
+    /// <param name="progress"></param>
     public static void Decompress(Stream archiveFileStream, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var directoryArchiveProxyOutputStream = new DirectoryArchiveProxyOutputStream(outputFolder);

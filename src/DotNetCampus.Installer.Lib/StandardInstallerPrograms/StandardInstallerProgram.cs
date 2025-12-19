@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -20,6 +21,8 @@ namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 public abstract class StandardInstallerProgram : IDisposable
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
+
+    #region 环境
 
     /// <summary>
     /// 检测环境和弹出提示
@@ -51,6 +54,10 @@ public abstract class StandardInstallerProgram : IDisposable
     /// 单例用的互斥锁
     /// </summary>
     private Mutex? _singletonMutex;
+
+    #endregion
+
+    #region 欢迎界面
 
     /// <summary>
     /// 显示欢迎界面
@@ -84,6 +91,32 @@ public abstract class StandardInstallerProgram : IDisposable
     /// 关闭欢迎界面
     /// </summary>
     public void CloseSplashScreen() => _splashScreen?.Close();
+
+    #endregion
+
+    #region 解压缩
+
+    /// <summary>
+    /// 解压缩，将 <see cref="StandardInstallContext.ContentResourceAssetsInfo"/> 解压缩到安装路径下
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    public virtual void Decompress()
+    {
+        var contentResourceAssetsInfo = StandardInstallContext.ContentResourceAssetsInfo;
+        if (contentResourceAssetsInfo is null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var mainInstallPath = StandardInstallContext.MainInstallPath;
+        using var stream = contentResourceAssetsInfo.Value.GetManifestResourceStream();
+        DirectoryArchive.Decompress(stream,
+            Directory.CreateDirectory(mainInstallPath));
+    }
+
+    #endregion
+
+    #region 注册表
 
     /// <summary>
     /// 写注册表
@@ -167,6 +200,14 @@ public abstract class StandardInstallerProgram : IDisposable
             productUninstallKey.SetValue("UninstallString", uninstaller, RegistryValueKind.String);
         }
     }
+
+    #endregion
+
+    #region 快捷方式
+
+    
+
+    #endregion
 
     public void Dispose()
     {

@@ -1,4 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Input;
 
 using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
@@ -29,10 +32,18 @@ public partial class MainWindow : Window
 
     public InstallerProgram InstallerProgram { get; }
 
-    private void InstallBar_RequestInstallStart(object? sender, System.EventArgs e)
+    private async void InstallBar_RequestInstallStart(object? sender, System.EventArgs e)
     {
-        // 点击了开始安装的按钮，现在开始安装
-        // 需要切换一下界面
-        InstallerProgram.WriteRegister();
+        try
+        {
+            // 点击了开始安装的按钮，现在开始安装
+            // 需要切换一下界面
+            await Task.Run(() => InstallerProgram.Decompress());
+        }
+        catch (Exception exception)
+        {
+            // async void 捕获全部异常
+            Debug.WriteLine(exception);
+        }
     }
 }
