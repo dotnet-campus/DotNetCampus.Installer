@@ -187,6 +187,11 @@ public record StandardInstallContext
 
     public string? GetUninstallerFullPath() => GetFullPath(UninstallerRelativePath);
 
+    /// <summary>
+    /// 安装器的 UI 界面，用于弹出对话框的时候能够设置窗口
+    /// </summary>
+    public IntPtr InstallerUIWindowHandler { get; set; }
+
     private string? GetFullPath(string? relativePath)
     {
         if (string.IsNullOrEmpty(relativePath))

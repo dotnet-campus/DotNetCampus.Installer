@@ -10,7 +10,7 @@
         Title="Installer"
         SystemDecorations="None" ExtendClientAreaToDecorationsHint="true">
     <Grid>
-		<Grid RowDefinitions="Auto,*,Auto">
+		<Grid RowDefinitions="Auto,*,62">
 			<Grid>
 				<Border Width="32" Height="32" Background="Gray"
                         HorizontalAlignment="Left">
@@ -29,6 +29,10 @@
 
 			<!-- 安装条 -->
 			<views:InstallBarUserControl x:Name="InstallBar" Grid.Row="2"/>
+
+			<views:InstallStatusUserControl x:Name="InstallStatus" Grid.Row="2" IsVisible="False"/>
+
+			<views:InstallFinishUserControl x:Name="InstallFinish" Grid.Row="2" IsVisible="False"/>
         </Grid>
     </Grid>
 </Window>

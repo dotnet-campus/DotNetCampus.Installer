@@ -1,23 +1,26 @@
 ﻿using DotNetCampus.Installer.Lib.EnvironmentCheckers;
 using DotNetCampus.Installer.Lib.SplashScreens;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using Microsoft.Win32;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
+
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
 /// <summary>
 /// 标准安装器流程
 /// </summary>
+[SupportedOSPlatform("windows5.0")]
 public abstract class StandardInstallerProgram : IDisposable
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
@@ -34,7 +37,7 @@ public abstract class StandardInstallerProgram : IDisposable
         if (!isSingleton)
         {
             // 本产品已经有一个安装向导正在运行！
-            PInvoke.MessageBox(HWND.Null, "本产品已经有一个安装向导正在运行！", StandardInstallContext.DisplayProductName,
+            PInvoke.MessageBox(GetMessageOwner(), "本产品已经有一个安装向导正在运行！", StandardInstallContext.DisplayProductName,
                 MESSAGEBOX_STYLE.MB_ICONWARNING);
 
             return false;
@@ -109,10 +112,14 @@ public abstract class StandardInstallerProgram : IDisposable
         // 2. 解压缩文件到安装路径
         // 3. 写注册表和快捷方式
 
-
+        // 1. 清理旧版本
+        ClearOldVersion();
 
         // 2. 解压缩文件到安装路径
         Decompress();
+
+        // 3. 写注册表和快捷方式
+        WriteRegister();
     }
 
     /// <summary>
@@ -120,7 +127,18 @@ public abstract class StandardInstallerProgram : IDisposable
     /// </summary>
     private void ClearOldVersion()
     {
-
+        // 可选检测旧版本
+        var oldVersion = ReadVersionFromRegister();
+        var currentVersion = StandardInstallContext.AppVersion;
+        if (oldVersion is not null)
+        {
+            if (oldVersion == currentVersion)
+            {
+                // 给出提示，覆盖安装
+                PInvoke.MessageBox(GetMessageOwner(), "检测到系统中已安装相同版本的程序，安装程序将覆盖安装该版本。", StandardInstallContext.DisplayProductName,
+                    MESSAGEBOX_STYLE.MB_ICONWARNING);
+            }
+        }
     }
 
     #region 解压缩
@@ -187,6 +205,19 @@ public abstract class StandardInstallerProgram : IDisposable
         productNameKey.SetValue("VersionPath", StandardInstallContext.MainInstallPath, RegistryValueKind.String);
     }
 
+    private string? ReadVersionFromRegister()
+    {
+        // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node
+        var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", writable: false)!;
+        var productNameKey = softwareKey.OpenSubKey(@$"{StandardInstallContext.ProductFamily}\{StandardInstallContext.ProductName}");
+        if (productNameKey != null)
+        {
+            return productNameKey.GetValue("version") as string;
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// 写卸载注册表
     /// </summary>
@@ -240,6 +271,15 @@ public abstract class StandardInstallerProgram : IDisposable
 
     #endregion
 
+    private HWND GetMessageOwner()
+    {
+        if (StandardInstallContext.InstallerUIWindowHandler == 0)
+        {
+            return HWND.Null;
+        }
+
+        return new HWND(StandardInstallContext.InstallerUIWindowHandler);
+    }
 
     public void Dispose()
     {
