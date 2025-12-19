@@ -85,13 +85,15 @@ public record StandardInstallContext
     /// 启动器相对于 <see cref="MainInstallPath"/> 的路径
     /// </summary>
     /// <returns>
-    /// 如无启动器，则保持空
+    /// 如无启动器无入口，则保持空
     /// </returns>
     public string? LauncherExeRelativePath
     {
         get;
         set;
     }
+
+    public string? GetLauncherExeFullPath() => GetFullPath(LauncherExeRelativePath);
 
     /// <summary>
     /// 安装路径
@@ -131,6 +133,8 @@ public record StandardInstallContext
         get;
         set;
     }
+
+    public string? GetUninstallDisplayIconFullPath() => GetFullPath(UninstallDisplayIconRelativePath);
 
     /// <summary>
     /// 控制面板卸载器显示的名称。默认使用 <see cref="DisplayProductName"/>
@@ -178,5 +182,16 @@ public record StandardInstallContext
     {
         get;
         set;
+    }
+
+    public string? GetUninstallerFullPath() => GetFullPath(UninstallerRelativePath);
+
+    private string? GetFullPath(string? relativePath)
+    {
+        if (string.IsNullOrEmpty(relativePath))
+        {
+            return null;
+        }
+        return Path.Join(MainInstallPath, relativePath);
     }
 }

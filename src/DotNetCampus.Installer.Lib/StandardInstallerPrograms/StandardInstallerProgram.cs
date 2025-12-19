@@ -72,13 +72,12 @@ public abstract class StandardInstallerProgram
             softwareKey.CreateSubKey(StandardInstallContext.ProductFamily);
         var productNameKey = productFamilyKey.CreateSubKey(StandardInstallContext.ProductName);
 
-        var launcherExeRelativePath = StandardInstallContext.LauncherExeRelativePath;
-        if (!string.IsNullOrEmpty(launcherExeRelativePath))
+        var launcherExeFullPath = StandardInstallContext.GetLauncherExeFullPath();
+        if (!string.IsNullOrEmpty(launcherExeFullPath))
         {
-            var launcherFullPath = Path.Join(StandardInstallContext.MainInstallPath, launcherExeRelativePath);
-            productNameKey.SetValue("ActualExePath", launcherFullPath, RegistryValueKind.String);
+            productNameKey.SetValue("ActualExePath", launcherExeFullPath, RegistryValueKind.String);
 
-            productNameKey.SetValue("ExePath", launcherFullPath, RegistryValueKind.String);
+            productNameKey.SetValue("ExePath", launcherExeFullPath, RegistryValueKind.String);
         }
 
         var code = StandardInstallContext.ProductCodeGuid.ToString("B");
@@ -104,11 +103,10 @@ public abstract class StandardInstallerProgram
         var code = StandardInstallContext.ProductCodeGuid.ToString("B");
         var productUninstallKey = uninstallKey.CreateSubKey(code);
 
-        var icon = StandardInstallContext.UninstallDisplayIconRelativePath;
+        var icon = StandardInstallContext.GetUninstallDisplayIconFullPath();
         if (!string.IsNullOrEmpty(icon))
         {
-            var iconFullPath = Path.Join(StandardInstallContext.MainInstallPath, icon);
-            productUninstallKey.SetValue("DisplayIcon", iconFullPath, RegistryValueKind.String);
+            productUninstallKey.SetValue("DisplayIcon", icon, RegistryValueKind.String);
         }
 
         productUninstallKey.SetValue("DisplayName", StandardInstallContext.DisplayProductName, RegistryValueKind.String);
@@ -128,11 +126,10 @@ public abstract class StandardInstallerProgram
 
         productUninstallKey.SetValue("Publisher", StandardInstallContext.UninstallDisplayPublisher, RegistryValueKind.String);
 
-        var uninstaller = StandardInstallContext.UninstallerRelativePath;
+        var uninstaller = StandardInstallContext.GetUninstallerFullPath();
         if (!string.IsNullOrEmpty(uninstaller))
         {
-            var uninstallerFullPath = Path.Join(StandardInstallContext.MainInstallPath, uninstaller);
-            productUninstallKey.SetValue("UninstallString", uninstallerFullPath, RegistryValueKind.String);
+            productUninstallKey.SetValue("UninstallString", uninstaller, RegistryValueKind.String);
         }
     }
 }
