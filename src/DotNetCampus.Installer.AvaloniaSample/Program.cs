@@ -25,7 +25,15 @@ internal class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        var installerProgram = new InstallerProgram();
+        using var installerProgram = new InstallerProgram();
+
+        // 确保安装包是单实例运行的
+        var isSingleton = installerProgram.EnsureSingletonInstaller();
+        if (!isSingleton)
+        {
+            return -1;
+        }
+
         var checkEnvironmentSuccess = installerProgram.CheckEnvironment();
         if (!checkEnvironmentSuccess)
         {

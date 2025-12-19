@@ -8,15 +8,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
 /// <summary>
 /// 标准安装器流程
 /// </summary>
-public abstract class StandardInstallerProgram
+public abstract class StandardInstallerProgram : IDisposable
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
+
+    /// <summary>
+    /// 确保是单例的安装程序运行
+    /// </summary>
+    public virtual bool EnsureSingletonInstaller()
+    {
+        var isSingleton = CheckSingletonInstaller();
+
+        if (!isSingleton)
+        {
+            // 本产品已经有一个安装向导正在运行！
+            PInvoke.MessageBox(HWND.Null, "本产品已经有一个安装向导正在运行！", StandardInstallContext.DisplayProductName,
+                MESSAGEBOX_STYLE.MB_ICONWARNING);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected bool CheckSingletonInstaller()
+    {
+        var mutexName = StandardInstallContext.SingletonMutexName;
+        _singletonMutex = new Mutex(initiallyOwned: true, mutexName, out var createdNew);
+        return createdNew;
+    }
+
+    /// <summary>
+    /// 单例用的互斥锁
+    /// </summary>
+    private Mutex? _singletonMutex;
 
     /// <summary>
     /// 检测环境和弹出提示
@@ -131,7 +165,7 @@ public abstract class StandardInstallerProgram
 
         if (size is not null)
         {
-            productUninstallKey.SetValue("EstimatedSize", size,RegistryValueKind.DWord);
+            productUninstallKey.SetValue("EstimatedSize", size, RegistryValueKind.DWord);
         }
 
         productUninstallKey.SetValue("Publisher", StandardInstallContext.UninstallDisplayPublisher, RegistryValueKind.String);
@@ -141,5 +175,10 @@ public abstract class StandardInstallerProgram
         {
             productUninstallKey.SetValue("UninstallString", uninstaller, RegistryValueKind.String);
         }
+    }
+
+    public void Dispose()
+    {
+        _singletonMutex?.Dispose();
     }
 }
