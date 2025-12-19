@@ -138,6 +138,18 @@ public abstract class StandardInstallerProgram : IDisposable
                 PInvoke.MessageBox(GetMessageOwner(), "检测到系统中已安装相同版本的程序，安装程序将覆盖安装该版本。", StandardInstallContext.DisplayProductName,
                     MESSAGEBOX_STYLE.MB_ICONWARNING);
             }
+            else
+            {
+                // 如果能作为版本判断的话，用版本判断
+                if (Version.TryParse(oldVersion,out var oldVersionValue) && Version.TryParse(currentVersion,out var currentVersionValue))
+                {
+                    if (currentVersionValue < oldVersionValue)
+                    {
+                        PInvoke.MessageBox(GetMessageOwner(), $"检测到系统中已安装更新版本 {oldVersion} 的程序，安装程序将降级已安装版本。", StandardInstallContext.DisplayProductName,
+                            MESSAGEBOX_STYLE.MB_ICONWARNING);
+                    }
+                }
+            }
         }
     }
 

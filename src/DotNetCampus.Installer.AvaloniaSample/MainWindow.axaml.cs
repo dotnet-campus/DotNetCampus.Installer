@@ -6,7 +6,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.AvaloniaSample.ViewModels;
-using DotNetCampus.Installer.Lib.Hosts;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
 public partial class MainWindow : Window

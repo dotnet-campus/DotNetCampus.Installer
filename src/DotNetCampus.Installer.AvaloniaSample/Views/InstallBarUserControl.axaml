@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl"
              x:DataType="viewModels:MainViewModel">
-	<Grid Height="62">
+	<Grid Height="62" Margin="10,0,10,0">
 		<Grid x:Name="MainInstallGrid" VerticalAlignment="Center">
 			<Button x:Name="InstallButton" HorizontalAlignment="Center" Click="InstallButton_OnClick">快速安装</Button>
 			<Button x:Name="CustomInstallPathButton" HorizontalAlignment="Right" Click="CustomInstallPathButton_OnClick">自定义安装</Button>
