@@ -27,13 +27,6 @@ internal class Program
     {
         using var installerProgram = new InstallerProgram();
 
-        // 确保安装包是单实例运行的
-        var isSingleton = installerProgram.EnsureSingletonInstaller();
-        if (!isSingleton)
-        {
-            return -1;
-        }
-
         var checkEnvironmentSuccess = installerProgram.CheckEnvironment();
         if (!checkEnvironmentSuccess)
         {

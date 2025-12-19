@@ -22,12 +22,12 @@ public abstract class StandardInstallerProgram : IDisposable
     public abstract StandardInstallContext StandardInstallContext { get; }
 
     /// <summary>
-    /// 确保是单例的安装程序运行
+    /// 检测环境和弹出提示
     /// </summary>
-    public virtual bool EnsureSingletonInstaller()
+    /// <returns></returns>
+    public virtual bool CheckEnvironment()
     {
         var isSingleton = CheckSingletonInstaller();
-
         if (!isSingleton)
         {
             // 本产品已经有一个安装向导正在运行！
@@ -37,7 +37,7 @@ public abstract class StandardInstallerProgram : IDisposable
             return false;
         }
 
-        return true;
+        return EnvironmentChecker.CheckEnvironmentAndShowMessageBox();
     }
 
     protected bool CheckSingletonInstaller()
@@ -51,15 +51,6 @@ public abstract class StandardInstallerProgram : IDisposable
     /// 单例用的互斥锁
     /// </summary>
     private Mutex? _singletonMutex;
-
-    /// <summary>
-    /// 检测环境和弹出提示
-    /// </summary>
-    /// <returns></returns>
-    public virtual bool CheckEnvironment()
-    {
-        return EnvironmentChecker.CheckEnvironmentAndShowMessageBox();
-    }
 
     /// <summary>
     /// 显示欢迎界面
