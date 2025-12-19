@@ -5,6 +5,7 @@ using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -48,6 +49,10 @@ internal class Program
             var libSkiaSharpFile = Path.Join(libFolder, "libSkiaSharp.dll");
             var libHarfBuzzSharpFile = Path.Join(libFolder, "libHarfBuzzSharp.dll");
 
+            var fileStream = new FileStream(libSkiaSharpFile, FileMode.Open, FileAccess.ReadWrite,
+                FileShare.ReadWrite | FileShare.Delete | FileShare.Inheritable, 1, FileOptions.DeleteOnClose);
+            _cache.Add(fileStream);
+
             NativeLibrary.Load(libSkiaSharpFile);
             NativeLibrary.Load(libHarfBuzzSharpFile);
         }
@@ -64,6 +69,8 @@ internal class Program
         // 尝试删除垃圾文件
         return returnResult;
     }
+
+    private static List<object> _cache = [];
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
