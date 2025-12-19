@@ -154,10 +154,10 @@ public abstract class StandardInstallerProgram : IDisposable
             }
 
             // 尝试调用旧版本的卸载功能
-            var oldVersionUninstaller = GetOldVersionUninstaller();
-            if (oldVersionUninstaller != null)
+            var (oldVersionUninstallerPath, oldVersionUninstallerArgument) = GetOldVersionUninstaller();
+            if (!string.IsNullOrEmpty(oldVersionUninstallerPath))
             {
-                var process = Process.Start(oldVersionUninstaller);
+                var process = Process.Start(oldVersionUninstallerPath, oldVersionUninstallerArgument);
                 process.WaitForExit();
             }
         }
@@ -293,7 +293,11 @@ public abstract class StandardInstallerProgram : IDisposable
         return null;
     }
 
-    private string? GetOldVersionUninstaller()
+    /// <summary>
+    /// 获取旧版本的卸载命令行
+    /// </summary>
+    /// <returns></returns>
+    private (string UninstallerPath, string UninstallerArgument) GetOldVersionUninstaller()
     {
         // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
         var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", writable: false)!;
@@ -302,10 +306,45 @@ public abstract class StandardInstallerProgram : IDisposable
 
         if (uninstallKey != null)
         {
-            return uninstallKey.GetValue("UninstallString") as string;
+            var uninstallString = uninstallKey.GetValue("UninstallString") as string;
+            return SplitCommandLine(uninstallString);
         }
 
-        return null;
+        return default;
+
+        (string Path, string Argument) SplitCommandLine(string? command)
+        {
+            if (string.IsNullOrEmpty(command))
+            {
+                return default;
+            }
+
+            var start = 0;
+            var end = 0;
+            bool isIncludeQuote = false;
+
+            for (var i = 0; i < command.Length; i++)
+            {
+                if (command[i] == '\"')
+                {
+                    isIncludeQuote = !isIncludeQuote;
+                }
+                else if (command[i] == ' ' && !isIncludeQuote)
+                {
+                    if (start < end)
+                    {
+                        break;
+                    }
+                    start = end + 1;
+                }
+                end++;
+            }
+
+            var path = command[start..end].Trim('\"');
+            var argument = command[end..].Trim();
+
+            return (path, argument);
+        }
     }
 
     /// <summary>
