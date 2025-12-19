@@ -94,6 +94,35 @@ public abstract class StandardInstallerProgram : IDisposable
 
     #endregion
 
+    #region 安装
+
+    /// <summary>
+    /// 安装
+    /// </summary>
+    public virtual void Install()
+    {
+        // 安装过程：
+        // 1. 清理旧版本
+        //   1.1. 先查看是否有旧版本
+        //   1.2. 如果有旧版本，先卸载旧版本
+        //   1.3. 如果有相同版本，先杀进程，后删除文件，再安装新版本
+        // 2. 解压缩文件到安装路径
+        // 3. 写注册表和快捷方式
+
+
+
+        // 2. 解压缩文件到安装路径
+        Decompress();
+    }
+
+    /// <summary>
+    /// 清理旧版本
+    /// </summary>
+    private void ClearOldVersion()
+    {
+
+    }
+
     #region 解压缩
 
     /// <summary>
@@ -205,9 +234,12 @@ public abstract class StandardInstallerProgram : IDisposable
 
     #region 快捷方式
 
-    
+
 
     #endregion
+
+    #endregion
+
 
     public void Dispose()
     {
