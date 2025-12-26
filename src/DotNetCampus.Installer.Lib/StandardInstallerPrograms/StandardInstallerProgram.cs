@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using DotNetCampus.Installer.Lib.Logging;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -27,6 +28,7 @@ namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 public abstract class StandardInstallerProgram : IDisposable
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
+    public InstallerLogger Logger => StandardInstallContext.Logger;
 
     #region 环境
 
@@ -115,6 +117,8 @@ public abstract class StandardInstallerProgram : IDisposable
         // 2. 解压缩文件到安装路径
         // 3. 写注册表和快捷方式
 
+        Logger.WriteLog($"Install start. Installer PID={Environment.ProcessId}");
+
         // 1. 清理旧版本
         ClearOldVersion();
 
@@ -132,12 +136,12 @@ public abstract class StandardInstallerProgram : IDisposable
     /// </summary>
     protected void ClearOldVersion()
     {
-        WriteLog($"Start ClearOldVersion");
+        Logger.WriteLog($"Start ClearOldVersion");
 
         // 可选检测旧版本
         var oldVersion = ReadVersionFromRegister();
 
-        WriteLog($"Read Old version. OldVersion={oldVersion}");
+        Logger.WriteLog($"Read Old version. OldVersion='{oldVersion}'");
 
         var currentVersion = StandardInstallContext.AppVersion;
         if (oldVersion is not null)
@@ -173,17 +177,17 @@ public abstract class StandardInstallerProgram : IDisposable
         var installRootPath = StandardInstallContext.InstallRootPath;
         if (Directory.Exists(installRootPath))
         {
-            WriteLog($"Delete Install Path. Path={installRootPath}");
-            WriteLog($"Start KillProcessInInstallPath");
+            Logger.WriteLog($"Delete Install Path. Path={installRootPath}");
+            Logger.WriteLog($"Start KillProcessInInstallPath");
 
             // 结束旧版本进程和清理
             KillProcessInInstallPath();
-            WriteLog($"Finish KillProcessInInstallPath");
+            Logger.WriteLog($"Finish KillProcessInInstallPath");
 
             // 删除安装路径
-            WriteLog($"Start Delete '{installRootPath}'");
+            Logger.WriteLog($"Start Delete '{installRootPath}'");
             FolderDeleteHelper.DeleteFolder(installRootPath);
-            WriteLog($"Finish Delete '{installRootPath}'");
+            Logger.WriteLog($"Finish Delete '{installRootPath}'");
         }
     }
 
@@ -447,9 +451,5 @@ public abstract class StandardInstallerProgram : IDisposable
     public void Dispose()
     {
         _singletonMutex?.Dispose();
-    }
-
-    protected virtual void WriteLog(string message)
-    {
     }
 }

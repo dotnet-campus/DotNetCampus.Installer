@@ -1,5 +1,7 @@
-﻿using System.Dynamic;
+﻿using System.Diagnostics;
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
+using DotNetCampus.Installer.Lib.Logging;
+using DotNetCampus.Installer.Lib.Utils.PEOverlays;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -200,4 +202,31 @@ public record StandardInstallContext
         }
         return Path.Join(MainInstallPath, relativePath);
     }
+
+    /// <summary>
+    /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息
+    /// </summary>
+    /// <returns></returns>
+    public async Task<Stream?> GetOverlayInstallerContentStream()
+    {
+        var overlayInstallerContentInfo = await GetOverlayInstallerContentInfo();
+        return overlayInstallerContentInfo?.ContentStream;
+    }
+
+    /// <summary>
+    /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息
+    /// </summary>
+    /// <returns></returns>
+    public Task<OverlayInstallerContentInfo?> GetOverlayInstallerContentInfo()
+    {
+        var reader = new PEOverlayContentReader();
+        var processPath = Environment.ProcessPath;
+        Debug.Assert(processPath!=null);
+        return reader.ReadOverlayInstallerContent(new FileInfo(processPath));
+    }
+
+    /// <summary>
+    /// 日志记录器
+    /// </summary>
+    public InstallerLogger Logger { get; } = new();
 }
