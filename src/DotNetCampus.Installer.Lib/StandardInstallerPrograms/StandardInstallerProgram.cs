@@ -7,6 +7,7 @@ using Microsoft.Win32;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -104,7 +105,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// <summary>
     /// 安装
     /// </summary>
-    public virtual void Install()
+    public virtual Task InstallAsync()
     {
         // 安装过程：
         // 1. 清理旧版本
@@ -122,15 +123,22 @@ public abstract class StandardInstallerProgram : IDisposable
 
         // 3. 写注册表和快捷方式
         WriteRegister();
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// 清理旧版本
     /// </summary>
-    private void ClearOldVersion()
+    protected void ClearOldVersion()
     {
+        WriteLog($"Start ClearOldVersion");
+
         // 可选检测旧版本
         var oldVersion = ReadVersionFromRegister();
+
+        WriteLog($"Read Old version. OldVersion={oldVersion}");
+
         var currentVersion = StandardInstallContext.AppVersion;
         if (oldVersion is not null)
         {
@@ -165,11 +173,17 @@ public abstract class StandardInstallerProgram : IDisposable
         var installRootPath = StandardInstallContext.InstallRootPath;
         if (Directory.Exists(installRootPath))
         {
+            WriteLog($"Delete Install Path. Path={installRootPath}");
+            WriteLog($"Start KillProcessInInstallPath");
+
             // 结束旧版本进程和清理
             KillProcessInInstallPath();
+            WriteLog($"Finish KillProcessInInstallPath");
 
             // 删除安装路径
+            WriteLog($"Start Delete '{installRootPath}'");
             FolderDeleteHelper.DeleteFolder(installRootPath);
+            WriteLog($"Finish Delete '{installRootPath}'");
         }
     }
 
@@ -200,12 +214,32 @@ public abstract class StandardInstallerProgram : IDisposable
             {
                 try
                 {
+                    if (process.Id == 0)
+                    {
+                        // 这是 Idle 进程，忽略
+                        continue;
+                    }
+
+                    if (process.Id == 4)
+                    {
+                        // 这是 System 进程，忽略
+                        continue;
+                    }
+
                     var fileName = process.MainModule?.FileName;
                     if (!string.IsNullOrEmpty(fileName) &&
                         fileName.StartsWith(installRootPath, StringComparison.OrdinalIgnoreCase))
                     {
                         // 进程包含在安装路径下，结束它
                         process.Kill();
+                    }
+                }
+                catch (Win32Exception e)
+                {
+                    if (e.NativeErrorCode == 0x5)
+                    {
+                        // 拒绝访问
+                        continue;
                     }
                 }
                 catch (Exception e)
@@ -413,5 +447,9 @@ public abstract class StandardInstallerProgram : IDisposable
     public void Dispose()
     {
         _singletonMutex?.Dispose();
+    }
+
+    protected virtual void WriteLog(string message)
+    {
     }
 }

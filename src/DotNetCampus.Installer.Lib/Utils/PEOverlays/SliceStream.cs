@@ -1,0 +1,127 @@
+﻿namespace DotNetCampus.Installer.Lib.Utils.PEOverlays;
+
+/// <summary>
+/// 从一个 <see cref="Stream"/> 中切出一段作为新的流来使用
+/// </summary>
+class SliceStream : Stream
+{
+    public SliceStream(Stream originStream, long start, long length, bool leaveOpen = false)
+    {
+        _originStream = originStream;
+        Length = length;
+        _start = start;
+        _leaveOpen = leaveOpen;
+    }
+
+    private readonly Stream _originStream;
+    private readonly long _start;
+    private readonly bool _leaveOpen;
+
+    public override void Flush()
+    {
+        throw new NotSupportedException();
+    }
+
+    public override int Read(Span<byte> buffer)
+    {
+        UpdatePositionForOriginStream();
+
+        var toRead = (int) Math.Min(buffer.Length, Length - Position);
+        buffer = buffer.Slice(0, toRead);
+
+        var read = _originStream.Read(buffer);
+        Position += read;
+        return read;
+    }
+
+    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        UpdatePositionForOriginStream();
+
+        var toRead = (int) Math.Min(count, Length - Position);
+
+        var read = await _originStream.ReadAsync(buffer, offset, toRead, cancellationToken);
+        Position += read;
+        return read;
+    }
+
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = new CancellationToken())
+    {
+        UpdatePositionForOriginStream();
+
+        var toRead = (int) Math.Min(buffer.Length, Length - Position);
+
+        var read = await _originStream.ReadAsync(buffer.Slice(0, toRead), cancellationToken);
+
+        Position += read;
+        return read;
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        UpdatePositionForOriginStream();
+
+        var toRead = (int) Math.Min(count, Length - Position);
+
+        var read = _originStream.Read(buffer, offset, toRead);
+        Position += read;
+        return read;
+    }
+
+    private void UpdatePositionForOriginStream()
+    {
+        var position = Position + _start;
+        if (_originStream.Position != position)
+        {
+            _originStream.Position = position;
+        }
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        Position = origin switch
+        {
+            SeekOrigin.Begin => offset,
+            SeekOrigin.Current => Position + offset,
+            SeekOrigin.End => Length + offset,
+            _ => throw new ArgumentOutOfRangeException(nameof(origin), origin, null)
+        };
+        return Position;
+    }
+
+    public override void SetLength(long value)
+    {
+        throw new NotSupportedException();
+    }
+
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        throw new NotSupportedException();
+    }
+
+    public override bool CanRead => true;
+    public override bool CanSeek => true;
+    public override bool CanWrite => false;
+    public override long Length { get; }
+    public override long Position { get; set; }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (!_leaveOpen)
+        {
+            _originStream.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        if (!_leaveOpen)
+        {
+            await _originStream.DisposeAsync();
+        }
+
+        await base.DisposeAsync();
+    }
+}
