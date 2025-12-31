@@ -28,7 +28,7 @@ public class InstallerHost
 {
     public static InstallerHostBuilder CreateBuilder()
     {
-       return new InstallerHostBuilder();
+        return new InstallerHostBuilder();
     }
 
     /// <summary>
@@ -222,4 +222,3 @@ public class InstallerHost
         return installerApplicationFile;
     }
 }
-

@@ -30,9 +30,9 @@
 			<!-- 安装条 -->
 			<views:InstallBarUserControl x:Name="InstallBar" Grid.Row="2"/>
 
-			<views:InstallStatusUserControl x:Name="InstallStatus" Grid.Row="2" IsVisible="False"/>
+			<views:InstallStatusUserControl x:Name="InstallStatusControl" Grid.Row="2" IsVisible="False"/>
 
-			<views:InstallFinishUserControl x:Name="InstallFinish" Grid.Row="2" IsVisible="False"/>
+			<views:InstallFinishUserControl x:Name="InstallFinishControl" Grid.Row="2" IsVisible="False" OnFinish="InstallFinishControl_OnOnFinish"/>
         </Grid>
     </Grid>
 </Window>

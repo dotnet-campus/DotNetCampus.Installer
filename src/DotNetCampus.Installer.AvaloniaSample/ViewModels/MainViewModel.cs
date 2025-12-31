@@ -1,4 +1,6 @@
-﻿using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
+﻿using Avalonia.Threading;
+
+using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
 using System;
@@ -18,7 +20,22 @@ public class MainViewModel : INotifyPropertyChanged
         InstallerProgram = installerProgram;
     }
 
-    /// <inheritdoc cref="Lib.StandardInstallerPrograms.StandardInstallContext.InstallRootPath"/>
+    /// <summary>
+    /// 安装状态
+    /// </summary>
+    public InstallStatus InstallStatus
+    {
+        get => _installStatus;
+        set
+        {
+            if (value == _installStatus) return;
+            _installStatus = value;
+            OnPropertyChanged();
+        }
+    }
+    private InstallStatus _installStatus = InstallStatus.Ready;
+
+    /// <inheritdoc cref="DotNetCampus.Installer.Lib.StandardInstallerPrograms.StandardInstallContext.InstallRootPath"/>
     public string InstallPath
     {
         get => StandardInstallContext.InstallRootPath;
@@ -37,6 +54,16 @@ public class MainViewModel : INotifyPropertyChanged
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        else
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }, DispatcherPriority.Send);
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.AvaloniaSample.ViewModels;
 
@@ -46,19 +47,43 @@ public partial class MainWindow : Window
         try
         {
             InstallBar.IsVisible = false;
-            InstallStatus.IsVisible = true;
+            InstallStatusControl.IsVisible = true;
+            ViewModel.InstallStatus = InstallStatus.Installing;
 
             // 点击了开始安装的按钮，现在开始安装
             // 需要切换一下界面
-            await Task.Run(() => InstallerProgram.InstallAsync());
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    await InstallerProgram.InstallAsync();
+                }
+                catch (Exception exception)
+                {
+                    InstallerProgram.Logger.WriteLog($"[Error] Install Fail. {exception}");
+                    ViewModel.InstallStatus = InstallStatus.Error;
+                }
+            });
 
-            InstallStatus.IsVisible = false;
-            InstallFinish.IsVisible = true;
+            if (ViewModel.InstallStatus == InstallStatus.Installing)
+            {
+                ViewModel.InstallStatus = InstallStatus.Finished;
+            }
         }
         catch (Exception exception)
         {
             // async void 捕获全部异常
             Debug.WriteLine(exception);
         }
+        finally
+        {
+            InstallStatusControl.IsVisible = false;
+            InstallFinishControl.IsVisible = true;
+        }
+    }
+
+    private void InstallFinishControl_OnOnFinish(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.BeginInvokeShutdown(DispatcherPriority.Default);
     }
 }

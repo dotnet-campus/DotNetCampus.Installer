@@ -2,9 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:DotNetCampus.Installer.AvaloniaSample.Views"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallFinishUserControl">
-	<Grid>
-        <Button HorizontalAlignment="Center" VerticalAlignment="Center">安装完成</Button>
+             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallFinishUserControl"
+             x:DataType="viewModels:MainViewModel">
+    <UserControl.Resources>
+        <views:InstallStatusToTextConverter x:Key="InstallStatusToTextConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Button x:Name="FinishInstallButton" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Click="FinishInstallButton_OnClick">
+            <Grid Width="150" Height="36">
+                <Border Background="#FF30C361" CornerRadius="5 5 5 5">
+                </Border>
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" 
+                           Text="{Binding Path=InstallStatus,Converter={StaticResource InstallStatusToTextConverter}}"></TextBlock>
+            </Grid>
+            <!-- 立即体验 -->
+        </Button>
     </Grid>
 </UserControl>

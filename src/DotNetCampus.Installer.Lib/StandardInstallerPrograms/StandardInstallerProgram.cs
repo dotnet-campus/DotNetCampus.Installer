@@ -122,6 +122,12 @@ public abstract class StandardInstallerProgram : IDisposable
         // 1. 清理旧版本
         ClearOldVersion();
 
+        // 清理旧版本之后才能重新创建安装目录
+        Directory.CreateDirectory(StandardInstallContext.MainInstallPath);
+        // 创建了安装目录之后，才能创建日志文件
+        var logFile = new FileInfo(Path.Join(StandardInstallContext.MainInstallPath, "InstallerLog.txt"));
+        Logger.SetLogFile(logFile);
+
         // 2. 解压缩文件到安装路径
         Decompress();
 
