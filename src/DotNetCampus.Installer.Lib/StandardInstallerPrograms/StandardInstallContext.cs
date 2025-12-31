@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.Installer.Lib.Logging;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
@@ -44,7 +45,7 @@ public record StandardInstallContext
     public string DisplayProductName
     {
         get => _displayProductName ?? ProductName;
-        init => _displayProductName  = value;
+        init => _displayProductName = value;
     }
     private readonly string? _displayProductName;
 
@@ -221,7 +222,7 @@ public record StandardInstallContext
     {
         var reader = new PEOverlayContentReader();
         var processPath = Environment.ProcessPath;
-        Debug.Assert(processPath!=null);
+        Debug.Assert(processPath != null);
         return reader.ReadOverlayInstallerContent(new FileInfo(processPath));
     }
 
