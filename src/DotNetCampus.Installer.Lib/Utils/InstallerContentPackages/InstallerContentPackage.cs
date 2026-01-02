@@ -13,9 +13,9 @@ namespace DotNetCampus.Installer.Lib.Utils.InstallerContentPackages;
 /// <summary>
 /// 安装包的内容包
 /// </summary>
-public class InstallerContentPackage
+public class InstallerContentPackage : IDisposable, IAsyncDisposable
 {
-    public static async Task<InstallerContentPackage> FromStream(Stream stream)
+    public static async Task<InstallerContentPackage> FromStream(Stream stream, bool leaveOpen = false)
     {
         using var poolBuffer = InstallerArrayPool.Rent<byte>(1024);
         var headerLength = ContentPackageHeader.Length;
@@ -106,18 +106,20 @@ public class InstallerContentPackage
             throw new InvalidOperationException($"框架内部异常，读取完成之后，没有满足定义的内容");
         }
 
-        var installerContentPackage = new InstallerContentPackage(stream, fileInfoList);
+        var installerContentPackage = new InstallerContentPackage(stream, fileInfoList, leaveOpen);
         return installerContentPackage;
     }
 
-    private InstallerContentPackage(Stream originStream, List<VirtualContentPackageFileInfo> fileInfoList)
+    private InstallerContentPackage(Stream originStream, List<VirtualContentPackageFileInfo> fileInfoList, bool leaveOpen)
     {
-        _originStream = originStream;
+        OriginStream = originStream;
         _fileInfoList = fileInfoList;
+        _leaveOpen = leaveOpen;
     }
 
-    private readonly Stream _originStream;
+    public Stream OriginStream { get; }
     private readonly List<VirtualContentPackageFileInfo> _fileInfoList;
+    private readonly bool _leaveOpen;
 
     public IReadOnlyList<IContentPackageFileInfo> FileList => _fileInfoList;
 
@@ -160,5 +162,18 @@ public class InstallerContentPackage
             var sliceStream = new SliceStream(Stream, FileBlock.FileContentOffset, FileBlock.FileLength, leaveOpen: true);
             return sliceStream;
         }
+    }
+
+    public void Dispose()
+    {
+        if (!_leaveOpen)
+        {
+            OriginStream.Dispose();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await OriginStream.DisposeAsync();
     }
 }

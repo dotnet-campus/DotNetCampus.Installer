@@ -15,6 +15,9 @@ internal class Options
     [Option()]
     public bool? ForceUtf8ConsoleOutput { get; init; }
 
+    /// <summary>
+    /// 被打包进去的文件夹
+    /// </summary>
     [Option()]
     public required string PackingFolder { get; init; }
 
@@ -37,13 +40,13 @@ internal class Options
     public required string InstallerBoostProjectName { get; init; }
 
     /// <summary>
-    /// 图标文件的路径，安装包的图标文件
+    /// 图标文件的路径，安装包的图标文件。将被拷贝到 InstallerBoostProjectFolderPath\Assets\Icon.ico 文件路径
     /// </summary>
     [Option()]
     public string? InstallerIconFilePath { get; init; }
 
     /// <summary>
-    /// 欢迎界面图片的路径，安装包的欢迎界面
+    /// 欢迎界面图片的路径，安装包的欢迎界面。将被拷贝到 InstallerBoostProjectFolderPath\Assets\SplashScreen.png 文件路径
     /// </summary>
     [Option()]
     public string? SplashScreenFilePath { get; init; }

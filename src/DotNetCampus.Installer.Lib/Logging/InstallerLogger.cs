@@ -12,6 +12,9 @@ namespace DotNetCampus.Installer.Lib.Logging;
 /// </summary>
 public class InstallerLogger
 {
+    /// <summary>
+    /// 日志文件
+    /// </summary>
     public FileInfo? LogFile { get; private set; }
 
     public void SetLogFile(FileInfo logFile)

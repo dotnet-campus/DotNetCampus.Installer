@@ -12,7 +12,7 @@ namespace DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 /// <summary>
 /// 安装程序
 /// </summary>
-[SupportedOSPlatform("windows5.0")]
+[SupportedOSPlatform("windows5.1.2600")]
 public class InstallerProgram : StandardInstallerProgram
 {
     public InstallerProgram()

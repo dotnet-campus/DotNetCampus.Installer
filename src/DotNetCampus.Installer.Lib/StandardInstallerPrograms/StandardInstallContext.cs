@@ -2,6 +2,7 @@
 
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.Installer.Lib.Logging;
+using DotNetCampus.Installer.Lib.Utils.InstallerContentPackages;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
@@ -204,15 +205,40 @@ public record StandardInstallContext
         return Path.Join(MainInstallPath, relativePath);
     }
 
+    ///// <summary>
+    ///// 获取放在 PE 文件的 Overlay 部分的安装器内容信息
+    ///// </summary>
+    ///// <returns></returns>
+    //public async Task<Stream?> GetOverlayInstallerContentStream()
+    //{
+    //    var overlayInstallerContentInfo = await GetOverlayInstallerContentInfo();
+    //    return overlayInstallerContentInfo?.ContentStream;
+    //}
+
     /// <summary>
-    /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息
+    /// 获取放在 PE 文件的 InstallerContentPackage 部分的内容
     /// </summary>
     /// <returns></returns>
-    public async Task<Stream?> GetOverlayInstallerContentStream()
+    public async Task<InstallerContentPackage?> GetContentPackageFromPEOverlay()
     {
+        if (_installerContentPackage is not null)
+        {
+            return _installerContentPackage;
+        }
+
+        // 这里的 Stream 是读取自己，不释放也没有什么问题
         var overlayInstallerContentInfo = await GetOverlayInstallerContentInfo();
-        return overlayInstallerContentInfo?.ContentStream;
+        if (overlayInstallerContentInfo is null)
+        {
+            return null;
+        }
+
+        var installerContentPackage = await InstallerContentPackage.FromStream(overlayInstallerContentInfo.Value.ContentStream);
+        _installerContentPackage = installerContentPackage;
+        return installerContentPackage;
     }
+
+    private InstallerContentPackage? _installerContentPackage;
 
     /// <summary>
     /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息

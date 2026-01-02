@@ -24,7 +24,7 @@ namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 /// <summary>
 /// 标准安装器流程
 /// </summary>
-[SupportedOSPlatform("windows5.0")]
+[SupportedOSPlatform("windows5.1.2600")]
 public abstract class StandardInstallerProgram : IDisposable
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
