@@ -27,7 +27,7 @@ public class DirectoryArchiveTest
 
                 for (int i = 0; i < 1024 * 4; i++)
                 {
-                    random.Shuffle(buffer);
+                    random.NextBytes(buffer);
 
                     await fileStream.WriteAsync(buffer);
                 }
