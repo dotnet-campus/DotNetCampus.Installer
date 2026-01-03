@@ -7,7 +7,7 @@ namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 /// <summary>
 /// 文件夹存档
 /// </summary>
-public static class DirectoryArchive
+public static partial class DirectoryArchive
 {
     /// <summary>
     /// 压缩文件夹为存档文件

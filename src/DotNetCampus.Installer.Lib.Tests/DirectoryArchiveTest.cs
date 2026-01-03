@@ -1,12 +1,55 @@
 ﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace DotNetCampus.Installer.Lib.Tests;
 
 [TestClass]
 public class DirectoryArchiveTest
 {
+    [TestMethod]
+    public async Task TestMethod2()
+    {
+        // 先尝试制造垃圾
+        var testFolder = @"G:\Temp\DirectoryArchive2";
+
+        if (!Directory.Exists(testFolder))
+        {
+            return;
+        }
+
+        if (!Directory.EnumerateFiles(testFolder).Any())
+        {
+            var fileCount = 200;
+            var fileLength = 1024 * 1024 * 10; // 10 MB
+
+            var buffer = new byte[1024 * 1024];
+            var random = Random.Shared;
+
+            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+            {
+                var archiveFile = Path.Join(testFolder, $"Test{fileIndex}.archive");
+                if (!File.Exists(archiveFile))
+                {
+                    using (var fileStream = File.Create(archiveFile))
+                    {
+                        for (int i = 0; i < fileLength / buffer.Length; i++)
+                        {
+                            random.NextBytes(buffer);
+                            await fileStream.WriteAsync(buffer);
+                        }
+                    }
+                }
+            }
+        }
+
+        var outputFileInfo = new FileInfo("2.assets");
+        var workingFolder = Directory.CreateDirectory(@"G:\Temp\DirectoryArchiveWork");
+
+        await DirectoryArchive.CompressAsync(new DirectoryInfo(testFolder), outputFileInfo, workingFolder);
+    }
+
     [TestMethod]
     public async Task TestMethod1()
     {
