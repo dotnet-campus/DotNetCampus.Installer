@@ -54,15 +54,16 @@ public sealed class InstallerContentPackageTest
 
     private async Task AssertStreamEqualAsync(Stream a, Stream b)
     {
-        var buffer1 = ArrayPool<byte>.Shared.Rent(10240);
-        var buffer2 = ArrayPool<byte>.Shared.Rent(10240);
+        const int length = 10240;
+        var buffer1 = ArrayPool<byte>.Shared.Rent(length);
+        var buffer2 = ArrayPool<byte>.Shared.Rent(length);
 
         try
         {
             while (true)
             {
-                var readCount1 = await a.ReadAsync(buffer1.AsMemory());
-                var readCount2 = await b.ReadAsync(buffer2.AsMemory());
+                var readCount1 = await a.ReadAsync(buffer1.AsMemory(0, length));
+                var readCount2 = await b.ReadAsync(buffer2.AsMemory(0, length));
 
                 Assert.AreEqual(readCount1, readCount2);
 
