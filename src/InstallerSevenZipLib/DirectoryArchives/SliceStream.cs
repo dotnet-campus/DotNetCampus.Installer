@@ -36,7 +36,7 @@ public class SliceStream : Stream
         buffer = buffer.Slice(0, toRead);
 
         var read = _originStream.Read(buffer);
-        _position += read;
+        Position += read;
         return read;
     }
 
@@ -47,7 +47,7 @@ public class SliceStream : Stream
         var toRead = (int) Math.Min(count, Length - Position);
 
         var read = await _originStream.ReadAsync(buffer, offset, toRead, cancellationToken);
-        _position += read;
+        Position += read;
         return read;
     }
 
@@ -59,24 +59,20 @@ public class SliceStream : Stream
 
         var read = await _originStream.ReadAsync(buffer.Slice(0, toRead), cancellationToken);
 
-        _position += read;
+        Position += read;
         return read;
     }
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-        _readCount++;
-
         UpdatePositionForOriginStream();
 
         var toRead = (int) Math.Min(count, Length - Position);
 
         var read = _originStream.Read(buffer, offset, toRead);
-        _position += read;
+        Position += read;
         return read;
     }
-
-    private int _readCount;
 
     private void UpdatePositionForOriginStream()
     {
@@ -89,7 +85,7 @@ public class SliceStream : Stream
 
     public override long Seek(long offset, SeekOrigin origin)
     {
-        _position = origin switch
+        Position = origin switch
         {
             SeekOrigin.Begin => offset,
             SeekOrigin.Current => Position + offset,
@@ -113,13 +109,7 @@ public class SliceStream : Stream
     public override bool CanSeek => true;
     public override bool CanWrite => false;
     public override long Length { get; }
-
-    public override long Position
-    {
-        get => _position;
-        set => _position = value;
-    }
-    private long _position;
+    public override long Position { get; set; }
 
     protected override void Dispose(bool disposing)
     {
