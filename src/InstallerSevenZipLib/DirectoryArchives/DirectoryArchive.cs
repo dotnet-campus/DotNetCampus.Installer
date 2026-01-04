@@ -100,7 +100,7 @@ public static partial class DirectoryArchive
 
         var stopwatch = Stopwatch.StartNew();
 
-        CompressionUtility.Compress(directoryArchiveProxyInputStream, outputFileStream, new ConsoleProgressReport());
+        CompressionUtility.Compress(directoryArchiveProxyInputStream, outputFileStream, new NoneProgressReport());
 
         stopwatch.Stop();
         Console.WriteLine($"TotalLength={totalFileLength};Elapsed={stopwatch.Elapsed.Minutes}m,{stopwatch.Elapsed.Seconds}s,{stopwatch.Elapsed.Milliseconds}ms");
@@ -184,7 +184,7 @@ public static partial class DirectoryArchive
                 FileOptions.DeleteOnClose);
             await using var sourceFileStream = info.FileInfo.OpenRead();
 
-            CompressionUtility.Compress(sourceFileStream, fileStream, new ConsoleProgressReport());
+            CompressionUtility.Compress(sourceFileStream, fileStream, new NoneProgressReport());
 
             progressFileList[index] = new CompressProgressFile(info, fileStream);
         });
@@ -253,7 +253,7 @@ public static partial class DirectoryArchive
 
         // 被压缩的文件块信息
         var fileBlockOutputStream = new MemoryStream();
-        CompressionUtility.Compress(fileBlockMemoryStream, fileBlockOutputStream, new ConsoleProgressReport());
+        CompressionUtility.Compress(fileBlockMemoryStream, fileBlockOutputStream, new NoneProgressReport());
         return fileBlockOutputStream;
 
         static void WriteFileBlock(Stream stream, in FileBlock fileBlock)
@@ -366,7 +366,7 @@ public static partial class DirectoryArchive
 
         await using var fileBlockInputStream = new SliceStream(archiveFileStream, archiveFileStream.Position, fileBlockLength, leaveOpen: true);
         await using var fileBlockStream = new MemoryStream();
-        CompressionUtility.Decompress(fileBlockInputStream, fileBlockStream, new ConsoleProgressReport());
+        CompressionUtility.Decompress(fileBlockInputStream, fileBlockStream, new NoneProgressReport());
         fileBlockStream.Seek(0, SeekOrigin.Begin);
 
         FileBlock[] fileBlockList = DecompressFileBlockList(fileBlockStream);
@@ -379,8 +379,8 @@ public static partial class DirectoryArchive
         // 当前刚好就读取到内容位置
         Debug.Assert(contentPosition == archiveFileStream.Position);
 
-        await using var fileListContentStream = new SliceStream(archiveFileStream, contentPosition,
-            archiveFileStream.Length - contentPosition, leaveOpen: true);
+        //await using var fileListContentStream = new SliceStream(archiveFileStream, contentPosition,
+        //    archiveFileStream.Length - contentPosition, leaveOpen: true);
 
         for (var i = 0; i < fileBlockList.Length; i++)
         {
@@ -396,11 +396,12 @@ public static partial class DirectoryArchive
                 Debug.Fail($"预期肯定能拿到文件夹");
             }
 
-            await using var outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            await using var outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
 
-            await using var fileCompressedStream = new SliceStream(fileListContentStream, fileBlock.FileContentOffset,
+            var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
+            await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
                 fileBlock.FileLength, leaveOpen: true);
-            CompressionUtility.Decompress(fileCompressedStream, outputFileStream, new ConsoleProgressReport());
+            CompressionUtility.Decompress(fileCompressedStream, outputFileStream, new NoneProgressReport());
         }
     }
 

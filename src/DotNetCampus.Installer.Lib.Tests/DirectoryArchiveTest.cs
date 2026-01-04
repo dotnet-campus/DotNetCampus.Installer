@@ -1,5 +1,7 @@
 ﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
+using Microsoft.DotNet.Archive;
+
 using System.Buffers;
 using System.Runtime.InteropServices;
 
