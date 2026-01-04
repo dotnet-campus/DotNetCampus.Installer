@@ -8,6 +8,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.Utils.PEOverlays;
 

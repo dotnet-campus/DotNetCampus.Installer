@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using DotNetCampus.Installer.Lib.Utils.InstallerArrayPools;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.Utils.InstallerContentPackages;
 
