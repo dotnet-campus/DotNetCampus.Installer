@@ -12,7 +12,7 @@ public class DirectoryArchiveTest
     public async Task TestMethod2()
     {
         // 先尝试制造垃圾
-        var testFolder = @"G:\Temp\DirectoryArchive2";
+        var testFolder = @"F:\Temp\DirectoryArchive2";
 
         if (!Directory.Exists(testFolder))
         {
@@ -44,10 +44,41 @@ public class DirectoryArchiveTest
             }
         }
 
-        var outputFileInfo = new FileInfo("2.assets");
-        var workingFolder = Directory.CreateDirectory(@"G:\Temp\DirectoryArchiveWork");
+        var outputFileInfo = new FileInfo("1.assets");
+        var workingFolder = Directory.CreateDirectory(@"C:\lindexi\Work\DirectoryArchiveWork");
 
         await DirectoryArchive.CompressAsync(new DirectoryInfo(testFolder), outputFileInfo, workingFolder);
+
+        var outputFolder = Path.Join(AppContext.BaseDirectory, "Output");
+        if (Directory.Exists(outputFolder))
+        {
+            Directory.Delete(outputFolder, true);
+        }
+
+        await DirectoryArchive.DecompressAsync(outputFileInfo, new DirectoryInfo(outputFolder));
+
+        await AssetsDirectoryEqual(testFolder, outputFolder);
+    }
+
+    private async Task AssetsDirectoryEqual(string expectedFolder, string outputFolder)
+    {
+        var expectedFileSet = Directory
+            .EnumerateFiles(expectedFolder, "*", SearchOption.AllDirectories)
+            .ToHashSet();
+        var outputFileArray = Directory.GetFiles(outputFolder, "*", SearchOption.AllDirectories);
+
+        Assert.HasCount(expectedFileSet.Count, outputFileArray);
+
+        foreach (var outputFile in outputFileArray)
+        {
+            var relativePath = Path.GetRelativePath(outputFolder, outputFile);
+            var expectedFile = Path.Join(expectedFolder, relativePath);
+            Assert.IsTrue(expectedFileSet.Remove(expectedFile), $"缺少文件 {relativePath}");    
+
+           await using var a = File.OpenRead(expectedFile);
+           await using var b = File.OpenRead(outputFile);
+           await AssertHelper.AssertStreamEqualAsync(a,b);
+        }
     }
 
     [TestMethod]
@@ -90,39 +121,6 @@ public class DirectoryArchiveTest
         await using var a = File.OpenRead(archiveFile);
         await using var b = File.OpenRead(testFile);
 
-        await AssertStreamEqualAsync(a, b);
-    }
-
-    private async Task AssertStreamEqualAsync(Stream a, Stream b)
-    {
-        const int length = 10240;
-        var buffer1 = ArrayPool<byte>.Shared.Rent(length);
-        var buffer2 = ArrayPool<byte>.Shared.Rent(length);
-
-        try
-        {
-            while (true)
-            {
-                var readCount1 = await a.ReadAsync(buffer1.AsMemory(0, length));
-                var readCount2 = await b.ReadAsync(buffer2.AsMemory(0, length));
-
-                Assert.AreEqual(readCount1, readCount2);
-
-                if (readCount1 == 0)
-                {
-                    break;
-                }
-
-                var span1 = buffer1.AsSpan(0, readCount1);
-                var span2 = buffer2.AsSpan(0, readCount2);
-
-                Assert.IsTrue(span1.SequenceEqual(span2));
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer1);
-            ArrayPool<byte>.Shared.Return(buffer2);
-        }
+        await AssertHelper.AssertStreamEqualAsync(a, b);
     }
 }

@@ -76,9 +76,9 @@ public static partial class DirectoryArchive
         outputFileStream.Write(CompressHeader);
         // 再写入 FileBlock 的长度
         var writer = new StackallocStreamWriter(outputFileStream);
-        fileBlockMemoryStream.Seek(0, SeekOrigin.Begin);
         writer.WriteInt64(fileBlockMemoryStream.Length);
         // 写入文件块信息
+        fileBlockMemoryStream.Seek(0, SeekOrigin.Begin);
         await fileBlockMemoryStream.CopyToAsync(outputFileStream);
 
         // 写入各个文件内容
@@ -102,6 +102,10 @@ public static partial class DirectoryArchive
     {
         // 写入文件块信息。这部分内容也可以进行压缩，进一步减少体积
         using var fileBlockMemoryStream = new MemoryStream();
+        // 写入文件块数量
+        var writer = new StackallocStreamWriter(fileBlockMemoryStream);
+        writer.WriteInt32(progressFileList.Length);
+
         long currentOffset = 0;
         foreach (CompressProgressFile compressProgressFile in progressFileList)
         {
@@ -124,7 +128,7 @@ public static partial class DirectoryArchive
         CompressionUtility.Compress(fileBlockMemoryStream, fileBlockOutputStream, new ConsoleProgressReport());
         return fileBlockOutputStream;
 
-        void WriteFileBlock(Stream stream, in FileBlock fileBlock)
+        static void WriteFileBlock(Stream stream, in FileBlock fileBlock)
         {
             var writer = new StackallocStreamWriter(stream);
 
