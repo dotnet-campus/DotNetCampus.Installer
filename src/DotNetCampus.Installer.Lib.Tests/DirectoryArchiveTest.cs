@@ -12,6 +12,74 @@ namespace DotNetCampus.Installer.Lib.Tests;
 public class DirectoryArchiveTest
 {
     [TestMethod]
+    public async Task TestMethod3()
+    {
+        // 先尝试制造垃圾
+        var testFolder = Path.Join(AppContext.BaseDirectory, $"Test_{Path.GetRandomFileName()}");
+        Directory.CreateDirectory(testFolder);
+        var testInputFolder = Path.Join(testFolder, $"File");
+        Directory.CreateDirectory(testInputFolder);
+
+        var fileCount = 10;
+        var fileLength = 1024 * 1024 * 10; // 10 MB
+
+        var buffer = new byte[1024 * 1024];
+        var random = Random.Shared;
+
+        for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+        {
+            var archiveFile = Path.Join(testInputFolder, $"Test{fileIndex}.archive");
+            if (!File.Exists(archiveFile))
+            {
+                using (var fileStream = File.Create(archiveFile))
+                {
+                    var currentFileLength = random.Next(fileLength);
+
+                    for (int i = 0; i < currentFileLength; i += buffer.Length)
+                    {
+                        random.NextBytes(buffer);
+                        var writeCount = Math.Min(buffer.Length, currentFileLength - i);
+                        await fileStream.WriteAsync(buffer.AsMemory(0, writeCount));
+                    }
+                }
+            }
+        }
+
+        var outputFileInfo = new FileInfo(Path.Join(testFolder, "Output.assets"));
+
+        var workingFolder = Directory.CreateDirectory(Path.Join(testFolder, "Working"));
+
+        await DirectoryArchive.CompressAsync(new DirectoryInfo(testInputFolder), outputFileInfo, workingFolder);
+
+        ReadOnlyDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
+        Assert.HasCount(fileCount, directoryArchive.EntryFileList);
+
+        var outputFolder = Path.Join(testFolder, "Output");
+
+        var logStringBuilder = new StringBuilder();
+
+        var progress = new DirectoryArchiveDecompressProgress();
+        progress.Updated += (_, _) =>
+        {
+            if (progress.IsFinished)
+            {
+                logStringBuilder.AppendLine($"{progress.TotalProgressPercentage:0.00}");
+            }
+            else
+            {
+                logStringBuilder.AppendLine($"[{progress.CurrentDecompressedProgressPercentage:0.00}][{progress.TotalProgressPercentage:0.00}] {progress.CurrentDecompressedPath}");
+            }
+        };
+
+        await directoryArchive.DecompressAsync(new DirectoryInfo(outputFolder), progress);
+
+        await AssetsDirectoryEqual(testInputFolder, outputFolder);
+
+        var log = logStringBuilder.ToString();
+        Assert.IsNotEmpty(log);
+    }
+
+    [TestMethod]
     public async Task TestMethod2()
     {
         // 先尝试制造垃圾
@@ -94,11 +162,11 @@ public class DirectoryArchiveTest
         {
             var relativePath = Path.GetRelativePath(outputFolder, outputFile);
             var expectedFile = Path.Join(expectedFolder, relativePath);
-            Assert.IsTrue(expectedFileSet.Remove(expectedFile), $"缺少文件 {relativePath}");    
+            Assert.IsTrue(expectedFileSet.Remove(expectedFile), $"缺少文件 {relativePath}");
 
-           await using var a = File.OpenRead(expectedFile);
-           await using var b = File.OpenRead(outputFile);
-           await AssertHelper.AssertStreamEqualAsync(a,b);
+            await using var a = File.OpenRead(expectedFile);
+            await using var b = File.OpenRead(outputFile);
+            await AssertHelper.AssertStreamEqualAsync(a, b);
         }
     }
 

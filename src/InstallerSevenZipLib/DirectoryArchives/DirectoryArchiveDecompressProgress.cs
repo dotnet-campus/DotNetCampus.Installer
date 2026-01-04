@@ -3,6 +3,9 @@ using Microsoft.DotNet.Archive;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
+/// <summary>
+/// 解压缩的进度条
+/// </summary>
 public class DirectoryArchiveDecompressProgress
 {
     public DirectoryArchiveDecompressProgress()

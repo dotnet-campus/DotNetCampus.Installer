@@ -391,40 +391,13 @@ public static partial class DirectoryArchive
 
     public static async Task DecompressAsync(Stream archiveFileStream, DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress progress)
     {
-        var startPosition = archiveFileStream.Position;
+        var header = await DecompressDirectoryArchiveHeaderAsync(archiveFileStream);
+        var fileBlockList = header.FileBlockList;
+        var contentPosition = header.ContentPosition;
 
-        var headerLength = CompressHeader.Length;
-        Span<byte> header = stackalloc byte[headerLength];
-        archiveFileStream.ReadExactly(header);
+        progress.Start(fileBlockList.Count);
 
-        if (!header.SequenceEqual(CompressHeader))
-        {
-            throw new ArgumentException();
-        }
-
-        var reader = new StackallocStreamReader(archiveFileStream);
-        var fileBlockLength = reader.ReadInt64();
-
-        await using var fileBlockInputStream = new SliceStream(archiveFileStream, archiveFileStream.Position, fileBlockLength, leaveOpen: true);
-        await using var fileBlockStream = new MemoryStream();
-        CompressionUtility.Decompress(fileBlockInputStream, fileBlockStream, new NoneProgressReport());
-        fileBlockStream.Seek(0, SeekOrigin.Begin);
-
-        FileBlock[] fileBlockList = DecompressFileBlockList(fileBlockStream);
-
-        // 内容的开始位置就是： 去掉头部 + 文件块长度字段 + 文件块内容
-        var contentPosition = startPosition
-                              + headerLength
-                              + sizeof(long) // fileBlockLengthField
-                              + fileBlockLength;
-        // 当前刚好就读取到内容位置
-        Debug.Assert(contentPosition == archiveFileStream.Position);
-
-        //await using var fileListContentStream = new SliceStream(archiveFileStream, contentPosition,
-        //    archiveFileStream.Length - contentPosition, leaveOpen: true);
-        progress.Start(fileBlockList.Length);
-
-        for (var i = 0; i < fileBlockList.Length; i++)
+        for (var i = 0; i < fileBlockList.Count; i++)
         {
             var fileBlock = fileBlockList[i];
             var outputFilePath = Path.Join(outputFolder.FullName, fileBlock.RelativePath);
@@ -451,12 +424,53 @@ public static partial class DirectoryArchive
         progress.Finish();
     }
 
+    private static async ValueTask<DecompressDirectoryArchiveHeader> DecompressDirectoryArchiveHeaderAsync(Stream archiveFileStream)
+    {
+        long startPosition = archiveFileStream.Position;
+
+        var headerLength = CompressHeader.Length;
+        Span<byte> header = stackalloc byte[headerLength];
+        archiveFileStream.ReadExactly(header);
+
+        if (!header.SequenceEqual(CompressHeader))
+        {
+            throw new ArgumentException();
+        }
+
+        var reader = new StackallocStreamReader(archiveFileStream);
+        var fileBlockLength = reader.ReadInt64();
+
+        await using var fileBlockInputStream = new SliceStream(archiveFileStream, archiveFileStream.Position, fileBlockLength, leaveOpen: true);
+        await using var fileBlockStream = new MemoryStream();
+        CompressionUtility.Decompress(fileBlockInputStream, fileBlockStream, new NoneProgressReport());
+        fileBlockStream.Seek(0, SeekOrigin.Begin);
+
+        FileBlock[] fileBlockList = ParseFileBlockList(fileBlockStream);
+
+        // 内容的开始位置就是： 去掉头部 + 文件块长度字段 + 文件块内容
+        var contentPosition = startPosition
+                              + headerLength
+                              + sizeof(long) // fileBlockLengthField
+                              + fileBlockLength;
+        // 当前刚好就读取到内容位置
+        Debug.Assert(contentPosition == archiveFileStream.Position);
+
+        return new DecompressDirectoryArchiveHeader()
+        {
+            ArchiveStream = archiveFileStream,
+            StartPosition = startPosition,
+            ContentPosition = contentPosition,
+            FileBlockLength = fileBlockLength,
+            FileBlockList = fileBlockList,
+        };
+    }
+
     /// <summary>
     /// 解压缩文件块列表
     /// </summary>
     /// <returns></returns>
     /// 传入的一般都是内存流，也就没有异步的必要
-    private static FileBlock[] DecompressFileBlockList(MemoryStream fileBlockStream)
+    private static FileBlock[] ParseFileBlockList(MemoryStream fileBlockStream)
     {
         // 读取文件块数量
         var reader = new StackallocStreamReader(fileBlockStream);
@@ -491,6 +505,85 @@ public static partial class DirectoryArchive
         }
 
         return fileList;
+    }
+
+    readonly record struct DecompressDirectoryArchiveHeader
+    {
+        public required Stream ArchiveStream { get; init; }
+
+        public required long StartPosition { get; init; }
+
+        public required long FileBlockLength { get; init; }
+        public required IReadOnlyList<FileBlock> FileBlockList { get; init; }
+        public required long ContentPosition { get; init; }
+    }
+
+    /// <summary>
+    /// 打开读取存档文件
+    /// </summary>
+    /// <param name="archiveFileInfo"></param>
+    /// <returns></returns>
+    public static async Task<ReadOnlyDirectoryArchive> OpenReadAsync(FileInfo archiveFileInfo)
+    {
+        var archiveStream = archiveFileInfo.OpenRead();
+        // 不能释放 archiveStream 对象，应该被 ReadOnlyDirectoryArchive 所释放
+        return await OpenReadAsync(archiveStream);
+    }
+
+    /// <summary>
+    /// 打开读取存档文件
+    /// </summary>
+    /// <param name="archiveStream"></param>
+    /// <returns></returns>
+    public static async Task<ReadOnlyDirectoryArchive> OpenReadAsync(Stream archiveStream)
+    {
+        var header = await DecompressDirectoryArchiveHeaderAsync(archiveStream);
+
+        var directoryArchiveEntryFiles = new IDirectoryArchiveEntryFile[header.FileBlockList.Count];
+        for (int i = 0; i < header.FileBlockList.Count; i++)
+        {
+            directoryArchiveEntryFiles[i] = new DirectoryArchiveEntryFile()
+            {
+                Header = header,
+                FileBlockIndex = i
+            };
+        }
+
+        return new ReadOnlyDirectoryArchive(archiveStream)
+        {
+            EntryFileList = directoryArchiveEntryFiles
+        };
+    }
+
+    class DirectoryArchiveEntryFile : IDirectoryArchiveEntryFile
+    {
+        public required DecompressDirectoryArchiveHeader Header { get; init; }
+        public required int FileBlockIndex { get; init; }
+
+        private FileBlock FileBlock => Header.FileBlockList[FileBlockIndex];
+
+        public string RelativePath => FileBlock.RelativePath;
+
+        public async Task CopyToAsync(Stream destinationStream, IProgress<ProgressReport>? progress = null)
+        {
+            var fileBlock = FileBlock;
+            var archiveFileStream = Header.ArchiveStream;
+            var contentPosition = Header.ContentPosition;
+
+            var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
+
+            await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
+                fileBlock.FileLength, leaveOpen: true);
+            progress ??= new NoneProgressReport();
+
+            CompressionUtility.Decompress(fileCompressedStream, destinationStream, progress);
+        }
+
+        public async Task SaveToFileAsync(FileInfo outputFile, IProgress<ProgressReport>? progress = null)
+        {
+            await using var outputFileStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
+            await CopyToAsync(outputFileStream, progress);
+        }
     }
 }
 
