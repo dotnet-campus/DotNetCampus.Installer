@@ -169,7 +169,12 @@ public static partial class DirectoryArchive
         DirectoryInfo workingDirectoryInfo)
     {
         await using var outputFileStream = new FileStream(outputFileInfo.FullName, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+        await CompressAsync(inputFileList, outputFileStream, workingDirectoryInfo);
+    }
 
+    public static async Task CompressAsync(IReadOnlyList<DirectoryArchiveFileInfo> inputFileList, Stream outputStream,
+        DirectoryInfo workingDirectoryInfo)
+    {
         workingDirectoryInfo.Create();
 
         CompressProgressFile[] progressFileList = new CompressProgressFile[inputFileList.Count];
@@ -183,10 +188,9 @@ public static partial class DirectoryArchive
                 // 设置 DeleteOnClose 这样文件在使用完成后会被自动删除
                 FileOptions.DeleteOnClose);
             await using var sourceFileStream = info.FileInfo.OpenRead();
+            progressFileList[index] = new CompressProgressFile(info, fileStream);
 
             CompressionUtility.Compress(sourceFileStream, fileStream, new NoneProgressReport());
-
-            progressFileList[index] = new CompressProgressFile(info, fileStream);
         });
 
         await using var fileBlockMemoryStream = CompressFileBlockList(progressFileList);
@@ -201,19 +205,19 @@ public static partial class DirectoryArchive
         //{
         //    Assert.AreEqual(h[i], t2[i]);
         //}
-        outputFileStream.Write(CompressHeader);
+        outputStream.Write(CompressHeader);
         // 再写入 FileBlock 的长度
-        var writer = new StackallocStreamWriter(outputFileStream);
+        var writer = new StackallocStreamWriter(outputStream);
         writer.WriteInt64(fileBlockMemoryStream.Length);
         // 写入文件块信息
         fileBlockMemoryStream.Seek(0, SeekOrigin.Begin);
-        await fileBlockMemoryStream.CopyToAsync(outputFileStream);
+        await fileBlockMemoryStream.CopyToAsync(outputStream);
 
         // 写入各个文件内容
         foreach (CompressProgressFile compressProgressFile in progressFileList)
         {
             compressProgressFile.CompressFileStream.Seek(0, SeekOrigin.Begin);
-            await compressProgressFile.CompressFileStream.CopyToAsync(outputFileStream);
+            await compressProgressFile.CompressFileStream.CopyToAsync(outputStream);
             await compressProgressFile.CompressFileStream.DisposeAsync();
         }
     }
@@ -340,15 +344,17 @@ public static partial class DirectoryArchive
     /// </summary>
     /// <param name="archiveFileInfo"></param>
     /// <param name="outputFolder"></param>
+    /// <param name="progress"></param>
     /// <returns></returns>
-    public static async Task DecompressAsync(FileInfo archiveFileInfo, DirectoryInfo outputFolder)
+    public static async Task DecompressAsync(FileInfo archiveFileInfo, DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress? progress = null)
     {
         await using var archiveFileStream = archiveFileInfo.OpenRead();
 
-        await DecompressAsync(archiveFileStream, outputFolder);
+        progress ??= new DirectoryArchiveDecompressProgress(shouldIgnore: true);
+        await DecompressAsync(archiveFileStream, outputFolder, progress);
     }
 
-    public static async Task DecompressAsync(Stream archiveFileStream, DirectoryInfo outputFolder)
+    public static async Task DecompressAsync(Stream archiveFileStream, DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress progress)
     {
         var startPosition = archiveFileStream.Position;
 
@@ -381,6 +387,7 @@ public static partial class DirectoryArchive
 
         //await using var fileListContentStream = new SliceStream(archiveFileStream, contentPosition,
         //    archiveFileStream.Length - contentPosition, leaveOpen: true);
+        progress.Start(fileBlockList.Length);
 
         for (var i = 0; i < fileBlockList.Length; i++)
         {
@@ -401,8 +408,12 @@ public static partial class DirectoryArchive
             var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
             await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
                 fileBlock.FileLength, leaveOpen: true);
-            CompressionUtility.Decompress(fileCompressedStream, outputFileStream, new NoneProgressReport());
+            CompressionUtility.Decompress(fileCompressedStream, outputFileStream, progress.UpdateCurrentDecompress(outputFilePath));
+
+            progress.SetCurrentDecompressFinish();
         }
+
+        progress.Finish();
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using Microsoft.DotNet.Archive;
 
 using System.Buffers;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace DotNetCampus.Installer.Lib.Tests;
 
@@ -57,9 +58,27 @@ public class DirectoryArchiveTest
             Directory.Delete(outputFolder, true);
         }
 
-        await DirectoryArchive.DecompressAsync(outputFileInfo, new DirectoryInfo(outputFolder));
+        var logStringBuilder = new StringBuilder();
+
+        var progress = new DirectoryArchiveDecompressProgress();
+        progress.Updated += (_, _) =>
+        {
+            if (progress.IsFinished)
+            {
+                logStringBuilder.AppendLine($"{progress.TotalProgressPercentage:0.00}");
+            }
+            else
+            {
+                logStringBuilder.AppendLine($"[{progress.CurrentDecompressedProgressPercentage:0.00}][{progress.TotalProgressPercentage:0.00}] {progress.CurrentDecompressedPath}");
+            }
+        };
+
+        await DirectoryArchive.DecompressAsync(outputFileInfo, new DirectoryInfo(outputFolder), progress);
 
         await AssetsDirectoryEqual(testFolder, outputFolder);
+
+        var log = logStringBuilder.ToString();
+        Assert.IsNotEmpty(log);
     }
 
     private async Task AssetsDirectoryEqual(string expectedFolder, string outputFolder)
