@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>DotNetCampus.Installer</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
+    <ProjectReference Include="..\InstallerCreateTool\InstallerCreateTool.csproj" />
+  </ItemGroup>
+
+</Project>
