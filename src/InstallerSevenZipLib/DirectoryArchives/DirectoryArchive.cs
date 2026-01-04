@@ -269,51 +269,6 @@ public static partial class DirectoryArchive
         }
     }
 
-    readonly record struct StackallocStreamWriter(Stream Stream)
-    {
-        public void WriteString(string value, int utf8ByteCount)
-        {
-            scoped Span<byte> buffer;
-            byte[]? pool = null;
-            if (utf8ByteCount < 512)
-            {
-                buffer = stackalloc byte[utf8ByteCount];
-            }
-            else
-            {
-                pool = ArrayPool<byte>.Shared.Rent(utf8ByteCount);
-                buffer = pool.AsSpan(0, utf8ByteCount);
-            }
-
-            try
-            {
-                Encoding.UTF8.GetBytes(value, buffer);
-                Stream.Write(buffer);
-            }
-            finally
-            {
-                if (pool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(pool);
-                }
-            }
-        }
-
-        public void WriteInt32(int value)
-        {
-            Span<byte> buffer = stackalloc byte[sizeof(int)];
-            MemoryMarshal.Write(buffer, value);
-            Stream.Write(buffer);
-        }
-
-        public void WriteInt64(long value)
-        {
-            Span<byte> buffer = stackalloc byte[sizeof(long)];
-            MemoryMarshal.Write(buffer, value);
-            Stream.Write(buffer);
-        }
-    }
-
     /// <summary>
     /// 压缩过程的文件信息
     /// </summary>
@@ -380,6 +335,12 @@ public static partial class DirectoryArchive
         public required long FileLength { get; init; }
     }
 
+    /// <summary>
+    /// 解压缩存档文件到文件夹
+    /// </summary>
+    /// <param name="archiveFileInfo"></param>
+    /// <param name="outputFolder"></param>
+    /// <returns></returns>
     public static async Task DecompressAsync(FileInfo archiveFileInfo, DirectoryInfo outputFolder)
     {
         await using var archiveFileStream = archiveFileInfo.OpenRead();
@@ -484,49 +445,94 @@ public static partial class DirectoryArchive
 
         return fileList;
     }
+}
 
-    readonly record struct StackallocStreamReader(Stream Stream)
+file readonly record struct StackallocStreamWriter(Stream Stream)
+{
+    public void WriteString(string value, int utf8ByteCount)
     {
-        public string ReadString(int utf8ByteCount)
+        scoped Span<byte> buffer;
+        byte[]? pool = null;
+        if (utf8ByteCount < 512)
         {
-            scoped Span<byte> buffer;
-            byte[]? pool = null;
-            if (utf8ByteCount < 512)
-            {
-                buffer = stackalloc byte[utf8ByteCount];
-            }
-            else
-            {
-                pool = ArrayPool<byte>.Shared.Rent(utf8ByteCount);
-                buffer = pool.AsSpan(0, utf8ByteCount);
-            }
-
-            try
-            {
-                Stream.ReadExactly(buffer);
-                return Encoding.UTF8.GetString(buffer);
-            }
-            finally
-            {
-                if (pool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(pool);
-                }
-            }
+            buffer = stackalloc byte[utf8ByteCount];
+        }
+        else
+        {
+            pool = ArrayPool<byte>.Shared.Rent(utf8ByteCount);
+            buffer = pool.AsSpan(0, utf8ByteCount);
         }
 
-        public int ReadInt32()
+        try
         {
-            Span<byte> buffer = stackalloc byte[sizeof(int)];
+            Encoding.UTF8.GetBytes(value, buffer);
+            Stream.Write(buffer);
+        }
+        finally
+        {
+            if (pool != null)
+            {
+                ArrayPool<byte>.Shared.Return(pool);
+            }
+        }
+    }
+
+    public void WriteInt32(int value)
+    {
+        Span<byte> buffer = stackalloc byte[sizeof(int)];
+        MemoryMarshal.Write(buffer, value);
+        Stream.Write(buffer);
+    }
+
+    public void WriteInt64(long value)
+    {
+        Span<byte> buffer = stackalloc byte[sizeof(long)];
+        MemoryMarshal.Write(buffer, value);
+        Stream.Write(buffer);
+    }
+}
+
+file readonly record struct StackallocStreamReader(Stream Stream)
+{
+    public string ReadString(int utf8ByteCount)
+    {
+        scoped Span<byte> buffer;
+        byte[]? pool = null;
+        if (utf8ByteCount < 512)
+        {
+            buffer = stackalloc byte[utf8ByteCount];
+        }
+        else
+        {
+            pool = ArrayPool<byte>.Shared.Rent(utf8ByteCount);
+            buffer = pool.AsSpan(0, utf8ByteCount);
+        }
+
+        try
+        {
             Stream.ReadExactly(buffer);
-            return MemoryMarshal.Read<int>(buffer);
+            return Encoding.UTF8.GetString(buffer);
         }
-
-        public long ReadInt64()
+        finally
         {
-            Span<byte> buffer = stackalloc byte[sizeof(long)];
-            Stream.ReadExactly(buffer);
-            return MemoryMarshal.Read<long>(buffer);
+            if (pool != null)
+            {
+                ArrayPool<byte>.Shared.Return(pool);
+            }
         }
+    }
+
+    public int ReadInt32()
+    {
+        Span<byte> buffer = stackalloc byte[sizeof(int)];
+        Stream.ReadExactly(buffer);
+        return MemoryMarshal.Read<int>(buffer);
+    }
+
+    public long ReadInt64()
+    {
+        Span<byte> buffer = stackalloc byte[sizeof(long)];
+        Stream.ReadExactly(buffer);
+        return MemoryMarshal.Read<long>(buffer);
     }
 }
