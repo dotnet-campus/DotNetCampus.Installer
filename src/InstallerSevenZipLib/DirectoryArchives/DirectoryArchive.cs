@@ -165,6 +165,13 @@ public static partial class DirectoryArchive
         await CompressAsync(fileList, outputFileInfo, workingDirectoryInfo);
     }
 
+    /// <summary>
+    /// 压缩文件夹为存档文件
+    /// </summary>
+    /// <param name="inputFileList"></param>
+    /// <param name="outputFileInfo"></param>
+    /// <param name="workingDirectoryInfo"></param>
+    /// <returns></returns>
     public static async Task CompressAsync(IReadOnlyList<DirectoryArchiveFileInfo> inputFileList, FileInfo outputFileInfo,
         DirectoryInfo workingDirectoryInfo)
     {
@@ -172,6 +179,34 @@ public static partial class DirectoryArchive
         await CompressAsync(inputFileList, outputFileStream, workingDirectoryInfo);
     }
 
+    /// <summary>
+    /// 压缩文件夹为存档文件
+    /// </summary>
+    /// <param name="inputFileList"></param>
+    /// <param name="outputStream"></param>
+    /// <param name="workingDirectoryInfo"></param>
+    /// <returns></returns>
+    // Header 部分
+    // CompressHeader 校验
+    // FileBlock 压缩后的内容长度: Int64
+    // 压缩后的 FileBlock 内容
+    // 压缩后的各个文件内容
+    //
+    // FileBlock 部分结构：
+    // - FileBlockCount: Int32
+    // - FileBlock 列表
+    // FileBlock:
+    // - FileBlockLength: Int32
+    // - RelativePathLength: Int32
+    // - RelativePath: String
+    // - FileContentOffset: Int64
+    // - FileLength 压缩后的文件长度: Int64
+    // 按照 FileBlock 顺序存放各个文件
+    //
+    // 压缩实现逻辑：
+    // 1. 制作 FileBlock 列表，且将其压缩，写入到输出流中
+    // 2. 并行地将各个文件压缩到临时文件中
+    // 3. 按照 FileBlock 列表的顺序，将各个文件内容写入到输出流中
     public static async Task CompressAsync(IReadOnlyList<DirectoryArchiveFileInfo> inputFileList, Stream outputStream,
         DirectoryInfo workingDirectoryInfo)
     {
@@ -186,7 +221,7 @@ public static partial class DirectoryArchive
             var file = Path.Join(workingDirectoryInfo.FullName, info.RelativePath);
             var fileStream = new FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 4096,
                 // 设置 DeleteOnClose 这样文件在使用完成后会被自动删除
-                FileOptions.DeleteOnClose);
+                FileOptions.DeleteOnClose | FileOptions.Asynchronous | FileOptions.SequentialScan);
             await using var sourceFileStream = info.FileInfo.OpenRead();
             progressFileList[index] = new CompressProgressFile(info, fileStream);
 
