@@ -3,6 +3,7 @@
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.Installer.Lib.Logging;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
@@ -204,15 +205,39 @@ public record StandardInstallContext
         return Path.Join(MainInstallPath, relativePath);
     }
 
-    ///// <summary>
-    ///// 获取放在 PE 文件的 Overlay 部分的安装器内容信息
-    ///// </summary>
-    ///// <returns></returns>
-    //public async Task<Stream?> GetOverlayInstallerContentStream()
-    //{
-    //    var overlayInstallerContentInfo = await GetOverlayInstallerContentInfo();
-    //    return overlayInstallerContentInfo?.ContentStream;
-    //}
+    /// <summary>
+    /// 将放在 PE 文件的 Overlay 部分的安装器内容作为目录归档读取出来
+    /// </summary>
+    /// <returns></returns>
+    public async Task<ReadOnlyDirectoryArchive?> GetOverlayDirectoryArchive()
+    {
+        if (_directoryArchive != null)
+        {
+            return _directoryArchive;
+        }
+
+        var overlayInstallerContentStream = await GetOverlayInstallerContentStream();
+        if (overlayInstallerContentStream is null)
+        {
+            return null;
+        }
+
+        ReadOnlyDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
+        _directoryArchive = readOnlyDirectoryArchive;
+        return _directoryArchive;
+    }
+
+    private ReadOnlyDirectoryArchive? _directoryArchive;
+
+    /// <summary>
+    /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息
+    /// </summary>
+    /// <returns></returns>
+    public async Task<Stream?> GetOverlayInstallerContentStream()
+    {
+        var overlayInstallerContentInfo = await GetOverlayInstallerContentInfo();
+        return overlayInstallerContentInfo?.ContentStream;
+    }
 
     /// <summary>
     /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息

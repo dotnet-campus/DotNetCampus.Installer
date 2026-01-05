@@ -170,46 +170,46 @@ public class DirectoryArchiveTest
         }
     }
 
-    [TestMethod]
-    public async Task TestMethod1()
-    {
-        // 先尝试制造垃圾
-        var testFolder = @"G:\Temp\DirectoryArchive";
-        if (!Directory.Exists(testFolder))
-        {
-            return;
-        }
+    //[TestMethod]
+    //public async Task TestMethod1()
+    //{
+    //    // 先尝试制造垃圾
+    //    var testFolder = @"G:\Temp\DirectoryArchive";
+    //    if (!Directory.Exists(testFolder))
+    //    {
+    //        return;
+    //    }
 
-        var archiveFile = Path.Join(testFolder, "Test.archive");
-        if (!File.Exists(archiveFile))
-        {
-            using (var fileStream = File.Create(archiveFile))
-            {
-                var buffer = new byte[1024 * 1024];
-                var random = Random.Shared;
+    //    var archiveFile = Path.Join(testFolder, "Test.archive");
+    //    if (!File.Exists(archiveFile))
+    //    {
+    //        using (var fileStream = File.Create(archiveFile))
+    //        {
+    //            var buffer = new byte[1024 * 1024];
+    //            var random = Random.Shared;
 
-                for (int i = 0; i < 1024 * 4; i++)
-                {
-                    random.NextBytes(buffer);
+    //            for (int i = 0; i < 1024 * 4; i++)
+    //            {
+    //                random.NextBytes(buffer);
 
-                    await fileStream.WriteAsync(buffer);
-                }
-            }
-        }
+    //                await fileStream.WriteAsync(buffer);
+    //            }
+    //        }
+    //    }
 
-        var outputFileInfo = new FileInfo("1.assets");
-        if (!outputFileInfo.Exists)
-        {
-            DirectoryArchive.Compress(new DirectoryInfo(testFolder), outputFileInfo);
-        }
+    //    var outputFileInfo = new FileInfo("1.assets");
+    //    if (!outputFileInfo.Exists)
+    //    {
+    //        DirectoryArchive.Compress(new DirectoryInfo(testFolder), outputFileInfo);
+    //    }
 
-        var outputFolder = Path.Join(AppContext.BaseDirectory, "Output");
-        DirectoryArchive.Decompress(outputFileInfo, new DirectoryInfo(outputFolder));
+    //    var outputFolder = Path.Join(AppContext.BaseDirectory, "Output");
+    //    DirectoryArchive.Decompress(outputFileInfo, new DirectoryInfo(outputFolder));
 
-        var testFile = Path.Join(outputFolder, "Test.archive");
-        await using var a = File.OpenRead(archiveFile);
-        await using var b = File.OpenRead(testFile);
+    //    var testFile = Path.Join(outputFolder, "Test.archive");
+    //    await using var a = File.OpenRead(archiveFile);
+    //    await using var b = File.OpenRead(testFile);
 
-        await AssertHelper.AssertStreamEqualAsync(a, b);
-    }
+    //    await AssertHelper.AssertStreamEqualAsync(a, b);
+    //}
 }

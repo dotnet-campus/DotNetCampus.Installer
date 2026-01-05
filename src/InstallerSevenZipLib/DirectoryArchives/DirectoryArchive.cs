@@ -19,7 +19,7 @@ public static partial class DirectoryArchive
     /// <param name="inputDirectoryInfo"></param>
     /// <param name="outputFileInfo"></param>
     /// <exception cref="Exception"></exception>
-    [Obsolete("请使用异步的方法")]
+    [Obsolete("请使用异步的方法", error: true)]
     public static void Compress(DirectoryInfo inputDirectoryInfo, FileInfo outputFileInfo)
     {
         using var outputFileStream = new FileStream(outputFileInfo.FullName, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
@@ -117,7 +117,7 @@ public static partial class DirectoryArchive
     /// <param name="archiveFileInfo"></param>
     /// <param name="outputFolder"></param>
     /// <param name="progress"></param>
-    [Obsolete("请使用异步的方法")]
+    [Obsolete("请使用异步的方法", error: true)]
     public static void Decompress(FileInfo archiveFileInfo, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var archiveFileStream = archiveFileInfo.OpenRead();
@@ -150,7 +150,7 @@ public static partial class DirectoryArchive
     /// <param name="outputFileInfo"></param>
     /// <param name="workingDirectoryInfo">工作的文件夹，会在这里存放压缩过程中存放的临时文件</param>
     public static async Task CompressAsync(DirectoryInfo inputDirectoryInfo, FileInfo outputFileInfo,
-        DirectoryInfo workingDirectoryInfo)
+        DirectoryInfo? workingDirectoryInfo = null)
     {
         FileInfo[] fileArray = inputDirectoryInfo.GetFiles("*", SearchOption.AllDirectories);
         var fileList = new List<DirectoryArchiveFileInfo>(fileArray.Length);
@@ -173,7 +173,7 @@ public static partial class DirectoryArchive
     /// <param name="workingDirectoryInfo"></param>
     /// <returns></returns>
     public static async Task CompressAsync(IReadOnlyList<DirectoryArchiveFileInfo> inputFileList, FileInfo outputFileInfo,
-        DirectoryInfo workingDirectoryInfo)
+        DirectoryInfo? workingDirectoryInfo = null)
     {
         await using var outputFileStream = new FileStream(outputFileInfo.FullName, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
         await CompressAsync(inputFileList, outputFileStream, workingDirectoryInfo);
@@ -208,8 +208,12 @@ public static partial class DirectoryArchive
     // 2. 并行地将各个文件压缩到临时文件中
     // 3. 按照 FileBlock 列表的顺序，将各个文件内容写入到输出流中
     public static async Task CompressAsync(IReadOnlyList<DirectoryArchiveFileInfo> inputFileList, Stream outputStream,
-        DirectoryInfo workingDirectoryInfo)
+        DirectoryInfo? workingDirectoryInfo = null)
     {
+        workingDirectoryInfo ??=
+            new DirectoryInfo(Path.Join(Path.GetTempPath(), $"DirectoryArchive_{Path.GetRandomFileName()}"));
+        bool shouldDeleteWorkingDirectory = !Directory.Exists(workingDirectoryInfo.FullName);
+
         workingDirectoryInfo.Create();
 
         CompressProgressFile[] progressFileList = new CompressProgressFile[inputFileList.Count];
@@ -254,6 +258,18 @@ public static partial class DirectoryArchive
             compressProgressFile.CompressFileStream.Seek(0, SeekOrigin.Begin);
             await compressProgressFile.CompressFileStream.CopyToAsync(outputStream);
             await compressProgressFile.CompressFileStream.DisposeAsync();
+        }
+
+        if (shouldDeleteWorkingDirectory)
+        {
+            try
+            {
+                workingDirectoryInfo.Delete(recursive: true);
+            }
+            catch
+            {
+                // 删除失败也没有什么影响，忽略
+            }
         }
     }
 

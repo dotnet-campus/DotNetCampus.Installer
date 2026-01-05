@@ -74,7 +74,7 @@ Console.WriteLine($"开始制作安装包资产文件");
 var resourceAssetsName = "Resource.assets";
 var resourceAssetsFile = Path.Join(installerBoostProjectFolder, "Assets", resourceAssetsName);
 
-DirectoryArchive.Compress(new DirectoryInfo(option.PackingFolder), new FileInfo(resourceAssetsFile));
+await DirectoryArchive.CompressAsync(new DirectoryInfo(option.PackingFolder), new FileInfo(resourceAssetsFile), Directory.CreateDirectory(Path.Join(Path.GetTempPath(), $"Installer_{Path.GetRandomFileName()}")));
 
 Console.WriteLine($"完成制作安装包资产文件");
 

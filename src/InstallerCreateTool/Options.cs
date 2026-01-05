@@ -7,6 +7,7 @@ using DotNetCampus.Cli.Compiler;
 
 namespace InstallerCreateTool;
 
+[Command("pack")]
 internal class Options
 {
     /// <summary>
