@@ -133,6 +133,7 @@ public abstract class StandardInstallerProgram : IDisposable
 
         // 3. 写注册表和快捷方式
         WriteRegister();
+        CreateShortcut();
     }
 
     /// <summary>
@@ -443,7 +444,7 @@ public abstract class StandardInstallerProgram : IDisposable
             productUninstallKey.SetValue("DisplayIcon", icon, RegistryValueKind.String);
         }
 
-        productUninstallKey.SetValue("DisplayName", StandardInstallContext.DisplayProductName, RegistryValueKind.String);
+        productUninstallKey.SetValue("DisplayName", StandardInstallContext.UninstallDisplayName, RegistryValueKind.String);
 
         productUninstallKey.SetValue("DisplayVersion", StandardInstallContext.UninstallDisplayVersion, RegistryValueKind.String);
 
@@ -471,7 +472,36 @@ public abstract class StandardInstallerProgram : IDisposable
 
     #region 快捷方式
 
+    /// <summary>
+    /// 创建桌面快捷方式和开始菜单快捷方式
+    /// </summary>
+    protected virtual void CreateShortcut()
+    {
+        var launcherExeFullPath = StandardInstallContext.GetLauncherExeFullPath();
 
+        if (string.IsNullOrEmpty(launcherExeFullPath))
+        {
+            // 没有可以启动的程序，无法创建快捷方式
+            return;
+        }
+
+        var name = StandardInstallContext.DisplayProductName;
+        var workDir = StandardInstallContext.MainInstallPath;
+
+        // 默认应该放在公共的桌面上，不能放在当前用户桌面上，因为安装包本身的权限不一定是当前用户
+        var shortcutFile = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+            $"{name}.lnk");
+        ShortcutHelper.CreateShortcut(shortcutFile, launcherExeFullPath, workDir);
+
+        // 可以考虑创建开始菜单快捷方式
+        string commonStartMenuPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
+        string programsPath = Path.Join(commonStartMenuPath, "Programs");
+        var displayProductFamily = StandardInstallContext.DisplayProductFamily;
+        var startMenuShortcutFolder = Path.Join(programsPath, displayProductFamily, $"{name}.lnk");
+        Directory.CreateDirectory(startMenuShortcutFolder);
+        var shortcutFileInStartMenu = Path.Join(startMenuShortcutFolder, $"{name}.lnk");
+        File.Copy(shortcutFile, shortcutFileInStartMenu, overwrite: true);
+    }
 
     #endregion
 

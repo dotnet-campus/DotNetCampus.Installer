@@ -35,12 +35,6 @@ public record StandardInstallContext
     public required string ProductName { get; init; }
 
     /// <summary>
-    /// 产品族名称，如 Microsoft。其大小关系为：
-    ///   公司名 -> 品牌名(产品族名称) -> 产品名
-    /// </summary>
-    public required string ProductFamily { get; init; }
-
-    /// <summary>
     /// 软件内部对用户显示的产品名称
     /// </summary>
     public string DisplayProductName
@@ -49,6 +43,23 @@ public record StandardInstallContext
         init => _displayProductName = value;
     }
     private readonly string? _displayProductName;
+
+    /// <summary>
+    /// 产品族名称，如 Microsoft。其大小关系为：
+    ///   公司名 -> 品牌名(产品族名称) -> 产品名
+    /// </summary>
+    public required string ProductFamily { get; init; }
+
+    /// <summary>
+    /// 对用户展示的产品族名称
+    /// </summary>
+    /// 如 ProductFamily 叫 dotnet campus，则 DisplayProductFamily 可以叫 DotNet 职业技术学苑
+    public string DisplayProductFamily
+    {
+        get => _displayProductFamily ?? ProductFamily;
+        init => _displayProductFamily = value;
+    }
+    private readonly string? _displayProductFamily;
 
     /// <summary>
     /// 应用版本号
@@ -174,11 +185,11 @@ public record StandardInstallContext
     }
 
     /// <summary>
-    /// 控制面板卸载器显示的发布者。默认使用 <see cref="ProductFamily"/>
+    /// 控制面板卸载器显示的发布者。默认使用 <see cref="DisplayProductFamily"/>
     /// </summary>
     public string UninstallDisplayPublisher
     {
-        get => _uninstallDisplayPublisher ?? ProductFamily;
+        get => _uninstallDisplayPublisher ?? DisplayProductFamily;
         set => _uninstallDisplayPublisher = value;
     }
     private string? _uninstallDisplayPublisher;
