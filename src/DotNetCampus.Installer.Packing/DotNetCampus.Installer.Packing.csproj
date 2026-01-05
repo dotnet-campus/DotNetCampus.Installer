@@ -8,7 +8,9 @@
 
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+    <!-- 暂时还是空白的项目 -->
+    <!-- <GeneratePackageOnBuild>True</GeneratePackageOnBuild> -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -77,8 +77,11 @@ public record StandardInstallContext
     private DirectoryInfo? _workingFolder;
 
     /// <summary>
-    /// 安装内容的资源信息
+    /// 安装内容的资源信息。如果安装内容比较大，十分推荐使用 Overlay 方式存放安装内容。这里存放的是放在嵌入资源里面的安装内容。由于 PE 文件限制，这里只能存放小于 2 GB 的安装内容
     /// </summary>
+    /// <remarks>
+    /// 如需获取 Overlay 内容，请使用 <see cref="GetOverlayDirectoryArchive"/> 方法获取
+    /// </remarks>
     public required AssemblyManifestResourceInfo? ContentResourceAssetsInfo { get; init; }
 
     /// <summary>
@@ -209,6 +212,12 @@ public record StandardInstallContext
     /// 将放在 PE 文件的 Overlay 部分的安装器内容作为目录归档读取出来
     /// </summary>
     /// <returns></returns>
+    /// <remarks>
+    /// 约定：
+    /// - 安装包里面的放入到最终安装路径的内容，应该是在 `Packing\` 相对路径下的内容
+    /// - 用完即丢的临时文件，应该是在 `Temp\` 相对路径下的内容
+    /// - 安装包本身需要依赖的运行时文件，直接放在根目录下。比如使用 Avalonia UI 的安装包，需要放置 Avalonia 相关的 DLL 文件在根目录下，如 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件
+    /// </remarks>
     public async Task<ReadOnlyDirectoryArchive?> GetOverlayDirectoryArchive()
     {
         if (_directoryArchive != null)

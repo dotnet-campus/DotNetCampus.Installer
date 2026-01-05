@@ -261,11 +261,46 @@ public abstract class StandardInstallerProgram : IDisposable
     #region 解压缩
 
     /// <summary>
-    /// 解压缩，将 <see cref="StandardInstallContext.ContentResourceAssetsInfo"/> 解压缩到安装路径下
+    /// 解压缩，将放在 Overlay 里的内容或 <see cref="StandardInstallContext.ContentResourceAssetsInfo"/> 内容解压缩到安装路径下
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
     public virtual async Task Decompress()
     {
+        // 优先使用 Overlay 里的内容
+        // 优势在于： 可以一次做好安装包，之后不需要重复构建，只需要每次在模版 exe 添加 Overlay 内容就可以了
+        // 其次是可以突破 PE 文件的 2 GB 大小限制
+        // 再次是可以减少工作集的大小，在 Windows 里面，不会加载 Overlay 里的内容到内存中
+        // 但带来的缺点是杀毒软件会扫描更久一点，且最好是添加数字签名，否则杀毒软件会误报。数字签名将放在 Overlay 之后，因此需要先添加 Overlay 内容，让数字签名作为最后步骤
+        var directoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive();
+        if (directoryArchive is not null)
+        {
+            Logger.WriteLog($"Decompress from Overlay to '{StandardInstallContext.MainInstallPath}'");
+
+            // 按照约定，取 Packing\ 路径下的内容进行解压缩
+            bool anyPackingContent = false;
+            foreach (var directoryArchiveEntryFile in directoryArchive.EntryFileList)
+            {
+                const string packingPrefix = @"Packing\";
+                if (directoryArchiveEntryFile.RelativePath.StartsWith(packingPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    var relativePath = directoryArchiveEntryFile.RelativePath.Substring(packingPrefix.Length);
+                    var outputFile = new FileInfo( Path.Join(StandardInstallContext.MainInstallPath, relativePath));
+
+                    outputFile.Directory?.Create();
+
+                    await directoryArchiveEntryFile.SaveToFileAsync(outputFile);
+
+                    anyPackingContent = true;
+                }
+            }
+
+            if (!anyPackingContent)
+            {
+                // 没有任何加入到安装包里的内容
+                throw new InvalidOperationException();
+            }
+        }
+
         var contentResourceAssetsInfo = StandardInstallContext.ContentResourceAssetsInfo;
         if (contentResourceAssetsInfo is null)
         {
@@ -415,7 +450,7 @@ public abstract class StandardInstallerProgram : IDisposable
         var size = StandardInstallContext.UninstallEstimatedSize;
         if (size is null)
         {
-
+            // 可以考虑统计一下安装目录的大小，将其作为安装之后的体积
         }
 
         if (size is not null)
