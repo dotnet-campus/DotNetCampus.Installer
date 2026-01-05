@@ -66,6 +66,19 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
             }
         }
 
+        if (FolderList is not null)
+        {
+            foreach (var folder in FolderList)
+            {
+                foreach (var file in Directory.EnumerateFiles(folder,"*",SearchOption.AllDirectories))
+                {
+                    var relativePath = Path.GetRelativePath(folder, file);
+                    var fileInfo = new FileInfo(file);
+                    fileList.Add(new DirectoryArchiveFileInfo(relativePath, fileInfo));
+                }
+            }
+        }
+
         var compressWorkingFolder = Directory.CreateDirectory(Path.Join(workingFolder, "Compress"));
         await DirectoryArchive.CompressAsync(fileList, archiveFile, compressWorkingFolder);
 
