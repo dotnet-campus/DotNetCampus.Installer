@@ -30,6 +30,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{4F9DEAE5-078F-E77A-2E4A-FEB6FFE226FF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCampus.Installer.AvaloniaSample", "src\DotNetCampus.Installer.AvaloniaSample\DotNetCampus.Installer.AvaloniaSample.csproj", "{1F548C4B-84A2-4A05-86D4-81932E78C942}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2FF4CCDF-4B3F-43DE-9EB1-40557C739937} = {2FF4CCDF-4B3F-43DE-9EB1-40557C739937}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCampus.Installer.Lib.Tests", "src\DotNetCampus.Installer.Lib.Tests\DotNetCampus.Installer.Lib.Tests.csproj", "{E169914C-8D13-E977-8D4C-A603B5083B3B}"
 EndProject
