@@ -6,6 +6,7 @@ using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -37,20 +38,44 @@ internal class Program
         // 先解压缩资产文件，确保在 Avalonia 初始化前完成
         // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
 
+        // 以下是采用嵌入程序集的方式存放。这样的方式的缺点在于需要使用先使用 InstallerSevenZipTool 工具压缩的 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件的资源
         var context = installerProgram.StandardInstallContext;
-        var assemblyManifestResourceInfo = new AssemblyManifestResourceInfo(Assembly.GetExecutingAssembly(), "DotNetCampus.Installer.AvaloniaSample.Assets.SkiaX86.assets");
-        using (var stream = assemblyManifestResourceInfo.GetManifestResourceStream())
+        //var assemblyManifestResourceInfo = new AssemblyManifestResourceInfo(Assembly.GetExecutingAssembly(), "DotNetCampus.Installer.AvaloniaSample.Assets.SkiaX86.assets");
+        //using (var stream = assemblyManifestResourceInfo.GetManifestResourceStream())
+        //{
+        //    var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
+
+        //    DirectoryArchive.Decompress(stream, Directory.CreateDirectory(libFolder));
+
+        //    var libSkiaSharpFile = Path.Join(libFolder, "libSkiaSharp.dll");
+        //    var libHarfBuzzSharpFile = Path.Join(libFolder, "libHarfBuzzSharp.dll");
+
+        //    NativeLibrary.Load(libSkiaSharpFile);
+        //    NativeLibrary.Load(libHarfBuzzSharpFile);
+        //}
+
+        // 以下是从 PE 的 Overlay 中解压缩文件的方式
+        // 调试下，可先通过 InstallerCreateTool 工具，将 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件写入 Overlay 中
+        var directoryArchive = context.GetOverlayDirectoryArchive()
+            // 这里强行异步转同步，而不是 async 的原因是为了避免弄坏 STAThread 特性
+            // https://github.com/dotnet/runtime/issues/73099
+            .Result;
+        if (directoryArchive is null)
         {
-            var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
-
-            DirectoryArchive.Decompress(stream, Directory.CreateDirectory(libFolder));
-
-            var libSkiaSharpFile = Path.Join(libFolder, "libSkiaSharp.dll");
-            var libHarfBuzzSharpFile = Path.Join(libFolder, "libHarfBuzzSharp.dll");
-
-            NativeLibrary.Load(libSkiaSharpFile);
-            NativeLibrary.Load(libHarfBuzzSharpFile);
+            throw new InvalidOperationException($"未能从 PE 文件读取到 Overlay 内容，请确保打包工具正确写入文件");
         }
+
+        var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
+
+        var libSkiaSharp = directoryArchive.EntryFileList.First(t => t.RelativePath == "libSkiaSharp.dll");
+        var libSkiaSharpOutput = Path.Join(libFolder, "libSkiaSharp.dll");
+        libSkiaSharp.SaveToFileAsync(new FileInfo(libSkiaSharpOutput)).Wait();
+        NativeLibrary.Load(libSkiaSharpOutput);
+
+        var libHarfBuzzSharp = directoryArchive.EntryFileList.First(t => t.RelativePath == "libHarfBuzzSharp.dll");
+        var libHarfBuzzSharpOutput = Path.Join(libFolder, "libHarfBuzzSharp.dll");
+        libHarfBuzzSharp.SaveToFileAsync(new FileInfo(libHarfBuzzSharpOutput)).Wait();
+        NativeLibrary.Load(libHarfBuzzSharpOutput);
 
         var returnResult = RunAvalonia(args, installerProgram);
 

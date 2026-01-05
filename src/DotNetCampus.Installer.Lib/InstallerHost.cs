@@ -134,16 +134,16 @@ public class InstallerHost
     /// 开始安装
     /// </summary>
     /// <param name="context"></param>
-    protected virtual void Install(InstallContext context)
+    protected virtual async Task Install(InstallContext context)
     {
-        InstallByIndependentInstallerProcess(context);
+        await InstallByIndependentInstallerProcess(context);
     }
 
     /// <summary>
     /// 通过独立的安装器进程来安装
     /// </summary>
     /// <param name="context"></param>
-    protected void InstallByIndependentInstallerProcess(InstallContext context)
+    protected async Task InstallByIndependentInstallerProcess(InstallContext context)
     {
         var workingFolder = _configuration.WorkingFolder;
         string installerApplicationFile;
@@ -159,7 +159,7 @@ public class InstallerHost
         else
 #endif
         {
-            installerApplicationFile = ExtractInstallerAssets();
+            installerApplicationFile = await ExtractInstallerAssets();
         }
 
         List<string> argumentList =
@@ -197,7 +197,7 @@ public class InstallerHost
         Environment.Exit(process.ExitCode);
     }
 
-    private string ExtractInstallerAssets()
+    private async Task<string> ExtractInstallerAssets()
     {
         if (_configuration.InstallerResourceAssetsInfo is null)
         {
@@ -208,7 +208,8 @@ public class InstallerHost
         var installerResourceAssetsInfo = _configuration.InstallerResourceAssetsInfo.Value;
         using var assetsStream = installerResourceAssetsInfo.GetManifestResourceStream();
         var resourceAssetsFolder = Directory.CreateDirectory(Path.Join(workingFolder.FullName, installerResourceAssetsInfo.ManifestResourceName));
-        DirectoryArchive.Decompress(assetsStream, resourceAssetsFolder);
+
+        await DirectoryArchive.DecompressAsync(assetsStream, resourceAssetsFolder);
 
         // 带界面的安装包界面程序
         var installerApplicationFile = Path.Join(resourceAssetsFolder.FullName, _configuration.InstallerRelativePath);

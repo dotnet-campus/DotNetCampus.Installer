@@ -38,19 +38,19 @@ public class InstallContext
         }
     }
 
-    /// <summary>
-    /// 解压缩安装内容资源
-    /// </summary>
-    public void DecompressContentResource(DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
-    {
-        if (ContentResourceAssetsInfo is null)
-        {
-            throw new InvalidOperationException();
-        }
+    ///// <summary>
+    ///// 解压缩安装内容资源
+    ///// </summary>
+    //public void DecompressContentResource(DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
+    //{
+    //    if (ContentResourceAssetsInfo is null)
+    //    {
+    //        throw new InvalidOperationException();
+    //    }
 
-        using var manifestResourceStream = ContentResourceAssetsInfo.Value.GetManifestResourceStream();
-        DirectoryArchive.Decompress(manifestResourceStream, outputFolder, progress);
-    }
+    //    using var manifestResourceStream = ContentResourceAssetsInfo.Value.GetManifestResourceStream();
+    //    DirectoryArchive.Decompress(manifestResourceStream, outputFolder, progress);
+    //}
 
     /// <summary>
     /// 创建一个快捷方式

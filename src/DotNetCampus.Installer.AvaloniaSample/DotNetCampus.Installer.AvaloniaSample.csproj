@@ -42,5 +42,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
+    <ProjectReference Include="..\InstallerCreateTool\InstallerCreateTool.csproj" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 </Project>

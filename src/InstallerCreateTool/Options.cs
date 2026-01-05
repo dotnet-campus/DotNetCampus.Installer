@@ -4,14 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using DotNetCampus.Cli;
 using DotNetCampus.Cli.Compiler;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace InstallerCreateTool;
 
-[Command("boost")]
-internal class Options:ICommandHandler
+[Command("build boost")]
+internal class Options : ICommandHandler
 {
     /// <summary>
     /// 是否强行使用 UTF-8 编码作为控制台输出

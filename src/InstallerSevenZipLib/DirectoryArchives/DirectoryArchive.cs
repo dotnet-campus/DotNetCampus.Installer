@@ -130,7 +130,7 @@ public static partial class DirectoryArchive
     /// <param name="archiveFileStream"></param>
     /// <param name="outputFolder"></param>
     /// <param name="progress"></param>
-    [Obsolete("请使用异步的方法")]
+    [Obsolete("请使用异步的方法", error: true)]
     public static void Decompress(Stream archiveFileStream, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var directoryArchiveProxyOutputStream = new DirectoryArchiveProxyOutputStream(outputFolder);
@@ -401,12 +401,13 @@ public static partial class DirectoryArchive
     {
         await using var archiveFileStream = archiveFileInfo.OpenRead();
 
-        progress ??= new DirectoryArchiveDecompressProgress(shouldIgnore: true);
         await DecompressAsync(archiveFileStream, outputFolder, progress);
     }
 
-    public static async Task DecompressAsync(Stream archiveFileStream, DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress progress)
+    public static async Task DecompressAsync(Stream archiveFileStream, DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress? progress = null)
     {
+        progress ??= new DirectoryArchiveDecompressProgress(shouldIgnore: true);
+
         var header = await DecompressDirectoryArchiveHeaderAsync(archiveFileStream);
         var fileBlockList = header.FileBlockList;
         var contentPosition = header.ContentPosition;
@@ -597,6 +598,8 @@ public static partial class DirectoryArchive
 
         public async Task SaveToFileAsync(FileInfo outputFile, IProgress<ProgressReport>? progress = null)
         {
+            outputFile.Directory?.Create();
+
             await using var outputFileStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
             await CopyToAsync(outputFileStream, progress);
         }

@@ -107,7 +107,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// <summary>
     /// 安装
     /// </summary>
-    public virtual Task InstallAsync()
+    public virtual async Task InstallAsync()
     {
         // 安装过程：
         // 1. 清理旧版本
@@ -129,12 +129,10 @@ public abstract class StandardInstallerProgram : IDisposable
         Logger.SetLogFile(logFile);
 
         // 2. 解压缩文件到安装路径
-        Decompress();
+        await Decompress();
 
         // 3. 写注册表和快捷方式
         WriteRegister();
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -266,7 +264,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// 解压缩，将 <see cref="StandardInstallContext.ContentResourceAssetsInfo"/> 解压缩到安装路径下
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    public virtual void Decompress()
+    public virtual async Task Decompress()
     {
         var contentResourceAssetsInfo = StandardInstallContext.ContentResourceAssetsInfo;
         if (contentResourceAssetsInfo is null)
@@ -276,7 +274,7 @@ public abstract class StandardInstallerProgram : IDisposable
 
         var mainInstallPath = StandardInstallContext.MainInstallPath;
         using var stream = contentResourceAssetsInfo.Value.GetManifestResourceStream();
-        DirectoryArchive.Decompress(stream,
+        await DirectoryArchive.DecompressAsync(stream,
             Directory.CreateDirectory(mainInstallPath));
     }
 
