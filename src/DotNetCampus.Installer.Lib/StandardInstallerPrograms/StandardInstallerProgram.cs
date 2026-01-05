@@ -285,7 +285,7 @@ public abstract class StandardInstallerProgram : IDisposable
                 if (directoryArchiveEntryFile.RelativePath.StartsWith(packingPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     var relativePath = directoryArchiveEntryFile.RelativePath.Substring(packingPrefix.Length);
-                    var outputFile = new FileInfo( Path.Join(StandardInstallContext.MainInstallPath, relativePath));
+                    var outputFile = new FileInfo(Path.Join(StandardInstallContext.MainInstallPath, relativePath));
 
                     outputFile.Directory?.Create();
 
@@ -522,6 +522,18 @@ public abstract class StandardInstallerProgram : IDisposable
         string iconFile = "")
     {
         ShortcutHelper.CreateShortcut(lnkFilePath, targetPath, workDir, args, iconFile);
+    }
+
+    /// <summary>
+    /// 降权启动。默认安装包使用管理员权限启动，如果此时有某些应用程序需要以普通用户权限启动，可以使用此方法启动。此方法将取 explorer.exe 的权限启动新进程，从而达到降权启动的目的
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="arguments"></param>
+    /// <returns></returns>
+    /// 此方法仅仅只是为了方便开发者调用
+    protected bool StartProcessWithShellProcessToken(string fileName, string? arguments = null)
+    {
+        return ProcessRunner.StartProcessWithShellProcessToken(fileName, arguments, Logger);
     }
 
     #endregion
