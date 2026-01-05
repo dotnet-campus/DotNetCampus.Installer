@@ -491,7 +491,7 @@ public abstract class StandardInstallerProgram : IDisposable
         // 默认应该放在公共的桌面上，不能放在当前用户桌面上，因为安装包本身的权限不一定是当前用户
         var shortcutFile = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
             $"{name}.lnk");
-        ShortcutHelper.CreateShortcut(shortcutFile, launcherExeFullPath, workDir);
+        CreateShortcut(shortcutFile, launcherExeFullPath, workDir);
 
         // 可以考虑创建开始菜单快捷方式
         string commonStartMenuPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
@@ -504,6 +504,25 @@ public abstract class StandardInstallerProgram : IDisposable
     }
 
     #endregion
+
+    #endregion
+
+    #region 辅助方法
+
+    /// <summary>
+    /// 创建快捷方式
+    /// </summary>
+    /// <param name="lnkFilePath"></param>
+    /// <param name="targetPath"></param>
+    /// <param name="workDir"></param>
+    /// <param name="args"></param>
+    /// <param name="iconFile"></param>
+    /// 此方法仅仅只是为了方便开发者调用
+    protected void CreateShortcut(string lnkFilePath, string targetPath, string workDir, string args = "",
+        string iconFile = "")
+    {
+        ShortcutHelper.CreateShortcut(lnkFilePath, targetPath, workDir, args, iconFile);
+    }
 
     #endregion
 
