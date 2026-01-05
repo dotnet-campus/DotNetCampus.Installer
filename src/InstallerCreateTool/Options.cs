@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetCampus.Cli;
 using DotNetCampus.Cli.Compiler;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace InstallerCreateTool;
 
-[Command("pack")]
-internal class Options
+[Command("boost")]
+internal class Options:ICommandHandler
 {
     /// <summary>
     /// 是否强行使用 UTF-8 编码作为控制台输出
@@ -51,4 +54,64 @@ internal class Options
     /// </summary>
     [Option()]
     public string? SplashScreenFilePath { get; init; }
+
+    public async Task<int> RunAsync()
+    {
+        var option = this;
+
+        if (option.ForceUtf8ConsoleOutput is true)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+        }
+
+        var installerOutputFolder = option.InstallerOutputFolder;
+
+        var installerBoostProjectFolder = option.InstallerBoostProjectFolderPath;
+        var installerBoostProjectName = option.InstallerBoostProjectName;
+
+        var installerBoostProjectPath = Path.Join(installerBoostProjectFolder, installerBoostProjectName);
+
+        var installerIconFilePath = option.InstallerIconFilePath;
+        if (File.Exists(installerIconFilePath))
+        {
+            File.Copy(installerIconFilePath, Path.Join(installerBoostProjectFolder, "Assets", "icon.ico"));
+        }
+
+        var splashScreenFilePath = option.SplashScreenFilePath;
+        if (File.Exists(splashScreenFilePath))
+        {
+            File.Copy(splashScreenFilePath, Path.Join(installerBoostProjectFolder, "Assets", "SplashScreen.png"));
+        }
+
+        Console.WriteLine($"开始制作安装包资产文件");
+
+        var resourceAssetsName = "Resource.assets";
+        var resourceAssetsFile = Path.Join(installerBoostProjectFolder, "Assets", resourceAssetsName);
+
+        await DirectoryArchive.CompressAsync(new DirectoryInfo(option.PackingFolder), new FileInfo(resourceAssetsFile), Directory.CreateDirectory(Path.Join(Path.GetTempPath(), $"Installer_{Path.GetRandomFileName()}")));
+
+        Console.WriteLine($"完成制作安装包资产文件");
+
+        Console.WriteLine($"开始发布安装包 Boost 项目 {installerBoostProjectPath}");
+
+        List<string> argumentList =
+        [
+            "publish",
+            "-r", "win-x86",
+            "-tl:off",
+        ];
+        if (!string.IsNullOrEmpty(installerOutputFolder))
+        {
+            argumentList.Add("-o");
+            argumentList.Add(installerOutputFolder);
+        }
+        argumentList.Add(installerBoostProjectPath);
+
+        var process = Process.Start("dotnet", argumentList);
+        process.WaitForExit();
+
+        Console.WriteLine("打包完成");
+
+        return 0;
+    }
 }

@@ -7,7 +7,14 @@
     <Nullable>enable</Nullable>
 
     <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.CommandLine.Compiler</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.Cli.Compiler</InterceptorsNamespaces>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
