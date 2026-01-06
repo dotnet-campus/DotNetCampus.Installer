@@ -71,7 +71,6 @@ public static class EnvironmentChecker
             case EnvironmentCheckResultType.Passed:
                 // 正常的 dotnet core 依赖环境正常
                 return true;
-                break;
             case EnvironmentCheckResultType.FailedWithObsoleteOs:
                 PInvoke.MessageBox(HWND.Null, $"不支持 Win7 以下系统，当前系统版本 {Environment.OSVersion}", "系统版本过低",
                     MESSAGEBOX_STYLE.MB_OK);
