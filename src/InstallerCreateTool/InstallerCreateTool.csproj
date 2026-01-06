@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.CommandLine.Compiler</InterceptorsNamespaces>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.Cli.Compiler</InterceptorsNamespaces>
   </PropertyGroup>
 
