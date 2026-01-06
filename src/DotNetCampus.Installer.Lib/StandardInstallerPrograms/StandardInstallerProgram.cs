@@ -497,7 +497,7 @@ public abstract class StandardInstallerProgram : IDisposable
         string commonStartMenuPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
         string programsPath = Path.Join(commonStartMenuPath, "Programs");
         var displayProductFamily = StandardInstallContext.DisplayProductFamily;
-        var startMenuShortcutFolder = Path.Join(programsPath, displayProductFamily, $"{name}.lnk");
+        var startMenuShortcutFolder = Path.Join(programsPath, displayProductFamily);
         Directory.CreateDirectory(startMenuShortcutFolder);
         var shortcutFileInStartMenu = Path.Join(startMenuShortcutFolder, $"{name}.lnk");
         File.Copy(shortcutFile, shortcutFileInStartMenu, overwrite: true);
