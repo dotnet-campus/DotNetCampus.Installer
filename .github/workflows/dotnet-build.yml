@@ -1,7 +1,6 @@
 ﻿name: DotNetBuild
 
 on: [pull_request]
-run-name: '${{ github.event.head_commit.message }}'
 
 jobs:
   build:
