@@ -34,5 +34,7 @@ public static class ShortcutHelper
         shellLinkW->QueryInterface(out IPersistFile* persistFile);
         //persistFile->SaveCompleted(lnkFilePath);
         persistFile->Save(lnkFilePath, false);
+
+        shellLinkW->Release();
     }
 }
