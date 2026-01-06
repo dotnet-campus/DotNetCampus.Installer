@@ -83,14 +83,12 @@ public class DirectoryArchiveTest
     public async Task TestMethod2()
     {
         // 先尝试制造垃圾
-        var testFolder = @"F:\Temp\DirectoryArchive2";
+        var testFolder = Path.Join(AppContext.BaseDirectory, $"Test_{Path.GetRandomFileName()}");
+        Directory.CreateDirectory(testFolder);
+        var testInputFolder = Path.Join(testFolder, $"File");
+        Directory.CreateDirectory(testInputFolder);
 
-        if (!Directory.Exists(testFolder))
-        {
-            return;
-        }
-
-        if (!Directory.EnumerateFiles(testFolder).Any())
+        if (!Directory.EnumerateFiles(testInputFolder).Any())
         {
             var fileCount = 200;
             var fileLength = 1024 * 1024 * 10; // 10 MB
@@ -100,7 +98,7 @@ public class DirectoryArchiveTest
 
             for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
             {
-                var archiveFile = Path.Join(testFolder, $"Test{fileIndex}.archive");
+                var archiveFile = Path.Join(testInputFolder, $"Test{fileIndex}.archive");
                 if (!File.Exists(archiveFile))
                 {
                     using (var fileStream = File.Create(archiveFile))
@@ -115,12 +113,13 @@ public class DirectoryArchiveTest
             }
         }
 
-        var outputFileInfo = new FileInfo("1.assets");
-        var workingFolder = Directory.CreateDirectory(@"C:\lindexi\Work\DirectoryArchiveWork");
+        var outputFileInfo = new FileInfo(Path.Join(testFolder, "Output.assets"));
+        var workingFolder = Directory.CreateDirectory(Path.Join(testFolder, "Working"));
 
-        await DirectoryArchive.CompressAsync(new DirectoryInfo(testFolder), outputFileInfo, workingFolder);
+        await DirectoryArchive.CompressAsync(new DirectoryInfo(testInputFolder), outputFileInfo, workingFolder);
 
-        var outputFolder = Path.Join(AppContext.BaseDirectory, "Output");
+        var outputFolder = Path.Join(testFolder, "Output");
+
         if (Directory.Exists(outputFolder))
         {
             Directory.Delete(outputFolder, true);
@@ -143,7 +142,7 @@ public class DirectoryArchiveTest
 
         await DirectoryArchive.DecompressAsync(outputFileInfo, new DirectoryInfo(outputFolder), progress);
 
-        await AssetsDirectoryEqual(testFolder, outputFolder);
+        await AssetsDirectoryEqual(testInputFolder, outputFolder);
 
         var log = logStringBuilder.ToString();
         Assert.IsNotEmpty(log);
