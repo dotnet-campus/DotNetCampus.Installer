@@ -21,8 +21,8 @@ internal static class ShellLinkProvider
     private static unsafe T* CreateCom<T>(in Guid clsid)
         where T : unmanaged
     {
-        int hr = PInvoke.CoCreateInstance<T>(in clsid, /* No aggregation */ null, CLSCTX.CLSCTX_INPROC_SERVER, out var ptr);
-        Marshal.ThrowExceptionForHR(hr);
+        var hr = PInvoke.CoCreateInstance<T>(in clsid, /* No aggregation */ null, CLSCTX.CLSCTX_INPROC_SERVER, out var ptr);
+        hr.ThrowOnFailure();
 
         return ptr;
     }
