@@ -8,6 +8,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetCampus.Installer.Lib.Logging;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.Utils.PEOverlays;
@@ -17,7 +18,7 @@ namespace DotNetCampus.Installer.Lib.Utils.PEOverlays;
 /// </summary>
 public class PEOverlayContentReader
 {
-    public async Task<OverlayInstallerContentInfo?> ReadOverlayInstallerContent(FileInfo peFile)
+    public async Task<OverlayInstallerContentInfo?> ReadOverlayInstallerContent(FileInfo peFile, InstallerLogger logger)
     {
         var fileStream = new FileStream(peFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
@@ -81,7 +82,7 @@ public class PEOverlayContentReader
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            logger.WriteLog($"PEOverlayContentReader ReadOverlayInstallerContent Fail. {e}");
             // 要是出现异常了，那就应该释放，防止文件句柄泄漏
             // 如果没有异常，则交给上层业务去处理
             await fileStream.DisposeAsync();

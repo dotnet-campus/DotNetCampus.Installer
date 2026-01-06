@@ -268,7 +268,7 @@ public record StandardInstallContext
         var reader = new PEOverlayContentReader();
         var processPath = Environment.ProcessPath;
         Debug.Assert(processPath != null);
-        return reader.ReadOverlayInstallerContent(new FileInfo(processPath));
+        return reader.ReadOverlayInstallerContent(new FileInfo(processPath), Logger);
     }
 
     /// <summary>
