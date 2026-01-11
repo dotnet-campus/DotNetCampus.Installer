@@ -8,11 +8,18 @@ namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 /// </summary>
 public class DirectoryArchiveDecompressProgress
 {
+    /// <summary>
+    /// 创建解压缩的进度条
+    /// </summary>
     public DirectoryArchiveDecompressProgress()
     {
         Progress = new InnerProgress(this);
     }
 
+    /// <summary>
+    /// 创建解压缩的进度条
+    /// </summary>
+    /// <param name="shouldIgnore">是否应该忽略，如果应该忽略则可以减少一些逻辑，提升可以忽略的性能。当业务端没有传入进度条感知的时候，可以设置这个参数为 false 用于框架内提升性能</param>
     internal DirectoryArchiveDecompressProgress(bool shouldIgnore)
     {
         ShouldIgnore = shouldIgnore;
@@ -28,7 +35,7 @@ public class DirectoryArchiveDecompressProgress
     }
 
     /// <summary>
-    /// 更新的频率
+    /// 更新的频率，默认每秒更新一次。防止更新过于频繁导致性能问题
     /// </summary>
     public TimeSpan UpdateFrequency { get; init; } = TimeSpan.FromSeconds(1);
 
@@ -76,6 +83,11 @@ public class DirectoryArchiveDecompressProgress
         TotalFileCount = totalFileCount;
     }
 
+    /// <summary>
+    /// 更新当前的正在解压缩的文件路径
+    /// </summary>
+    /// <param name="currentDecompressedPath"></param>
+    /// <returns></returns>
     internal IProgress<ProgressReport> UpdateCurrentDecompress(string currentDecompressedPath)
     {
         CurrentDecompressedProgressPercentage = 0;
@@ -84,6 +96,9 @@ public class DirectoryArchiveDecompressProgress
         return Progress;
     }
 
+    /// <summary>
+    /// 设置当前解压缩的文件完成
+    /// </summary>
     internal void SetCurrentDecompressFinish()
     {
         DecompressedFileCount++;
@@ -92,6 +107,9 @@ public class DirectoryArchiveDecompressProgress
         Updated?.Invoke(this, this);
     }
 
+    /// <summary>
+    /// 设置解压缩全部完成
+    /// </summary>
     internal void Finish()
     {
         Debug.Assert(DecompressedFileCount == TotalFileCount);
@@ -102,6 +120,9 @@ public class DirectoryArchiveDecompressProgress
         Updated?.Invoke(this, this);
     }
 
+    /// <summary>
+    /// 内部进度，用于对接压缩算法内部
+    /// </summary>
     class InnerProgress : IProgress<ProgressReport>
     {
         public InnerProgress(DirectoryArchiveDecompressProgress progress)
@@ -115,6 +136,7 @@ public class DirectoryArchiveDecompressProgress
 
         public void Report(ProgressReport value)
         {
+            // 压缩算法里面的通知非常频繁，需要进行频率限制
             if (_stopwatch.Elapsed < _progress.UpdateFrequency)
             {
                 // 频率限制为每秒一次

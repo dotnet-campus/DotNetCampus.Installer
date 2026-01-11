@@ -1,6 +1,7 @@
 ﻿using Microsoft.DotNet.Archive;
 
 using System.Buffers;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -20,6 +21,7 @@ public static partial class DirectoryArchive
     /// <param name="outputFileInfo"></param>
     /// <exception cref="Exception"></exception>
     [Obsolete("请使用异步的方法", error: true)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Compress(DirectoryInfo inputDirectoryInfo, FileInfo outputFileInfo)
     {
         using var outputFileStream = new FileStream(outputFileInfo.FullName, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
@@ -118,6 +120,7 @@ public static partial class DirectoryArchive
     /// <param name="outputFolder"></param>
     /// <param name="progress"></param>
     [Obsolete("请使用异步的方法", error: true)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Decompress(FileInfo archiveFileInfo, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var archiveFileStream = archiveFileInfo.OpenRead();
@@ -131,6 +134,7 @@ public static partial class DirectoryArchive
     /// <param name="outputFolder"></param>
     /// <param name="progress"></param>
     [Obsolete("请使用异步的方法", error: true)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Decompress(Stream archiveFileStream, DirectoryInfo outputFolder, IProgress<ProgressReport>? progress = null)
     {
         using var directoryArchiveProxyOutputStream = new DirectoryArchiveProxyOutputStream(outputFolder);
@@ -418,6 +422,13 @@ public static partial class DirectoryArchive
         await DecompressAsync(archiveFileStream, outputFolder, progress);
     }
 
+    /// <summary>
+    /// 解压缩存档 Stream 到文件夹
+    /// </summary>
+    /// <param name="archiveFileStream"></param>
+    /// <param name="outputFolder"></param>
+    /// <param name="progress"></param>
+    /// <returns></returns>
     public static async Task DecompressAsync(Stream archiveFileStream, DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress? progress = null)
     {
         progress ??= new DirectoryArchiveDecompressProgress(shouldIgnore: true);
