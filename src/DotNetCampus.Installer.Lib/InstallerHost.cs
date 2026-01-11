@@ -13,6 +13,7 @@ using DotNetCampus.Installer.Lib.EnvironmentCheckers;
 using DotNetCampus.Installer.Lib.Hosts;
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.Installer.Lib.SplashScreens;
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -24,6 +25,7 @@ namespace DotNetCampus.Installer.Lib;
 /// 安装器主机
 /// </summary>
 /// 此对象可以继承和重写里面的很多方法来实现自定义的安装器主机行为。默认情况下，都是将独立的安装器打包作为资源，启动的时候解压缩出来运行。默认的情况的方法会导致安装包启动速度比较慢，毕竟需要解压缩和被杀毒扫描。自定义安装器可以直接立刻运行，但要求 UI 界面安装程序能够支持 AOT 构建
+/// 但通常采用非 Boost 方式将使用 <see cref="StandardInstallerProgram"/> 标准安装过程，而不是采用主机方式
 public class InstallerHost
 {
     public static InstallerHostBuilder CreateBuilder()
@@ -71,7 +73,8 @@ public class InstallerHost
         else
         {
             var context = CreateInstallContext(IntPtr.Zero);
-            Install(context);
+            Install(context)
+                .Wait();
         }
 
         return 0;
@@ -105,7 +108,7 @@ public class InstallerHost
 
         var splashScreen = new SplashScreen(_configuration.SplashScreenFile);
 
-        splashScreen.Showed += (_, eventArgs) =>
+        splashScreen.Showed += (s, eventArgs) =>
         {
             // 等待欢迎界面启动完成了，再继续执行后续代码，确保欢迎窗口足够快显示
             var thread = new Thread(() =>
@@ -113,7 +116,7 @@ public class InstallerHost
                 try
                 {
                     var context = CreateInstallContext(eventArgs.SplashScreenWindowHandler);
-                    Install(context);
+                    _ = Install(context);
                 }
                 catch (Exception e)
                 {

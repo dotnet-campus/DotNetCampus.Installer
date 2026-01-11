@@ -21,10 +21,11 @@ using DotNetCampus.Installer.Lib.Logging;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
+#pragma warning disable CA1416 // 执行版本有 YY-Thunks 保底，不适用文档描述的要求版本号
+
 /// <summary>
 /// 标准安装器流程
 /// </summary>
-[SupportedOSPlatform("windows5.1.2600")]
 public abstract class StandardInstallerProgram : IDisposable
 {
     public abstract StandardInstallContext StandardInstallContext { get; }
