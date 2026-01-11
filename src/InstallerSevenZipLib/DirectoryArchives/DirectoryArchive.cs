@@ -282,7 +282,7 @@ public static partial class DirectoryArchive
         => "DNCSZLDA"u8;
 
     /// <summary>
-    /// 获取压缩后的文件块列表
+    /// 写入压缩后的文件块列表
     /// </summary>
     /// <returns></returns>
     private static Stream CompressFileBlockList(CompressProgressFile[] progressFileList)
