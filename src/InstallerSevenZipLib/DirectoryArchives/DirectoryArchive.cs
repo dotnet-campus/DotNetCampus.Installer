@@ -1,4 +1,6 @@
-﻿using Microsoft.DotNet.Archive;
+﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives.Exceptions;
+
+using Microsoft.DotNet.Archive;
 
 using System.Buffers;
 using System.ComponentModel;
@@ -476,7 +478,7 @@ public static partial class DirectoryArchive
 
         if (!header.SequenceEqual(CompressHeader))
         {
-            throw new ArgumentException();
+            throw new DirectoryArchiveHeaderNotMatchException(archiveFileStream, header, CompressHeader);
         }
 
         var reader = new StackallocStreamReader(archiveFileStream);
