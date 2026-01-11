@@ -12,6 +12,16 @@ public interface IDirectoryArchiveEntryFile
     DirectoryArchiveEntryRelativePath RelativePath { get; }
 
     /// <summary>
+    /// 压缩后的文件长度
+    /// </summary>
+    long CompressedFileLength { get; }
+
+    /// <summary>
+    /// 原始文件长度，未压缩前的长度
+    /// </summary>
+    long OriginFileLength { get; }
+
+    /// <summary>
     /// 解压缩后拷贝到目标流中
     /// </summary>
     /// <param name="destinationStream"></param>

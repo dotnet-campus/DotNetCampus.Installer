@@ -614,6 +614,16 @@ public static partial class DirectoryArchive
 
         public DirectoryArchiveEntryRelativePath RelativePath => FileBlock.RelativePath;
 
+        /// <summary>
+        /// 压缩后的文件长度
+        /// </summary>
+        public long CompressedFileLength => FileBlock.CompressedFileLength;
+
+        /// <summary>
+        /// 原始文件长度，未压缩前的长度
+        /// </summary>
+        public long OriginFileLength => FileBlock.OriginFileLength;
+
         public async Task CopyToAsync(Stream destinationStream, IProgress<ProgressReport>? progress = null)
         {
             var fileBlock = FileBlock;
