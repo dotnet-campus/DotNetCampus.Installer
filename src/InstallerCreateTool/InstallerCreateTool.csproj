@@ -7,13 +7,10 @@
     <Nullable>enable</Nullable>
 
     <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.Cli.Compiler</InterceptorsNamespaces>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Properties\**" />
-    <EmbeddedResource Remove="Properties\**" />
-    <None Remove="Properties\**" />
-  </ItemGroup>
+    <!--设置自动回滚，如果开发者有安装更新版本的，就自动使用新版本 -->
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
