@@ -2,9 +2,7 @@
 using DotNetCampus.Installer.Lib.SplashScreens;
 using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
-
 using Microsoft.Win32;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,10 +11,12 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
-
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using DotNetCampus.Cli;
+using DotNetCampus.Cli.Utils.Parsers;
+using DotNetCampus.Installer.Lib.Commandlines;
 using DotNetCampus.Installer.Lib.Logging;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
@@ -103,6 +103,77 @@ public abstract class StandardInstallerProgram : IDisposable
 
     #endregion
 
+    /// <summary>
+    /// 执行默认的命令行操作。比如调试或静默安装逻辑
+    /// </summary>
+    /// <returns></returns>
+    public virtual async Task<RunDefaultCommandLineResult> RunDefaultCommandLine(string[] args)
+    {
+        // 兼容默认的 NSIS 的静默安装命令参数
+        if (args.Length == 1 && args[0] == "/S")
+        {
+            // 静默安装的过程
+            var exitCode = 0;
+            try
+            {
+                await InstallAsync();
+            }
+            catch (Exception e)
+            {
+                // 出错了
+                try
+                {
+                    Logger.WriteLog($"Install Fail {e}");
+                }
+                catch
+                {
+                    // 记录日志也爆炸了，那真的啥都干不了
+                }
+
+                exitCode = -1;
+            }
+
+            return new RunDefaultCommandLineResult()
+            {
+                // 静默安装
+                ShouldExitsInstallerProcess = true,
+                ExitCode = exitCode,
+            };
+        }
+
+        var result = new RunDefaultCommandLineResult();
+
+        var commandLine = CommandLine.Parse(args);
+        _ = await commandLine.AddHandler(async (DebugShowInstallerContentOption option) =>
+            {
+                var directoryArchive = await this.StandardInstallContext.GetOverlayDirectoryArchive();
+
+                if (directoryArchive is null)
+                {
+                    Console.WriteLine($"Can not find overlay");
+                    result = new RunDefaultCommandLineResult()
+                    {
+                        ShouldExitsInstallerProcess = true,
+                        ExitCode = -1
+                    };
+                    return -1;
+                }
+
+                Console.WriteLine($"Show overlay content:");
+                for (var i = 0; i < directoryArchive.EntryFileList.Count; i++)
+                {
+                    var directoryArchiveEntryFile = directoryArchive.EntryFileList[i];
+                    Console.WriteLine($"[{i}] {directoryArchiveEntryFile.RelativePath} {directoryArchiveEntryFile.OriginFileLength}");
+                }
+
+                return 0;
+            })
+            .RunAsync();
+
+        return result;
+    }
+
+
     #region 安装
 
     /// <summary>
@@ -155,17 +226,20 @@ public abstract class StandardInstallerProgram : IDisposable
             if (oldVersion == currentVersion)
             {
                 // 给出提示，覆盖安装
-                PInvoke.MessageBox(GetMessageOwner(), "检测到系统中已安装相同版本的程序，安装程序将覆盖安装该版本。", StandardInstallContext.DisplayProductName,
+                PInvoke.MessageBox(GetMessageOwner(), "检测到系统中已安装相同版本的程序，安装程序将覆盖安装该版本。",
+                    StandardInstallContext.DisplayProductName,
                     MESSAGEBOX_STYLE.MB_ICONWARNING);
             }
             else
             {
                 // 如果能作为版本判断的话，用版本判断
-                if (Version.TryParse(oldVersion, out var oldVersionValue) && Version.TryParse(currentVersion, out var currentVersionValue))
+                if (Version.TryParse(oldVersion, out var oldVersionValue) &&
+                    Version.TryParse(currentVersion, out var currentVersionValue))
                 {
                     if (currentVersionValue < oldVersionValue)
                     {
-                        PInvoke.MessageBox(GetMessageOwner(), $"检测到系统中已安装更新版本 {oldVersion} 的程序，安装程序将降级已安装版本。", StandardInstallContext.DisplayProductName,
+                        PInvoke.MessageBox(GetMessageOwner(), $"检测到系统中已安装更新版本 {oldVersion} 的程序，安装程序将降级已安装版本。",
+                            StandardInstallContext.DisplayProductName,
                             MESSAGEBOX_STYLE.MB_ICONWARNING);
                     }
                 }
@@ -364,7 +438,8 @@ public abstract class StandardInstallerProgram : IDisposable
     {
         // 计算机\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node
         var softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", writable: false)!;
-        var productNameKey = softwareKey.OpenSubKey(@$"{StandardInstallContext.ProductFamily}\{StandardInstallContext.ProductName}");
+        var productNameKey =
+            softwareKey.OpenSubKey(@$"{StandardInstallContext.ProductFamily}\{StandardInstallContext.ProductName}");
         if (productNameKey != null)
         {
             return productNameKey.GetValue("version") as string;
@@ -415,8 +490,10 @@ public abstract class StandardInstallerProgram : IDisposable
                     {
                         break;
                     }
+
                     start = end + 1;
                 }
+
                 end++;
             }
 
@@ -446,9 +523,11 @@ public abstract class StandardInstallerProgram : IDisposable
             productUninstallKey.SetValue("DisplayIcon", icon, RegistryValueKind.String);
         }
 
-        productUninstallKey.SetValue("DisplayName", StandardInstallContext.UninstallDisplayName, RegistryValueKind.String);
+        productUninstallKey.SetValue("DisplayName", StandardInstallContext.UninstallDisplayName,
+            RegistryValueKind.String);
 
-        productUninstallKey.SetValue("DisplayVersion", StandardInstallContext.UninstallDisplayVersion, RegistryValueKind.String);
+        productUninstallKey.SetValue("DisplayVersion", StandardInstallContext.UninstallDisplayVersion,
+            RegistryValueKind.String);
 
         var size = StandardInstallContext.UninstallEstimatedSize;
         if (size is null)
@@ -461,7 +540,8 @@ public abstract class StandardInstallerProgram : IDisposable
             productUninstallKey.SetValue("EstimatedSize", size, RegistryValueKind.DWord);
         }
 
-        productUninstallKey.SetValue("Publisher", StandardInstallContext.UninstallDisplayPublisher, RegistryValueKind.String);
+        productUninstallKey.SetValue("Publisher", StandardInstallContext.UninstallDisplayPublisher,
+            RegistryValueKind.String);
 
         var uninstaller = StandardInstallContext.GetUninstallerFullPath();
         if (!string.IsNullOrEmpty(uninstaller))

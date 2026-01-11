@@ -41,6 +41,14 @@ internal class Program
             return -1;
         }
 
+        var runResult = installerProgram.RunDefaultCommandLine(args)
+            .Result;
+        if (runResult.ShouldExitsInstallerProcess)
+        {
+            // 如果跑了默认命令行，发现应该结束了，那就结束
+            return runResult.ExitCode;
+        }
+
         // 先解压缩资产文件，确保在 Avalonia 初始化前完成
         // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
 

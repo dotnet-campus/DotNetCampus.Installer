@@ -27,8 +27,3 @@ public class InstallOptions
 
     public const string SplashScreenWindowHandlerOptionName = "SplashScreenWindowHandler";
 }
-
-[Command("debug show-content")]
-public class DebugShowInstallerContentOption
-{
-}
