@@ -1,6 +1,7 @@
 ﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives.Exceptions;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -22,16 +23,14 @@ public class ReadOnlyDirectoryArchive : IDisposable, IAsyncDisposable
     public required IReadOnlyList<IDirectoryArchiveEntryFile> EntryFileList { get; init; }
 
     /// <summary>
-    /// 获取指定路径的文件条目。如果只是想尝试获取，请自行遍历 <see cref="EntryFileList"/> 进行查找。此方法会在未找到时抛出异常。
+    /// 获取指定路径的文件条目。如果只是想尝试获取，请使用 <see cref="TryGetEntryFile"/> 进行查找。此方法会在未找到时抛出异常。
     /// </summary>
     /// <param name="relativePath"></param>
     /// <returns></returns>
     /// <exception cref="DirectoryArchiveEntryFileNotFoundException"></exception>
     public IDirectoryArchiveEntryFile GetEntryFile(DirectoryArchiveEntryRelativePath relativePath)
     {
-        var entryFile = EntryFileList.FirstOrDefault(t=>t.RelativePath.Equals(relativePath));
-
-        if (entryFile == null)
+        if (!TryGetEntryFile(relativePath, out var entryFile))
         {
             throw new DirectoryArchiveEntryFileNotFoundException(relativePath)
             {
@@ -40,6 +39,19 @@ public class ReadOnlyDirectoryArchive : IDisposable, IAsyncDisposable
         }
 
         return entryFile;
+    }
+
+    /// <summary>
+    /// 尝试获取指定路径的文件条目
+    /// </summary>
+    /// <param name="relativePath"></param>
+    /// <param name="entryFile"></param>
+    /// <returns></returns>
+    public bool TryGetEntryFile(DirectoryArchiveEntryRelativePath relativePath, [NotNullWhen(true)]
+        out IDirectoryArchiveEntryFile? entryFile)
+    {
+        entryFile = EntryFileList.FirstOrDefault(t => t.RelativePath.Equals(relativePath));
+        return entryFile != null;
     }
 
     /// <summary>
