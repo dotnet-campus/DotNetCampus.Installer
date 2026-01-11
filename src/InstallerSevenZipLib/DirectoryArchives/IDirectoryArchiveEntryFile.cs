@@ -7,6 +7,8 @@ public interface IDirectoryArchiveEntryFile
     /// <summary>
     /// 相对的路径，可以认为是文件名
     /// </summary>
+    /// 由于这是主要用于安装包的，也就不怕 `..\` 之类的路径穿越投毒问题
+    /// 什么是路径穿越投毒？那就是在相对路径里面使用 `..\` 之类的路径，导致解压缩到不该解压缩的位置，从而覆盖系统文件等危险操作。在正常压缩软件里面，是应该拦截这种路径的，但是在安装包场景下，这种情况一般不会出现，即安装的包含内容都是由开发者完全控制的，开发者自己想不开想做这样的事情，那也只好顺着他的想法
     DirectoryArchiveEntryRelativePath RelativePath { get; }
 
     /// <summary>
