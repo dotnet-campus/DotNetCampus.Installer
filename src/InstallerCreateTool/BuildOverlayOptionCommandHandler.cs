@@ -35,7 +35,7 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
     [Option("Folder")]
     public string[]? FolderList { get; init; }
 
-    [Option("WorkingFolder")]
+    [Option()]
     public string? WorkingFolder { get; init; }
 
     public async Task<int> RunAsync()
@@ -50,7 +50,7 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
         await using var archiveFile = new FileStream(Path.Join(workingFolder, $"{Path.GetRandomFileName()}.assets"),
             FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 4096,
             // 关闭就删除，不用持续占用磁盘。用这个文件仅仅只是为了避免大量占用内存而已
-            FileOptions.DeleteOnClose 
+            FileOptions.DeleteOnClose
             // 异步操作
             | FileOptions.Asynchronous
             // 顺序扫描，大部分情况下都是顺序读写，设置这个选项可以提升性能
@@ -70,7 +70,7 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
         {
             foreach (var folder in FolderList)
             {
-                foreach (var file in Directory.EnumerateFiles(folder,"*",SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories))
                 {
                     var relativePath = Path.GetRelativePath(folder, file);
                     var fileInfo = new FileInfo(file);
