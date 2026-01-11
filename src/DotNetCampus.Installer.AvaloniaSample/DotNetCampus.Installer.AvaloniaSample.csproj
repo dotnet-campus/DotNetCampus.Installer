@@ -33,6 +33,7 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="DotNetCampus.CommandLine" Version="4.1.1" />
   </ItemGroup>
 
   <ItemGroup>
