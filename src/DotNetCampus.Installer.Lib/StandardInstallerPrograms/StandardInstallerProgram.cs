@@ -310,7 +310,7 @@ public abstract class StandardInstallerProgram : IDisposable
         }
 
         var mainInstallPath = StandardInstallContext.MainInstallPath;
-        using var stream = contentResourceAssetsInfo.Value.GetManifestResourceStream();
+        await using var stream = contentResourceAssetsInfo.Value.GetManifestResourceStream();
         await DirectoryArchive.DecompressAsync(stream,
             Directory.CreateDirectory(mainInstallPath));
     }

@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives.Exceptions;
+
+using System.Diagnostics;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -18,6 +20,27 @@ public class ReadOnlyDirectoryArchive : IDisposable, IAsyncDisposable
     /// 包含的文件列表
     /// </summary>
     public required IReadOnlyList<IDirectoryArchiveEntryFile> EntryFileList { get; init; }
+
+    /// <summary>
+    /// 获取指定路径的文件条目。如果只是想尝试获取，请自行遍历 <see cref="EntryFileList"/> 进行查找。此方法会在未找到时抛出异常。
+    /// </summary>
+    /// <param name="relativePath"></param>
+    /// <returns></returns>
+    /// <exception cref="DirectoryArchiveEntryFileNotFoundException"></exception>
+    public IDirectoryArchiveEntryFile GetEntryFile(DirectoryArchiveEntryRelativePath relativePath)
+    {
+        var entryFile = EntryFileList.FirstOrDefault(t=>t.RelativePath.Equals(relativePath));
+
+        if (entryFile == null)
+        {
+            throw new DirectoryArchiveEntryFileNotFoundException(relativePath)
+            {
+                EntryFileList = EntryFileList
+            };
+        }
+
+        return entryFile;
+    }
 
     /// <summary>
     /// 将整个目录存档解压缩到指定的文件夹中

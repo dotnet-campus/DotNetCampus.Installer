@@ -73,15 +73,18 @@ internal class Program
 
         var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
 
-        var libSkiaSharp = directoryArchive.EntryFileList.First(t => t.RelativePath == "libSkiaSharp.dll");
-        var libSkiaSharpOutput = Path.Join(libFolder, "libSkiaSharp.dll");
-        libSkiaSharp.SaveToFileAsync(new FileInfo(libSkiaSharpOutput)).Wait();
-        NativeLibrary.Load(libSkiaSharpOutput);
+        LoadNativeLibrary("libSkiaSharp.dll");
+        LoadNativeLibrary("libHarfBuzzSharp.dll");
 
-        var libHarfBuzzSharp = directoryArchive.EntryFileList.First(t => t.RelativePath == "libHarfBuzzSharp.dll");
-        var libHarfBuzzSharpOutput = Path.Join(libFolder, "libHarfBuzzSharp.dll");
-        libHarfBuzzSharp.SaveToFileAsync(new FileInfo(libHarfBuzzSharpOutput)).Wait();
-        NativeLibrary.Load(libHarfBuzzSharpOutput);
+        void LoadNativeLibrary(string libraryName)
+        {
+            var libraryEntryFile = directoryArchive.GetEntryFile(libraryName);
+            var libraryOutputPath = Path.Join(libFolder, libraryName);
+            libraryEntryFile.SaveToFileAsync(new FileInfo(libraryOutputPath))
+                // 强行异步转同步，而不是 async 的原因是为了避免弄坏 STAThread 特性
+                .Wait();
+            NativeLibrary.Load(libraryOutputPath);
+        }
 
         var returnResult = RunAvalonia(args, installerProgram);
 
