@@ -200,7 +200,7 @@ public static partial class DirectoryArchive
     // - RelativePathLength: Int32
     // - RelativePath: String
     // - FileContentOffset: Int64
-    // - FileLength 压缩后的文件长度: Int64
+    // - CompressedFileLength 压缩后的文件长度: Int64
     // 按照 FileBlock 顺序存放各个文件
     //
     // 压缩实现逻辑：
@@ -292,14 +292,20 @@ public static partial class DirectoryArchive
         long currentOffset = 0;
         foreach (CompressProgressFile compressProgressFile in progressFileList)
         {
-            var fileLength = compressProgressFile.CompressFileStream.Length;
+            var compressedFileLength = compressProgressFile.CompressFileStream.Length;
+            var originFileLength = compressProgressFile.FileInfo.FileInfo.Length;
+
             var fileBlock = new FileBlock()
             {
-                FileLength = fileLength,
+                // 压缩之后的内容的偏移量
                 FileContentOffset = currentOffset,
-                RelativePath = compressProgressFile.FileInfo.RelativePath
+                RelativePath = compressProgressFile.FileInfo.RelativePath,
+                CompressedFileLength = compressedFileLength,
+                OriginFileLength = originFileLength,
             };
-            currentOffset += fileLength;
+
+            // 更新下一个文件的偏移量，应该相对于压缩后的内容
+            currentOffset += compressedFileLength;
 
             WriteFileBlock(fileBlockMemoryStream, in fileBlock);
         }
@@ -320,7 +326,7 @@ public static partial class DirectoryArchive
             writer.WriteInt32(fileBlock.RelativePathLength);
             writer.WriteString(fileBlock.RelativePath, fileBlock.RelativePathLength);
             writer.WriteInt64(fileBlock.FileContentOffset);
-            writer.WriteInt64(fileBlock.FileLength);
+            writer.WriteInt64(fileBlock.CompressedFileLength);
         }
     }
 
@@ -339,6 +345,7 @@ public static partial class DirectoryArchive
         /// <summary>
         /// 整个 FileBlock 的长度。不包括此字段的长度
         /// </summary>
+        /// 此属性的作用是日常二进制数据设计的兼容设计，用于旧版本跳过不认识的字段。尽管在安装包的情况，必定不存在新旧版本兼容的问题，即数据为新版本生产但解析代码为旧版本的情况。只是设计习惯，保持一致性，才添加这个属性
         public int FileBlockLength
         {
             get
@@ -346,11 +353,13 @@ public static partial class DirectoryArchive
                 // - FileNameLength: Int32
                 // - FileName: String
                 // - FileContentOffset: Int64
-                // - FileLength: Int64
+                // - CompressedFileLength: Int64
+                // - OriginFileLength: Int64
                 int length = sizeof(int) // FileNameLength field
                              + RelativePathLength // FileName field
                              + sizeof(long) // FileContentOffset field
-                             + sizeof(long); // FileLength field
+                             + sizeof(long) // CompressedFileLength field
+                             + sizeof(long); // OriginFileLength field
                 return length;
             }
         }
@@ -385,9 +394,14 @@ public static partial class DirectoryArchive
         public required long FileContentOffset { get; init; }
 
         /// <summary>
-        /// 文件长度
+        /// 压缩后的文件长度
         /// </summary>
-        public required long FileLength { get; init; }
+        public required long CompressedFileLength { get; init; }
+
+        /// <summary>
+        /// 原始文件长度，未压缩前的长度
+        /// </summary>
+        public required long OriginFileLength { get; init; }
     }
 
     /// <summary>
@@ -432,7 +446,7 @@ public static partial class DirectoryArchive
 
             var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
             await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
-                fileBlock.FileLength, leaveOpen: true);
+                fileBlock.CompressedFileLength, leaveOpen: true);
             CompressionUtility.Decompress(fileCompressedStream, outputFileStream, progress.UpdateCurrentDecompress(outputFilePath));
 
             progress.SetCurrentDecompressFinish();
@@ -504,7 +518,8 @@ public static partial class DirectoryArchive
             var relativePathLength = reader.ReadInt32();
             var relativePath = reader.ReadString(relativePathLength);
             var fileContentOffset = reader.ReadInt64();
-            var fileLength = reader.ReadInt64();
+            var compressedFileLength = reader.ReadInt64();
+            var originFileLength = reader.ReadInt64();
 
             var expectedPosition = position + fileBlockLength;
             if (fileBlockStream.Position != expectedPosition)
@@ -517,7 +532,8 @@ public static partial class DirectoryArchive
                 RelativePathLength = relativePathLength,
                 RelativePath = relativePath,
                 FileContentOffset = fileContentOffset,
-                FileLength = fileLength
+                CompressedFileLength = compressedFileLength,
+                OriginFileLength = originFileLength,
             };
         }
 
@@ -572,6 +588,10 @@ public static partial class DirectoryArchive
         };
     }
 
+    /// <summary>
+    /// 每个压缩文件项
+    /// </summary>
+    /// 需要放在这里的原因是为了引用 FileBlock 和 DecompressDirectoryArchiveHeader 等不对外开放的类型
     class DirectoryArchiveEntryFile : IDirectoryArchiveEntryFile
     {
         public required DecompressDirectoryArchiveHeader Header { get; init; }
@@ -590,7 +610,7 @@ public static partial class DirectoryArchive
             var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
 
             await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
-                fileBlock.FileLength, leaveOpen: true);
+                fileBlock.CompressedFileLength, leaveOpen: true);
             progress ??= new NoneProgressReport();
 
             CompressionUtility.Decompress(fileCompressedStream, destinationStream, progress);
