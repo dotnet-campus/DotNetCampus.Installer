@@ -610,7 +610,7 @@ public static partial class DirectoryArchive
 
         private FileBlock FileBlock => Header.FileBlockList[FileBlockIndex];
 
-        public string RelativePath => FileBlock.RelativePath;
+        public DirectoryArchiveEntryRelativePath RelativePath => FileBlock.RelativePath;
 
         public async Task CopyToAsync(Stream destinationStream, IProgress<ProgressReport>? progress = null)
         {

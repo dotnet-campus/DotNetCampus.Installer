@@ -282,9 +282,10 @@ public abstract class StandardInstallerProgram : IDisposable
             foreach (var directoryArchiveEntryFile in directoryArchive.EntryFileList)
             {
                 const string packingPrefix = @"Packing\";
-                if (directoryArchiveEntryFile.RelativePath.StartsWith(packingPrefix, StringComparison.OrdinalIgnoreCase))
+                var entryRelativePath = directoryArchiveEntryFile.RelativePath.RelativePath;
+                if (entryRelativePath.StartsWith(packingPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    var relativePath = directoryArchiveEntryFile.RelativePath.Substring(packingPrefix.Length);
+                    var relativePath = entryRelativePath.Substring(packingPrefix.Length);
                     var outputFile = new FileInfo(Path.Join(StandardInstallContext.MainInstallPath, relativePath));
 
                     outputFile.Directory?.Create();

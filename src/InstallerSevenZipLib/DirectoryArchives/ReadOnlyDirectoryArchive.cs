@@ -2,6 +2,9 @@
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
+/// <summary>
+/// 只读的压缩目录存档
+/// </summary>
 public class ReadOnlyDirectoryArchive : IDisposable, IAsyncDisposable
 {
     internal ReadOnlyDirectoryArchive(Stream archiveStream)
@@ -10,8 +13,18 @@ public class ReadOnlyDirectoryArchive : IDisposable, IAsyncDisposable
     }
 
     internal Stream ArchiveStream { get; }
+
+    /// <summary>
+    /// 包含的文件列表
+    /// </summary>
     public required IReadOnlyList<IDirectoryArchiveEntryFile> EntryFileList { get; init; }
 
+    /// <summary>
+    /// 将整个目录存档解压缩到指定的文件夹中
+    /// </summary>
+    /// <param name="outputFolder"></param>
+    /// <param name="progress"></param>
+    /// <returns></returns>
     public async Task DecompressAsync(DirectoryInfo outputFolder, DirectoryArchiveDecompressProgress? progress = null)
     {
         progress ??= new DirectoryArchiveDecompressProgress(shouldIgnore: true);
@@ -40,11 +53,13 @@ public class ReadOnlyDirectoryArchive : IDisposable, IAsyncDisposable
         progress.Finish();
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         ArchiveStream.Dispose();
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         await ArchiveStream.DisposeAsync();

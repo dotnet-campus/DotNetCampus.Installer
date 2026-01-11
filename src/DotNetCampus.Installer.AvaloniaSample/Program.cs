@@ -26,6 +26,12 @@ internal class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            // 仅支持 Windows 系统运行
+            return -1;
+        }
+
         using var installerProgram = new InstallerProgram();
 
         var checkEnvironmentSuccess = installerProgram.CheckEnvironment();

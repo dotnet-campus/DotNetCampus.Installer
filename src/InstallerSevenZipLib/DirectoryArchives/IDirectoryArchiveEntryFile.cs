@@ -7,7 +7,7 @@ public interface IDirectoryArchiveEntryFile
     /// <summary>
     /// 相对的路径，可以认为是文件名
     /// </summary>
-    string RelativePath { get; }
+    DirectoryArchiveEntryRelativePath RelativePath { get; }
 
     /// <summary>
     /// 解压缩后拷贝到目标流中
