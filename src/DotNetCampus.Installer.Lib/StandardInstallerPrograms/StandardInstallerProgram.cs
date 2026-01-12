@@ -144,7 +144,7 @@ public abstract class StandardInstallerProgram : IDisposable
         var result = new RunDefaultCommandLineResult();
 
         var commandLine = CommandLine.Parse(args);
-        _ = await commandLine.AddHandler<DebugShowInstallerContentOption>(async (option) =>
+        _ = await commandLine.AddHandler<DebugListInstallerContentOption>(async (option) =>
             {
                 var directoryArchive = await this.StandardInstallContext.GetOverlayDirectoryArchive();
 
