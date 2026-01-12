@@ -14,3 +14,6 @@ DuplicateTokenEx
 CreateProcessWithToken
 GetShellWindow
 GetWindowThreadProcessId
+
+AllocConsole
+FreeConsole

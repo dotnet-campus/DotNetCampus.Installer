@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -144,31 +145,12 @@ public abstract class StandardInstallerProgram : IDisposable
         var result = new RunDefaultCommandLineResult();
 
         var commandLine = CommandLine.Parse(args);
-        _ = await commandLine.AddHandler<DebugShowInstallerContentOption>(async (option) =>
+        _ = await commandLine.AddHandler<DebugShowInstallerContentOption>(async option =>
             {
-                var directoryArchive = await this.StandardInstallContext.GetOverlayDirectoryArchive();
-
-                if (directoryArchive is null)
-                {
-                    Console.WriteLine($"Can not find overlay");
-                    result = new RunDefaultCommandLineResult()
-                    {
-                        ShouldExitsInstallerProcess = true,
-                        ExitCode = -1
-                    };
-                    return -1;
-                }
-
-                Console.WriteLine($"Show overlay content:");
-                for (var i = 0; i < directoryArchive.EntryFileList.Count; i++)
-                {
-                    var directoryArchiveEntryFile = directoryArchive.EntryFileList[i];
-                    Console.WriteLine($"[{i}] {directoryArchiveEntryFile.RelativePath} {directoryArchiveEntryFile.OriginFileLength}");
-                }
-
-                return 0;
+                result = await ShowInstallerContent();
+                return result.ExitCode;
             })
-            .AddHandler<DefaultOption>(_ =>
+            .AddHandler<DefaultOption>(option =>
             {
                 // 没有什么输入的情况，这里啥都不干
             })
@@ -177,6 +159,43 @@ public abstract class StandardInstallerProgram : IDisposable
         return result;
     }
 
+    /// <summary>
+    /// 显示安装器包含的内容
+    /// </summary>
+    /// <returns></returns>
+    private async Task<RunDefaultCommandLineResult> ShowInstallerContent()
+    {
+        RunDefaultCommandLineResult result = new();
+        PInvoke.AllocConsole();
+
+        var directoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive();
+
+        if (directoryArchive is null)
+        {
+            Console.WriteLine($"Can not find overlay");
+            Console.WriteLine($"Please press enter key to continue...");
+            Console.ReadLine();
+
+            result = new RunDefaultCommandLineResult()
+            {
+                ShouldExitsInstallerProcess = true,
+                ExitCode = -1
+            };
+            return result;
+        }
+
+        Console.WriteLine($"Show overlay content:");
+        for (var i = 0; i < directoryArchive.EntryFileList.Count; i++)
+        {
+            var directoryArchiveEntryFile = directoryArchive.EntryFileList[i];
+            Console.WriteLine($"[{i}] {directoryArchiveEntryFile.RelativePath} {directoryArchiveEntryFile.OriginFileLength}");
+        }
+
+        Console.WriteLine($"Please press enter key to continue...");
+        Console.ReadLine();
+
+        return result;
+    }
 
     #region 安装
 
