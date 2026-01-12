@@ -144,7 +144,7 @@ public abstract class StandardInstallerProgram : IDisposable
         var result = new RunDefaultCommandLineResult();
 
         var commandLine = CommandLine.Parse(args);
-        _ = await commandLine.AddHandler(async (DebugShowInstallerContentOption option) =>
+        _ = await commandLine.AddHandler<DebugShowInstallerContentOption>(async (option) =>
             {
                 var directoryArchive = await this.StandardInstallContext.GetOverlayDirectoryArchive();
 
@@ -167,6 +167,10 @@ public abstract class StandardInstallerProgram : IDisposable
                 }
 
                 return 0;
+            })
+            .AddHandler<DefaultOption>(_ =>
+            {
+                // 没有什么输入的情况，这里啥都不干
             })
             .RunAsync();
 
