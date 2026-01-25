@@ -6,6 +6,7 @@ using System.Buffers;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -672,7 +673,18 @@ public static partial class DirectoryArchive
                 fileBlock.CompressedFileLength, leaveOpen: true);
             progress ??= new NoneProgressReport();
 
-            CompressionUtility.Decompress(fileCompressedStream, destinationStream, progress);
+            if (fileBlock.CompressMode == CompressMode.NoCompression)
+            {
+                await fileCompressedStream.CopyToAsync(destinationStream);
+            }
+            else if (fileBlock.CompressMode == CompressMode.LZMA)
+            {
+                CompressionUtility.Decompress(fileCompressedStream, destinationStream, progress);
+            }
+            else
+            {
+                throw new NotSupportedException($"不支持解压缩 CompressMode 为 {fileBlock.CompressMode} 的文件");
+            }
         }
 
         public async Task SaveToFileAsync(FileInfo outputFile, IProgress<ProgressReport>? progress = null)
