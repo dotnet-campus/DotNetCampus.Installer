@@ -228,6 +228,16 @@ public static partial class DirectoryArchive
         {
             var info = inputFileList[index];
 
+            if (info.CompressMode == CompressMode.NoCompression)
+            {
+                // 如果不用压缩，则可以走快速分支
+                // 由于不用压缩，因此原文件流就可以直接作为压缩流使用
+                var compressFileStream = info.FileInfo.OpenRead();
+                progressFileList[index] = new CompressProgressFile(info, compressFileStream);
+                return;
+            }
+
+            // 按照逻辑，会先压缩到一个中间临时文件中，然后再写入到最终的输出流中。如此设计可以执行非常并行地压缩各个文件。同时也不会撑爆内存
             var file = Path.Join(workingDirectoryInfo.FullName, info.RelativePath);
             var fileStream = new FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 4096,
                 // 设置 DeleteOnClose 这样文件在使用完成后会被自动删除
@@ -308,6 +318,7 @@ public static partial class DirectoryArchive
                 RelativePath = compressProgressFile.FileInfo.RelativePath,
                 CompressedFileLength = compressedFileLength,
                 OriginFileLength = originFileLength,
+                CompressMode = compressProgressFile.FileInfo.CompressMode,
             };
 
             // 更新下一个文件的偏移量，应该相对于压缩后的内容
@@ -333,6 +344,8 @@ public static partial class DirectoryArchive
             writer.WriteString(fileBlock.RelativePath, fileBlock.RelativePathLength);
             writer.WriteInt64(fileBlock.FileContentOffset);
             writer.WriteInt64(fileBlock.CompressedFileLength);
+            writer.WriteInt64(fileBlock.OriginFileLength);
+            stream.WriteByte((byte) fileBlock.CompressMode);
         }
     }
 
@@ -365,7 +378,9 @@ public static partial class DirectoryArchive
                              + RelativePathLength // FileName field
                              + sizeof(long) // FileContentOffset field
                              + sizeof(long) // CompressedFileLength field
-                             + sizeof(long); // OriginFileLength field
+                             + sizeof(long) // OriginFileLength field
+                             + sizeof(CompressMode) // CompressMode field
+                             ;
                 return length;
             }
         }
@@ -408,6 +423,11 @@ public static partial class DirectoryArchive
         /// 原始文件长度，未压缩前的长度
         /// </summary>
         public required long OriginFileLength { get; init; }
+
+        /// <summary>
+        /// 压缩模式
+        /// </summary>
+        public required CompressMode CompressMode { get; init; }
     }
 
     /// <summary>
@@ -460,7 +480,21 @@ public static partial class DirectoryArchive
             var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
             await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
                 fileBlock.CompressedFileLength, leaveOpen: true);
-            CompressionUtility.Decompress(fileCompressedStream, outputFileStream, progress.UpdateCurrentDecompress(outputFilePath));
+
+            if (fileBlock.CompressMode == CompressMode.NoCompression)
+            {
+                // 无压缩，直接拷贝
+                // 此时的 fileCompressedStream 的压缩方式为无压缩，解压方式为直接拷贝
+                await fileCompressedStream.CopyToAsync(outputFileStream);
+            }
+            else if(fileBlock.CompressMode == CompressMode.LZMA)
+            {
+                CompressionUtility.Decompress(fileCompressedStream, outputFileStream, progress.UpdateCurrentDecompress(outputFilePath));
+            }
+            else
+            {
+                throw new NotSupportedException($"当前不支持 CompressMode 为 {fileBlock.CompressMode} 的方式");
+            }
 
             progress.SetCurrentDecompressFinish();
         }
@@ -533,6 +567,7 @@ public static partial class DirectoryArchive
             var fileContentOffset = reader.ReadInt64();
             var compressedFileLength = reader.ReadInt64();
             var originFileLength = reader.ReadInt64();
+            CompressMode compressMode = (CompressMode) fileBlockStream.ReadByte();
 
             var expectedPosition = position + fileBlockLength;
             if (fileBlockStream.Position != expectedPosition)
@@ -547,6 +582,7 @@ public static partial class DirectoryArchive
                 FileContentOffset = fileContentOffset,
                 CompressedFileLength = compressedFileLength,
                 OriginFileLength = originFileLength,
+                CompressMode = compressMode,
             };
         }
 
