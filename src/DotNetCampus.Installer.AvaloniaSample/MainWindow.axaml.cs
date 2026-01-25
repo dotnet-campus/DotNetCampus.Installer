@@ -9,6 +9,7 @@ using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.AvaloniaSample.ViewModels;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
+
 public partial class MainWindow : Window
 {
     public MainWindow(InstallerProgram installerProgram)
