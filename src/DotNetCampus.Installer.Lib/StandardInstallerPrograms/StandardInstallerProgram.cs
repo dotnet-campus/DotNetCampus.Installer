@@ -14,6 +14,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.UI.WindowsAndMessaging;
 using DotNetCampus.Cli;
 using DotNetCampus.Cli.Utils.Parsers;
@@ -639,6 +640,46 @@ public abstract class StandardInstallerProgram : IDisposable
     protected bool StartProcessWithShellProcessToken(string fileName, string? arguments = null)
     {
         return ProcessRunner.StartProcessWithShellProcessToken(fileName, arguments, Logger);
+    }
+
+    /// <summary>
+    /// 延迟到下次开机启动之后删除文件
+    /// </summary>
+    /// <param name="file"></param>
+    /// <remarks>
+    /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现
+    /// </remarks>
+    /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
+    protected bool DeleteFileDelayUntilReboot(FileInfo file)
+    {
+        PInvoke.MoveFileEx(file.FullName, null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
+
+        if (!WindowsIdentityHelper.IsAdministratorRole())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// 延迟到下次开机启动之后删除空文件夹。要求删除到此文件夹时，此文件夹已经是空文件夹。如需删除非空文件夹，请先遍历子文件和子文件夹，逐一调用 <see cref="DeleteFileDelayUntilReboot"/> 和 <see cref="DeleteFolderDelayUntilReboot"/> 进行删除
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <remarks>
+    /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现
+    /// </remarks>
+    /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
+    protected bool DeleteFolderDelayUntilReboot(DirectoryInfo folder)
+    {
+        PInvoke.MoveFileEx(folder.FullName, null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
+
+        if (!WindowsIdentityHelper.IsAdministratorRole())
+        {
+            return false;
+        }
+
+        return true;
     }
 
     #endregion

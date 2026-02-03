@@ -17,3 +17,5 @@ GetWindowThreadProcessId
 
 AllocConsole
 FreeConsole
+
+MoveFileExW
