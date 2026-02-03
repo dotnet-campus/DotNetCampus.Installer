@@ -32,8 +32,9 @@ public static class ProcessRunner
     [SupportedOSPlatform("windows6.0.6000")]
     public static unsafe bool StartProcessWithShellProcessToken(string fileName, string? arguments, InstallerLogger logger)
     {
-        if (!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
+        if (!WindowsIdentityHelper.IsAdministratorRole())
         {
+            // 当前进程非管理员权限，直接打开即可
             Process.Start(new ProcessStartInfo(fileName, arguments ?? string.Empty)
             {
                 WorkingDirectory = Path.GetDirectoryName(fileName)
