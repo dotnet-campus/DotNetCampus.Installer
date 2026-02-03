@@ -7,8 +7,7 @@
         x:Class="DotNetCampus.Installer.AvaloniaSample.MainWindow"
 		Width="540" Height="326"
 		CanResize="False"
-        Title="Installer"
-        SystemDecorations="None" ExtendClientAreaToDecorationsHint="true">
+        Title="Installer">
     <Grid>
 		<Grid RowDefinitions="Auto,*,62">
 			<Grid>

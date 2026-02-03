@@ -2,6 +2,7 @@
 
 using Microsoft.DotNet.Archive;
 
+using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,6 +12,85 @@ namespace DotNetCampus.Installer.Lib.Tests;
 [TestClass]
 public class DirectoryArchiveTest
 {
+    [TestMethod]
+    public async Task TestNoCompressionMethod1()
+    {
+        var testFolder = Path.Join(AppContext.BaseDirectory, $"Test_{Path.GetRandomFileName()}");
+        Directory.CreateDirectory(testFolder);
+        var inputFolder = Path.Join(testFolder, $"File");
+        var testInputFolder = Directory.CreateDirectory(inputFolder);
+
+        var fileCount = 10;
+        var fileLength = 1024 * 1024 * 10; // 10 MB
+
+        var testFileInfoList = await CreateTestDataFileList(testInputFolder, fileCount, fileLength);
+
+        var outputFileInfo = new FileInfo(Path.Join(testFolder, "Output.assets"));
+
+        var workingFolder = Directory.CreateDirectory(Path.Join(testFolder, "Working"));
+
+        var inputFileList = new List<DirectoryArchiveFileInfo>(testFileInfoList.Count);
+        var beNoCompression = false;
+        foreach (var fileInfo in testFileInfoList)
+        {
+            inputFileList.Add(new DirectoryArchiveFileInfo()
+            {
+                RelativePath = fileInfo.Name,
+                CompressMode = beNoCompression ? CompressMode.LZMA : CompressMode.NoCompression,
+                FileInfo = fileInfo,
+            });
+
+            beNoCompression = !beNoCompression;
+        }
+
+        await DirectoryArchive.CompressAsync(inputFileList, outputFileInfo, workingFolder);
+
+        ReadOnlyDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
+        Assert.HasCount(fileCount, directoryArchive.EntryFileList);
+
+        var outputFolder = Path.Join(testFolder, "Output");
+
+        await directoryArchive.DecompressAsync(new DirectoryInfo(outputFolder));
+
+        await AssetsDirectoryEqual(inputFolder, outputFolder);
+
+        // 测试另一个解压缩方式
+        var outputFolder2 = Path.Join(testFolder, "Output2");
+        await DirectoryArchive.DecompressAsync(outputFileInfo,new DirectoryInfo(outputFolder2));
+        await AssetsDirectoryEqual(inputFolder, outputFolder2);
+    }
+
+    private async Task<List<FileInfo>> CreateTestDataFileList(DirectoryInfo testInputFolder, int fileCount, int fileLength)
+    {
+        var buffer = new byte[1024 * 1024];
+        var random = Random.Shared;
+
+        var fileInfoList = new List<FileInfo>(fileCount);
+
+        for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+        {
+            var archiveFile = Path.Join(testInputFolder.FullName, $"Test{fileIndex}.archive");
+            if (!File.Exists(archiveFile))
+            {
+                using (var fileStream = File.Create(archiveFile))
+                {
+                    var currentFileLength = random.Next(fileLength);
+
+                    for (int i = 0; i < currentFileLength; i += buffer.Length)
+                    {
+                        random.NextBytes(buffer);
+                        var writeCount = Math.Min(buffer.Length, currentFileLength - i);
+                        await fileStream.WriteAsync(buffer.AsMemory(0, writeCount));
+                    }
+                }
+            }
+
+            fileInfoList.Add(new FileInfo(archiveFile));
+        }
+
+        return fileInfoList;
+    }
+
     [TestMethod]
     public async Task TestMethod3()
     {

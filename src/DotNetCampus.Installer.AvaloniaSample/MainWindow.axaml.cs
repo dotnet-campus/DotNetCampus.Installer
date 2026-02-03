@@ -9,6 +9,7 @@ using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
 using DotNetCampus.Installer.AvaloniaSample.ViewModels;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
+
 public partial class MainWindow : Window
 {
     public MainWindow(InstallerProgram installerProgram)
@@ -16,8 +17,12 @@ public partial class MainWindow : Window
         InstallerProgram = installerProgram;
         ViewModel = new MainViewModel(installerProgram);
         DataContext = ViewModel;
+
+        var installContext = installerProgram.StandardInstallContext;
      
         InitializeComponent();
+
+        Title = $"{installContext.DisplayProductName} 安装程序";
 
         InstallBar.RequestInstallStart += InstallBar_RequestInstallStart;
 

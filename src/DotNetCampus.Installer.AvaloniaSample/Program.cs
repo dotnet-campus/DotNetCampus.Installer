@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 using Path = System.IO.Path;
 
 namespace DotNetCampus.Installer.AvaloniaSample;
@@ -49,11 +49,28 @@ internal class Program
             return runResult.ExitCode;
         }
 
+        StandardInstallContext context = installerProgram.StandardInstallContext;
+        LoadNativeLibrary(context);
+
+        var returnResult = RunAvalonia(args, installerProgram);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static int RunAvalonia(string[] args, InstallerProgram? installerProgram = null)
+        {
+            return BuildAvaloniaAppInner(installerProgram)
+                 .StartWithClassicDesktopLifetime(args);
+        }
+
+        // 尝试删除垃圾文件
+        return returnResult;
+    }
+
+    private static void LoadNativeLibrary(StandardInstallContext context)
+    {
         // 先解压缩资产文件，确保在 Avalonia 初始化前完成
         // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
 
         // 以下是采用嵌入程序集的方式存放。这样的方式的缺点在于需要使用先使用 InstallerSevenZipTool 工具压缩的 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件的资源
-        var context = installerProgram.StandardInstallContext;
         //var assemblyManifestResourceInfo = new AssemblyManifestResourceInfo(Assembly.GetExecutingAssembly(), "DotNetCampus.Installer.AvaloniaSample.Assets.SkiaX86.assets");
         //using (var stream = assemblyManifestResourceInfo.GetManifestResourceStream())
         //{
@@ -76,6 +93,11 @@ internal class Program
             .Result;
         if (directoryArchive is null)
         {
+#if DEBUG
+            // 调试下，只是设计界面等逻辑而已，那就不要纠结，直接返回
+            return;
+#endif
+
             throw new InvalidOperationException($"未能从 PE 文件读取到 Overlay 内容，请确保打包工具正确写入文件");
         }
 
@@ -93,18 +115,6 @@ internal class Program
                 .Wait();
             NativeLibrary.Load(libraryOutputPath);
         }
-
-        var returnResult = RunAvalonia(args, installerProgram);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static int RunAvalonia(string[] args, InstallerProgram? installerProgram = null)
-        {
-            return BuildAvaloniaAppInner(installerProgram)
-                 .StartWithClassicDesktopLifetime(args);
-        }
-
-        // 尝试删除垃圾文件
-        return returnResult;
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
