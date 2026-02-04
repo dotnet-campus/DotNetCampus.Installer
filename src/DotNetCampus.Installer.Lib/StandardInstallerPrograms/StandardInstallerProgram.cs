@@ -647,7 +647,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// </summary>
     /// <param name="file"></param>
     /// <remarks>
-    /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现
+    /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现。详细请参阅 [Win32 使用 MoveFileEx 延迟到重启后删除文件 - lindexi - 博客园](https://www.cnblogs.com/lindexi/p/19572306 )
     /// </remarks>
     /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
     protected bool DeleteFileDelayUntilReboot(FileInfo file)
@@ -667,7 +667,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// </summary>
     /// <param name="folder"></param>
     /// <remarks>
-    /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现
+    /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现。详细请参阅 [Win32 使用 MoveFileEx 延迟到重启后删除文件 - lindexi - 博客园](https://www.cnblogs.com/lindexi/p/19572306 )
     /// </remarks>
     /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
     protected bool DeleteFolderDelayUntilReboot(DirectoryInfo folder)
