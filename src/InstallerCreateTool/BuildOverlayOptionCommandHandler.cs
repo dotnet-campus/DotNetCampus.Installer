@@ -38,6 +38,9 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
     [Option()]
     public string? WorkingFolder { get; init; }
 
+    [Option(Description = "压缩模式，可选为 LZMA （默认） 、NoCompression")]
+    public string? CompressMode { get; init; }
+
     public async Task<int> RunAsync()
     {
         var workingFolder = WorkingFolder;
@@ -56,13 +59,23 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
             // 顺序扫描，大部分情况下都是顺序读写，设置这个选项可以提升性能
             | FileOptions.SequentialScan);
 
+        CompressMode compressMode = DotNetCampus.InstallerSevenZipLib.DirectoryArchives.CompressMode.LZMA;
+        if (string.Equals(nameof(DotNetCampus.InstallerSevenZipLib.DirectoryArchives.CompressMode.NoCompression),
+                CompressMode))
+        {
+            compressMode = DotNetCampus.InstallerSevenZipLib.DirectoryArchives.CompressMode.NoCompression;
+        }
+
         var fileList = new List<DirectoryArchiveFileInfo>();
         if (FileList is not null)
         {
             foreach (var file in FileList)
             {
                 var fileInfo = new FileInfo(file);
-                fileList.Add(new DirectoryArchiveFileInfo(fileInfo.Name, fileInfo));
+                fileList.Add(new DirectoryArchiveFileInfo(fileInfo.Name, fileInfo)
+                {
+                    CompressMode = compressMode,
+                });
             }
         }
 
@@ -74,7 +87,10 @@ internal class BuildOverlayOptionCommandHandler : ICommandHandler
                 {
                     var relativePath = Path.GetRelativePath(folder, file);
                     var fileInfo = new FileInfo(file);
-                    fileList.Add(new DirectoryArchiveFileInfo(relativePath, fileInfo));
+                    fileList.Add(new DirectoryArchiveFileInfo(relativePath, fileInfo)
+                    {
+                        CompressMode = compressMode,
+                    });
                 }
             }
         }
