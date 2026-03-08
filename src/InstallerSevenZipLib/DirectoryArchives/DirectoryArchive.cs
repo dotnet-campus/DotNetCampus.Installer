@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Text;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
@@ -240,6 +241,18 @@ public static partial class DirectoryArchive
 
             // 按照逻辑，会先压缩到一个中间临时文件中，然后再写入到最终的输出流中。如此设计可以执行非常并行地压缩各个文件。同时也不会撑爆内存
             var file = Path.Join(workingDirectoryInfo.FullName, info.RelativePath);
+
+            var folder= Path.GetDirectoryName(file)!;
+            try
+            {
+                // 确保文件夹存在
+                Directory.CreateDirectory(folder);
+            }
+            catch (Exception e) when(e is IOException or AuthenticationException)
+            {
+               // 忽略
+            }
+
             var fileStream = new FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 4096,
                 // 设置 DeleteOnClose 这样文件在使用完成后会被自动删除
                 FileOptions.DeleteOnClose | FileOptions.Asynchronous | FileOptions.SequentialScan);
