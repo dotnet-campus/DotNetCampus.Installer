@@ -166,7 +166,11 @@ public abstract class StandardInstallerProgram : IDisposable
     /// <returns></returns>
     private async Task<RunDefaultCommandLineResult> ShowInstallerContent()
     {
-        RunDefaultCommandLineResult result = new();
+        RunDefaultCommandLineResult result = new()
+        {
+            ShouldExitsInstallerProcess = true,
+            ExitCode = 0,
+        };
         PInvoke.AllocConsole();
 
         var directoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive();
