@@ -4,6 +4,7 @@ using Microsoft.DotNet.Archive;
 
 using System;
 using System.Buffers;
+using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -12,6 +13,59 @@ namespace DotNetCampus.Installer.Lib.Tests;
 [TestClass]
 public class DirectoryArchiveTest
 {
+    [TestMethod]
+    public async Task TestRelativePathCompression1()
+    {
+        var testFolder = Path.Join(AppContext.BaseDirectory, $"Test_{Path.GetRandomFileName()}");
+        Directory.CreateDirectory(testFolder);
+
+        var outputFileInfo = new FileInfo(Path.Join(testFolder, "Output.assets"));
+
+        var workingFolder = Directory.CreateDirectory(Path.Join(testFolder, "Working"));
+
+        var inputFolder = Path.Join(testFolder, $"File");
+        var folderCount = 10;
+        var fileLength = 1024 * 1024 * 1; // 1 MB
+        var fileCount = 10;
+
+        List<FileInfo> testFileInfoList = [];
+        for (int folderIndex = 0; folderIndex < folderCount; folderIndex++)
+        {
+            var subFolder = Path.Join(inputFolder, $"{folderIndex}");
+            Directory.CreateDirectory(subFolder);
+            var fileInfoList = await CreateTestDataFileList(new DirectoryInfo(subFolder), fileCount, fileLength);
+            testFileInfoList.AddRange(fileInfoList);
+        }
+
+        var inputFileList = new List<DirectoryArchiveFileInfo>(testFileInfoList.Count);
+        foreach (var fileInfo in testFileInfoList)
+        {
+            var relativePath = Path.GetRelativePath(inputFolder, fileInfo.FullName);
+
+            inputFileList.Add(new DirectoryArchiveFileInfo()
+            {
+                RelativePath = relativePath,
+                CompressMode = CompressMode.NoCompression,
+                FileInfo = fileInfo,
+            });
+        }
+
+        await DirectoryArchive.CompressAsync(inputFileList, outputFileInfo, workingFolder);
+
+        ReadOnlyDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
+        Assert.HasCount(folderCount * fileCount, directoryArchive.EntryFileList);
+
+        var hashSet = directoryArchive.EntryFileList.Select(t => t.RelativePath.RelativePath).ToImmutableHashSet();
+        for (int folderIndex = 0; folderIndex < folderCount; folderIndex++)
+        {
+            for (int fileIndex = 0; fileIndex < fileCount; fileIndex++)
+            {
+                var relativePath = $@"{folderIndex}\Test{fileIndex}.archive";
+                Assert.IsTrue(hashSet.Contains(relativePath));
+            }
+        }
+    }
+
     [TestMethod]
     public async Task TestNoCompressionMethod1()
     {
@@ -56,7 +110,7 @@ public class DirectoryArchiveTest
 
         // 测试另一个解压缩方式
         var outputFolder2 = Path.Join(testFolder, "Output2");
-        await DirectoryArchive.DecompressAsync(outputFileInfo,new DirectoryInfo(outputFolder2));
+        await DirectoryArchive.DecompressAsync(outputFileInfo, new DirectoryInfo(outputFolder2));
         await AssetsDirectoryEqual(inputFolder, outputFolder2);
     }
 
