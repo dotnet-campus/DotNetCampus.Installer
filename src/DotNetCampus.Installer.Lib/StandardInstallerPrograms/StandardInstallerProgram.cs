@@ -171,6 +171,7 @@ public abstract class StandardInstallerProgram : IDisposable
             ShouldExitsInstallerProcess = true,
             ExitCode = 0,
         };
+        // 为什么需要申请控制台？因为安装包是 WinExe 格式，桌面应用程序，是没有控制台的
         PInvoke.AllocConsole();
 
         var directoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive();
@@ -193,7 +194,7 @@ public abstract class StandardInstallerProgram : IDisposable
         for (var i = 0; i < directoryArchive.EntryFileList.Count; i++)
         {
             var directoryArchiveEntryFile = directoryArchive.EntryFileList[i];
-            Console.WriteLine($"[{i}] '{directoryArchiveEntryFile.RelativePath.RelativePath}' {directoryArchiveEntryFile.OriginFileLength}");
+            Console.WriteLine($"[{i}] '{directoryArchiveEntryFile.RelativePath.RelativePath}' {directoryArchiveEntryFile.OriginFileLength} ({FileSizeFormatter.FormatSize(directoryArchiveEntryFile.OriginFileLength)})");
         }
 
         Console.WriteLine($"Please press enter key to continue...");
