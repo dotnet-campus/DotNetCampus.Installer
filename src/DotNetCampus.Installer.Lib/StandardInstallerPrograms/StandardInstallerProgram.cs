@@ -193,7 +193,7 @@ public abstract class StandardInstallerProgram : IDisposable
         for (var i = 0; i < directoryArchive.EntryFileList.Count; i++)
         {
             var directoryArchiveEntryFile = directoryArchive.EntryFileList[i];
-            Console.WriteLine($"[{i}] {directoryArchiveEntryFile.RelativePath} {directoryArchiveEntryFile.OriginFileLength}");
+            Console.WriteLine($"[{i}] '{directoryArchiveEntryFile.RelativePath.RelativePath}' {directoryArchiveEntryFile.OriginFileLength}");
         }
 
         Console.WriteLine($"Please press enter key to continue...");
