@@ -16,10 +16,10 @@
         ExtendClientAreaToDecorationsHint="True"
         SystemDecorations="None"
         Title="Installer">
-    <Border Margin="12" Classes="window-shell">
+    <Border Margin="0 0 12 12" Classes="window-shell">
         <Grid RowDefinitions="56,*,105">
             <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_OnPointerPressed">
-                <Grid Margin="20,16,16,0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                <Grid Margin="12,0,0,0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
                     <Border Width="34" Height="34" CornerRadius="12" Background="{StaticResource InstallerAccentBrush}">
                         <Grid>
                             <Border Margin="8" CornerRadius="6" Background="#33FFFFFF"/>
@@ -34,7 +34,7 @@
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                         <Button Classes="icon-button" Click="MinimizeButton_OnClick">
-                            <Path Classes="window-action-icon" Margin="0,3,0,0" VerticalAlignment="Center" Data="M1,5 L9,5 9,6 1,6 Z"/>
+                            <Path Classes="window-action-icon" Margin="0,3,0,0" Height="NaN" VerticalAlignment="Center" Data="M1,10 L9,10 9,11 1,11 Z"/>
                         </Button>
                         <Button Classes="icon-button danger" Click="CloseButton_OnClick">
                             <Path Classes="window-action-icon" Data="M1.5,2.2 2.2,1.5 5,4.3 7.8,1.5 8.5,2.2 5.7,5 8.5,7.8 7.8,8.5 5,5.7 2.2,8.5 1.5,7.8 4.3,5 Z"/>
@@ -43,10 +43,10 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="20,6,20,14" >
+            <Grid Grid.Row="1" Margin="12,6,12,14" >
                 <Border Classes="card hero-panel" Padding="18 0 18 0">
                     <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-                        <Border Classes="badge" HorizontalAlignment="Left">
+                        <Border Classes="badge" Margin="0 5 0 0" HorizontalAlignment="Left">
                             <TextBlock Classes="caption" Foreground="White" Text="安装向导"/>
                         </Border>
 
