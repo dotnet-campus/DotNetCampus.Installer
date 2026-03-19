@@ -39,12 +39,6 @@ public partial class MainWindow : Window
 
     public MainViewModel ViewModel { get; }
 
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
-    {
-        BeginMoveDrag(e);
-        base.OnPointerPressed(e);
-    }
-
     public InstallerProgram InstallerProgram { get; }
 
     private async void InstallBar_RequestInstallStart(object? sender, System.EventArgs e)
@@ -66,6 +60,8 @@ public partial class MainWindow : Window
                 catch (Exception exception)
                 {
                     InstallerProgram.Logger.WriteLog($"[Error] Install Fail. {exception}");
+                    ViewModel.InstallStepText = "安装失败";
+                    ViewModel.InstallDetailText = exception.Message;
                     ViewModel.InstallStatus = InstallStatus.Error;
                 }
             });
@@ -90,5 +86,23 @@ public partial class MainWindow : Window
     private void InstallFinishControl_OnOnFinish(object? sender, EventArgs e)
     {
         Dispatcher.UIThread.BeginInvokeShutdown(DispatcherPriority.Default);
+    }
+
+    private void TitleBar_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            BeginMoveDrag(e);
+        }
+    }
+
+    private void MinimizeButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void CloseButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        Close();
     }
 }

@@ -2,9 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallStatusUserControl">
-  <Grid>
-	  <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">安装中</TextBlock>
-  </Grid>
+             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallStatusUserControl"
+             x:DataType="viewModels:MainViewModel">
+  <Border Classes="footer-panel" Margin="12,0,12,12" Padding="16,12">
+    <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="strong-label" FontSize="15" Text="{Binding InstallStepText}"/>
+          <TextBlock Classes="caption" Text="{Binding InstallDetailText}" TextWrapping="Wrap"/>
+        </StackPanel>
+        <TextBlock Grid.Column="1" Classes="progress-value" VerticalAlignment="Center" Text="{Binding InstallProgressText}"/>
+      </Grid>
+
+      <StackPanel Grid.Row="1" Spacing="8">
+        <ProgressBar Maximum="100" Value="{Binding InstallProgress}"/>
+        <TextBlock Classes="caption" Text="{Binding CurrentFileDisplayName, StringFormat=当前文件：{0}}" TextTrimming="CharacterEllipsis"/>
+      </StackPanel>
+    </Grid>
+  </Border>
 </UserControl>
