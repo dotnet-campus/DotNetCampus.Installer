@@ -9,7 +9,7 @@ namespace DotNetCampus.Installer.AvaloniaSample;
 
 public partial class App : Application
 {
-    public App(InstallerProgram? installerProgram)
+    public App(InstallerProgram? installerProgram = null)
     {
         InstallerProgram = installerProgram ?? new ();
     }

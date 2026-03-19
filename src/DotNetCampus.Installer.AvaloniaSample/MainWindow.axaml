@@ -55,43 +55,6 @@
                             <TextBlock Classes="hero-subtitle" Text="{Binding InstallDescription}"/>
                         </StackPanel>
 
-                        <Grid IsVisible="False" Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,6,0,0">
-                            <Border Grid.Column="0" Classes="feature-card">
-                                <StackPanel Spacing="6">
-                                    <Ellipse Classes="accent-dot"/>
-                                    <TextBlock Classes="section-title" FontSize="13" Text="快速部署"/>
-                                    <TextBlock Classes="caption" Text="自动清理旧版本并完成替换。" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="1" Classes="feature-card">
-                                <StackPanel Spacing="6">
-                                    <Ellipse Classes="success-dot"/>
-                                    <TextBlock Classes="section-title" FontSize="13" Text="真实进度"/>
-                                    <TextBlock Classes="caption" Text="按实际文件释放进度实时更新。" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="2" Classes="feature-card">
-                                <StackPanel Spacing="6">
-                                    <Ellipse Classes="accent-dot" Fill="#47D1C9"/>
-                                    <TextBlock Classes="section-title" FontSize="13" Text="系统接入"/>
-                                    <TextBlock Classes="caption" Text="安装完成后自动写入快捷方式。" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <Border IsVisible="False" Grid.Row="3" Classes="stat-card" Margin="0,2,0,0">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Classes="caption" Text="安装位置"/>
-                                    <TextBlock Classes="metric-value" Text="{Binding InstallPath}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="4">
-                                    <TextBlock Classes="caption" Text="版本" HorizontalAlignment="Right"/>
-                                    <TextBlock Classes="metric-value" Text="{Binding AppVersion}" HorizontalAlignment="Right"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
                         <StackPanel Grid.Row="2"  Spacing="4"
                                     Orientation="Horizontal">
                             <TextBlock Classes="caption" VerticalAlignment="Center" Margin="0,0,2,0" Text="版本" />
@@ -101,66 +64,6 @@
                     </Grid>
                 </Border>
 
-                <Border IsVisible="False" Grid.Column="1" Classes="card" Padding="18">
-                    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
-                        <StackPanel Spacing="4">
-                            <TextBlock Classes="section-title" Text="安装概览"/>
-                            <TextBlock Classes="caption" Text="持续显示当前安装阶段和目标信息。"/>
-                        </StackPanel>
-
-                        <Border Grid.Row="1" Classes="stat-card" Height="64">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                <Border Width="48" Height="48" CornerRadius="14" Background="#263F6F">
-                                    <Grid>
-                                        <Border Width="24" Height="24" CornerRadius="8" Background="#3A5FA1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        <Border Width="10" Height="10" CornerRadius="3" Background="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Grid>
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
-                                    <TextBlock Classes="caption" Text="当前阶段"/>
-                                    <TextBlock Classes="strong-label" Text="{Binding InstallStepText}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <Border Grid.Row="2" Classes="stat-card">
-                            <StackPanel Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                    <TextBlock Classes="caption" Text="总体进度"/>
-                                    <TextBlock Classes="progress-value" Text="{Binding InstallProgressText}"/>
-                                </Grid>
-                                <ProgressBar Maximum="100" Value="{Binding InstallProgress}"/>
-                                <TextBlock Classes="caption" Text="{Binding InstallDetailText}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
-                        <StackPanel Grid.Row="3" Spacing="10">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                <Ellipse Classes="accent-dot" VerticalAlignment="Top" Margin="0,4,0,0"/>
-                                <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Classes="caption" Text="安装路径"/>
-                                    <TextBlock Text="{Binding InstallLocationHint}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                <Ellipse Classes="success-dot" VerticalAlignment="Top" Margin="0,4,0,0"/>
-                                <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Classes="caption" Text="当前文件"/>
-                                    <TextBlock Text="{Binding CurrentFileDisplayName}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                            </Grid>
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                <Ellipse Classes="accent-dot" VerticalAlignment="Top" Margin="0,4,0,0"/>
-                                <StackPanel Grid.Column="1" Spacing="2">
-                                    <TextBlock Classes="caption" Text="系统接入"/>
-                                    <TextBlock Text="注册信息与快捷方式将在安装尾声自动完成。" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-
-                        <TextBlock Grid.Row="4" Classes="caption" Text="安装期间界面会与安装程序状态保持同步。"/>
-                    </Grid>
-                </Border>
             </Grid>
 
             <views:InstallBarUserControl x:Name="InstallBar" Grid.Row="2"/>

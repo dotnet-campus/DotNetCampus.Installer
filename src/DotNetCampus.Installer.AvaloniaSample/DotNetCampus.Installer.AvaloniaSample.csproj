@@ -8,10 +8,9 @@
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
     <Platforms>AnyCPU;x86</Platforms>
 
-    <!-- <PublishAot>true</PublishAot> -->
-    <!-- <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault> -->
-    <!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
-    <PublishAot>false</PublishAot>
+    <PublishAot>true</PublishAot>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 
   </PropertyGroup>
 
@@ -22,9 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(SkiaResourceAssetsPath)" Condition="Exists('$(SkiaResourceAssetsPath)')" Link="Assets\SkiaX86.assets" />
+    <EmbeddedResource Include="$(SkiaResourceAssetsPath)" Condition="Exists('$(SkiaResourceAssetsPath)')"
+                      Link="Assets\SkiaX86.assets" />
 
-    <EmbeddedResource Include="$(ContentResourceAssetsPath)" Condition="Exists('$(ContentResourceAssetsPath)')" Link="Assets\ContentResource.assets" />
+    <EmbeddedResource Include="$(ContentResourceAssetsPath)" Condition="Exists('$(ContentResourceAssetsPath)')"
+                      Link="Assets\ContentResource.assets" />
   </ItemGroup>
 
   <ItemGroup>
