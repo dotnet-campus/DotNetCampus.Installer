@@ -10,14 +10,14 @@
         x:Class="DotNetCampus.Installer.AvaloniaSample.MainWindow"
         x:DataType="viewModels:MainViewModel"
         Width="600"
-        Height="376"
+        Height="370"
         CanResize="False"
         Background="Transparent"
         ExtendClientAreaToDecorationsHint="True"
         SystemDecorations="None"
         Title="Installer">
     <Border Margin="12" Classes="window-shell">
-        <Grid RowDefinitions="56,*,72">
+        <Grid RowDefinitions="56,*,105">
             <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_OnPointerPressed">
                 <Grid Margin="20,16,16,0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
                     <Border Width="34" Height="34" CornerRadius="12" Background="{StaticResource InstallerAccentBrush}">
@@ -34,7 +34,7 @@
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                         <Button Classes="icon-button" Click="MinimizeButton_OnClick">
-                            <Path Classes="window-action-icon" Data="M1,5 L9,5 9,6 1,6 Z"/>
+                            <Path Classes="window-action-icon" Margin="0,3,0,0" VerticalAlignment="Center" Data="M1,5 L9,5 9,6 1,6 Z"/>
                         </Button>
                         <Button Classes="icon-button danger" Click="CloseButton_OnClick">
                             <Path Classes="window-action-icon" Data="M1.5,2.2 2.2,1.5 5,4.3 7.8,1.5 8.5,2.2 5.7,5 8.5,7.8 7.8,8.5 5,5.7 2.2,8.5 1.5,7.8 4.3,5 Z"/>
@@ -43,8 +43,8 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="20,6,20,14" ColumnDefinitions="1.25*,0.95*" ColumnSpacing="16">
-                <Border Classes="card hero-panel" Padding="18">
+            <Grid Grid.Row="1" Margin="20,6,20,14" >
+                <Border Classes="card hero-panel" Padding="18 0 18 0">
                     <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
                         <Border Classes="badge" HorizontalAlignment="Left">
                             <TextBlock Classes="caption" Foreground="White" Text="安装向导"/>
@@ -55,7 +55,7 @@
                             <TextBlock Classes="hero-subtitle" Text="{Binding InstallDescription}"/>
                         </StackPanel>
 
-                        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,6,0,0">
+                        <Grid IsVisible="False" Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,6,0,0">
                             <Border Grid.Column="0" Classes="feature-card">
                                 <StackPanel Spacing="6">
                                     <Ellipse Classes="accent-dot"/>
@@ -79,7 +79,7 @@
                             </Border>
                         </Grid>
 
-                        <Border Grid.Row="3" Classes="stat-card" Margin="0,2,0,0">
+                        <Border IsVisible="False" Grid.Row="3" Classes="stat-card" Margin="0,2,0,0">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                 <StackPanel Spacing="4">
                                     <TextBlock Classes="caption" Text="安装位置"/>
@@ -91,10 +91,17 @@
                                 </StackPanel>
                             </Grid>
                         </Border>
+
+                        <StackPanel Grid.Row="2"  Spacing="4"
+                                    Orientation="Horizontal">
+                            <TextBlock Classes="caption" VerticalAlignment="Center" Margin="0,0,2,0" Text="版本" />
+                            <TextBlock Classes="metric-value" VerticalAlignment="Center" Text="{Binding AppVersion}" />
+                        </StackPanel>
+
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" Classes="card" Padding="18">
+                <Border IsVisible="False" Grid.Column="1" Classes="card" Padding="18">
                     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
                         <StackPanel Spacing="4">
                             <TextBlock Classes="section-title" Text="安装概览"/>

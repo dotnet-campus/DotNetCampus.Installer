@@ -3,13 +3,16 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <SupportedOSPlatformVersion>5.1</SupportedOSPlatformVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-    <PublishAot>true</PublishAot>
     <Platforms>AnyCPU;x86</Platforms>
+
+    <!-- <PublishAot>true</PublishAot> -->
+    <!-- <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault> -->
+    <!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
+    <PublishAot>false</PublishAot>
+
   </PropertyGroup>
 
   <PropertyGroup>

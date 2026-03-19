@@ -1,22 +1,22 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl"
-             x:DataType="viewModels:MainViewModel">
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallBarUserControl"
+			 x:DataType="viewModels:MainViewModel">
 	<Border Classes="footer-panel" Margin="12,0,12,12" Padding="16,12">
-		<Grid Height="48">
+		<Grid>
 			<Grid x:Name="MainInstallGrid" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" VerticalAlignment="Center">
-				<StackPanel Spacing="4" VerticalAlignment="Center">
+				<StackPanel Spacing="4" VerticalAlignment="Top">
 					<TextBlock Classes="caption" Text="推荐安装"/>
 					<TextBlock Classes="strong-label" FontSize="15" Text="{Binding InstallLocationHint}" TextTrimming="CharacterEllipsis"/>
 				</StackPanel>
 				<Button x:Name="CustomInstallPathButton" Grid.Column="1" Classes="secondary" Click="CustomInstallPathButton_OnClick">自定义路径</Button>
 				<Button x:Name="InstallButton" Grid.Column="2" Classes="primary" Click="InstallButton_OnClick">立即安装</Button>
-        </Grid>
-			
+			</Grid>
+
 			<Grid x:Name="SelectInstallPathGrid" IsVisible="False" RowDefinitions="Auto,Auto" RowSpacing="8">
 				<TextBlock Classes="caption" Text="自定义安装目录后即可继续安装。"/>
 				<Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
@@ -24,8 +24,8 @@
 					<Button x:Name="PickFolderButton" Grid.Column="1" Classes="secondary" Click="PickFolderButton_OnClick">浏览</Button>
 					<Button x:Name="BackToMainInstallGridButton" Grid.Column="2" Classes="secondary" Click="BackToMainInstallGridButton_OnClick">返回</Button>
 					<Button x:Name="StartInstallButton" Grid.Column="3" Classes="primary" Click="StartInstallButton_OnClick">开始安装</Button>
-            </Grid>
-        </Grid>
-        </Grid>
-    </Border>
+				</Grid>
+			</Grid>
+		</Grid>
+	</Border>
 </UserControl>
