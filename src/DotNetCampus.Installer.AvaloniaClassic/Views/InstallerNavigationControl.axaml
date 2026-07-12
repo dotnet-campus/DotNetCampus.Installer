@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.InstallerNavigationControl">
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.ViewModels"
+             x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.InstallerNavigationControl"
+             x:DataType="viewModels:MainWindowViewModel">
     <UserControl.Styles>
         <Style Selector="Button.navigation-button">
             <Setter Property="Height" Value="28" />
@@ -18,10 +20,11 @@
             <TextBlock x:Name="InstallationFolderLabel"
                        Grid.Row="0"
                        Grid.Column="0"
-                       Text="Installation Folder"
+                       Text="{Binding InstallationFolderLabel}"
                        FontSize="10"
                        Margin="1,0,0,0"
-                       VerticalAlignment="Top" />
+                       VerticalAlignment="Top"
+                       IsVisible="{Binding IsPreparing}" />
 
             <TextBox x:Name="InstallationFolderTextBox"
                      Grid.Row="1"
@@ -30,14 +33,16 @@
                      Padding="6,2"
                      FontSize="11"
                      VerticalContentAlignment="Center"
-                     Text="C:\Program Files\Generic Software" />
+                     Text="{Binding InstallationFolder}"
+                     IsVisible="{Binding IsPreparing}" />
 
             <Button x:Name="BrowseButton"
                     Grid.Row="1"
                     Grid.Column="1"
                     Classes="navigation-button"
-                    Content="Browse..."
-                    Click="BrowseButton_OnClick" />
+                    Content="{Binding BrowseButtonText}"
+                    Command="{Binding BrowseInstallationFolderCommand}"
+                    IsVisible="{Binding IsPreparing}" />
 
             <LayoutTransformControl x:Name="LaunchApplicationPanel"
                                     Grid.Row="1"
@@ -45,15 +50,15 @@
                                     Grid.ColumnSpan="2"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    IsVisible="False">
+                                    IsVisible="{Binding IsCompleted}">
                 <LayoutTransformControl.LayoutTransform>
                     <ScaleTransform ScaleX="0.82" ScaleY="0.82" />
                 </LayoutTransformControl.LayoutTransform>
                 <CheckBox x:Name="LaunchApplicationCheckBox"
-                          IsChecked="True"
+                          IsChecked="{Binding ShouldLaunchApplication}"
                           FontSize="14"
                           VerticalContentAlignment="Center"
-                          Content="完成后立即运行应用" />
+                          Content="{Binding LaunchApplicationText}" />
             </LayoutTransformControl>
 
             <Button x:Name="NextButton"
@@ -61,24 +66,25 @@
                     Grid.Column="3"
                     Width="90"
                     Classes="navigation-button primary"
-                    Content="Next &gt;"
-                    Click="NextButton_OnClick" />
+                    Content="{Binding NextButtonText}"
+                    Command="{Binding StartInstallationCommand}"
+                    IsVisible="{Binding IsPreparing}" />
             <Button x:Name="CancelButton"
                     Grid.Row="1"
                     Grid.Column="3"
                     Width="90"
                     Classes="navigation-button"
-                    Content="Cancel"
-                    IsVisible="False"
-                    Click="CancelButton_OnClick" />
+                    Content="{Binding CancelButtonText}"
+                    Command="{Binding CancelInstallationCommand}"
+                    IsVisible="{Binding IsInstalling}" />
             <Button x:Name="FinishButton"
                     Grid.Row="1"
                     Grid.Column="3"
                     Width="90"
                     Classes="navigation-button"
-                    Content="完成"
-                    IsVisible="False"
-                    Click="FinishButton_OnClick" />
+                    Content="{Binding FinishButtonText}"
+                    Command="{Binding FinishCommand}"
+                    IsVisible="{Binding IsCompleted}" />
         </Grid>
     </Border>
 </UserControl>

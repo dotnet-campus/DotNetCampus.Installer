@@ -8,6 +8,4 @@ public partial class PrepareInstallControl : UserControl
     {
         InitializeComponent();
     }
-
-    public bool HasAcceptedAgreement => AgreementCheckBox.IsChecked == true;
 }

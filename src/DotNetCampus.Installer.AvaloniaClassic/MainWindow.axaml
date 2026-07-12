@@ -1,7 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.Views"
+        xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.ViewModels"
         x:Class="DotNetCampus.Installer.AvaloniaClassic.MainWindow"
+        x:DataType="viewModels:MainWindowViewModel"
         Width="720"
         Height="450"
         MinWidth="720"
@@ -11,7 +13,7 @@
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         Background="#F7FAFC"
-        Title="Software Installer">
+        Title="{Binding WindowTitle}">
     <Window.Styles>
         <Style Selector="TextBlock">
             <Setter Property="Foreground" Value="#171717" />
@@ -41,10 +43,10 @@
     <Grid RowDefinitions="*,58">
         <Grid Grid.Row="0" ColumnDefinitions="210,*" Margin="20,20,20,16" ColumnSpacing="16">
             <views:InstallerBrandingControl Grid.Column="0" />
-            <views:PrepareInstallControl x:Name="PrepareInstallControl" Grid.Column="1" />
-            <views:InstallProgressControl x:Name="InstallProgressControl" Grid.Column="1" IsVisible="False" />
+            <views:PrepareInstallControl Grid.Column="1" IsVisible="{Binding IsPreparing}" />
+            <views:InstallProgressControl Grid.Column="1" IsVisible="{Binding !IsPreparing}" />
         </Grid>
 
-        <views:InstallerNavigationControl x:Name="InstallerNavigationControl" Grid.Row="1" />
+        <views:InstallerNavigationControl Grid.Row="1" />
     </Grid>
 </Window>

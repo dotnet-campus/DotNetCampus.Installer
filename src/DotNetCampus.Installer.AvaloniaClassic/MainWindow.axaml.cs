@@ -1,67 +1,39 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
+
+using DotNetCampus.Installer.AvaloniaClassic.ViewModels;
 
 namespace DotNetCampus.Installer.AvaloniaClassic;
 
 public partial class MainWindow : Window
 {
-    private CancellationTokenSource? _installCancellationTokenSource;
+    private readonly MainWindowViewModel _viewModel;
 
     public MainWindow()
     {
+        _viewModel = new MainWindowViewModel();
+        DataContext = _viewModel;
         InitializeComponent();
 
-        InstallerNavigationControl.NextRequested += async (_, _) => await ShowProgressPageAsync();
-        InstallerNavigationControl.CancelRequested += (_, _) => CancelInstallation();
-        InstallerNavigationControl.FinishRequested += (_, _) => FinishInstallation();
+        _viewModel.CloseRequested += (_, _) => Close();
+        _viewModel.BrowseInstallationFolderRequested += async (_, _) => await BrowseInstallationFolderAsync();
+        Closed += (_, _) => _viewModel.Dispose();
     }
 
-    private async Task ShowProgressPageAsync()
+    private async System.Threading.Tasks.Task BrowseInstallationFolderAsync()
     {
-        if (!PrepareInstallControl.HasAcceptedAgreement)
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            return;
-        }
+            Title = "Select Installation Folder",
+            AllowMultiple = false
+        });
 
-        PrepareInstallControl.IsVisible = false;
-        InstallProgressControl.IsVisible = true;
-        InstallProgressControl.ShowInstallingState();
-        InstallerNavigationControl.ShowProgressState();
-
-        _installCancellationTokenSource = new CancellationTokenSource();
-
-        try
+        var folder = folders.FirstOrDefault();
+        if (folder is not null)
         {
-            await Task.Delay(TimeSpan.FromSeconds(3), _installCancellationTokenSource.Token);
-            InstallProgressControl.ShowCompletedState();
-            InstallerNavigationControl.ShowCompletedState();
+            _viewModel.SetInstallationFolder(folder.Path.LocalPath);
         }
-        catch (OperationCanceledException)
-        {
-        }
-        finally
-        {
-            _installCancellationTokenSource.Dispose();
-            _installCancellationTokenSource = null;
-        }
-    }
-
-    private void CancelInstallation()
-    {
-        _installCancellationTokenSource?.Cancel();
-        Close();
-    }
-
-    private void FinishInstallation()
-    {
-        if (InstallerNavigationControl.ShouldLaunchApplication)
-        {
-            // 对接真实安装过程后，在这里启动已安装的应用。
-        }
-
-        Close();
     }
 }
