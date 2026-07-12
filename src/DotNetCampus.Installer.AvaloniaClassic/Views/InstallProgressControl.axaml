@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.InstallProgressControl">
+    <Border Classes="content-card" Padding="22,18">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+            <TextBlock Text="安装正在进行中..." FontSize="18" FontWeight="SemiBold" />
+            <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="64" Height="8" />
+            <StackPanel Grid.Row="2" Spacing="3">
+                <TextBlock Text="正在解压文件..." FontSize="12" FontWeight="SemiBold" />
+                <TextBlock Text="• 正在注册组件..." FontSize="12" />
+                <TextBlock Text="• 正在创建桌面快捷方式..." FontSize="12" />
+                <TextBlock Text="• 正在创建开始菜单快捷方式..." FontSize="12" />
+                <TextBlock Text="预计剩余时间：3分钟" FontSize="12" />
+            </StackPanel>
+            <Canvas Grid.Row="3" Width="78" Height="54" HorizontalAlignment="Center" Opacity="0.72">
+                <Polygon Points="30,20 47,10 64,20 47,30" Fill="#BBD6F1" Stroke="#4D83B8" />
+                <Polygon Points="30,20 47,30 47,47 30,37" Fill="#91B9E1" Stroke="#4D83B8" />
+                <Polygon Points="47,30 64,20 64,37 47,47" Fill="#72A2D2" Stroke="#4D83B8" />
+                <Ellipse Canvas.Left="5" Canvas.Top="22" Width="8" Height="8" Fill="#8AAFD3" />
+                <Ellipse Canvas.Left="14" Canvas.Top="32" Width="6" Height="6" Fill="#8AAFD3" />
+                <Ellipse Canvas.Left="12" Canvas.Top="13" Width="5" Height="5" Fill="#8AAFD3" />
+            </Canvas>
+        </Grid>
+    </Border>
+</UserControl>

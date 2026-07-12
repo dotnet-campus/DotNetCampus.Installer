@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.PrepareInstallControl">
+    <Border Classes="content-card" Padding="22,18">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9">
+            <TextBlock Text="Prepare to Install" FontSize="17" FontWeight="SemiBold" />
+            <TextBlock Grid.Row="1"
+                       Text="This wizard will guide you through the generic software installation process. Make sure you have closed all other applications before proceeding."
+                       FontSize="12"
+                       TextWrapping="Wrap" />
+            <TextBox Grid.Row="2"
+                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            <CheckBox Grid.Row="3"
+                      x:Name="AgreementCheckBox"
+                      IsChecked="True"
+                      Content="I have read and agree to the License Agreement"
+                      FontSize="11" />
+        </Grid>
+    </Border>
+</UserControl>

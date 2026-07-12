@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.Views"
+        x:Class="DotNetCampus.Installer.AvaloniaClassic.MainWindow"
+        Width="700"
+        Height="440"
+        MinWidth="700"
+        MinHeight="440"
+        MaxWidth="700"
+        MaxHeight="440"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Background="#F7FAFC"
+        Title="Software Installer">
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="Foreground" Value="#171717" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinHeight" Value="27" />
+            <Setter Property="Padding" Value="14,3" />
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#3478C3" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2869AE" />
+        </Style>
+        <Style Selector="Border.content-card">
+            <Setter Property="Background" Value="#FCFDFD" />
+            <Setter Property="BorderBrush" Value="#C8CFD3" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*,52">
+        <Grid Grid.Row="0" ColumnDefinitions="210,*" Margin="18,18,18,12">
+            <views:InstallerBrandingControl Grid.Column="0" />
+            <views:PrepareInstallControl x:Name="PrepareInstallControl" Grid.Column="1" />
+            <views:InstallProgressControl x:Name="InstallProgressControl" Grid.Column="1" IsVisible="False" />
+        </Grid>
+
+        <views:InstallerNavigationControl x:Name="InstallerNavigationControl" Grid.Row="1" />
+    </Grid>
+</Window>
