@@ -9,10 +9,7 @@
             <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="{Binding InstallationProgress}" Height="8" />
             <StackPanel Grid.Row="2" Spacing="4">
                 <TextBlock Text="{Binding CurrentStepText}" FontSize="12" FontWeight="SemiBold" />
-                <TextBlock Text="{Binding ComponentStatusText}" FontSize="12" />
-                <TextBlock Text="{Binding DesktopShortcutStatusText}" FontSize="12" />
-                <TextBlock Text="{Binding StartMenuShortcutStatusText}" FontSize="12" />
-                <TextBlock Text="{Binding RemainingTimeText}" FontSize="12" />
+                <TextBlock Text="{Binding ProgressDetailText}" FontSize="12" TextWrapping="Wrap" />
             </StackPanel>
             <Canvas Grid.Row="3" Width="78" Height="54" HorizontalAlignment="Center" Opacity="0.72">
                 <Polygon Points="30,20 47,10 64,20 47,30" Fill="#BBD6F1" Stroke="#4D83B8" />

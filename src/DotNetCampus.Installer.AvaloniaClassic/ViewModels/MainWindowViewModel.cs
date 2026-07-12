@@ -17,10 +17,7 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private double _installationProgress;
     private string _progressHeadline = "Installing DotNetCampus Installer...";
     private string _currentStepText = "Preparing installation files...";
-    private string _componentStatusText = "• Registering application components...";
-    private string _desktopShortcutStatusText = "• Creating the desktop shortcut...";
-    private string _startMenuShortcutStatusText = "• Creating the Start menu shortcut...";
-    private string _remainingTimeText = "Estimated time remaining: 3 seconds";
+    private string _progressDetailText = "Waiting for installation to begin.";
 
     public MainWindowViewModel()
     {
@@ -108,28 +105,10 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
         private set => SetProperty(ref _currentStepText, value);
     }
 
-    public string ComponentStatusText
+    public string ProgressDetailText
     {
-        get => _componentStatusText;
-        private set => SetProperty(ref _componentStatusText, value);
-    }
-
-    public string DesktopShortcutStatusText
-    {
-        get => _desktopShortcutStatusText;
-        private set => SetProperty(ref _desktopShortcutStatusText, value);
-    }
-
-    public string StartMenuShortcutStatusText
-    {
-        get => _startMenuShortcutStatusText;
-        private set => SetProperty(ref _startMenuShortcutStatusText, value);
-    }
-
-    public string RemainingTimeText
-    {
-        get => _remainingTimeText;
-        private set => SetProperty(ref _remainingTimeText, value);
+        get => _progressDetailText;
+        private set => SetProperty(ref _progressDetailText, value);
     }
 
     public AsyncRelayCommand StartInstallationCommand { get; }
@@ -148,13 +127,12 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private async Task StartInstallationAsync()
     {
         SetStage(InstallerStage.Installing);
-        ShowInstallingState();
         using var cancellationTokenSource = new CancellationTokenSource();
         _installationCancellationTokenSource = cancellationTokenSource;
 
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(3), cancellationTokenSource.Token);
+            await ShowSimulatedInstallationAsync(cancellationTokenSource.Token);
             ShowCompletedState();
             SetStage(InstallerStage.Completed);
         }
@@ -181,15 +159,22 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ShowInstallingState()
+    private async Task ShowSimulatedInstallationAsync(CancellationToken cancellationToken)
     {
         ProgressHeadline = "Installing DotNetCampus Installer...";
-        InstallationProgress = 64;
-        CurrentStepText = "Extracting application files...";
-        ComponentStatusText = "• Registering application components...";
-        DesktopShortcutStatusText = "• Creating the desktop shortcut...";
-        StartMenuShortcutStatusText = "• Creating the Start menu shortcut...";
-        RemainingTimeText = "Estimated time remaining: 3 seconds";
+        await ShowSimulatedStepAsync(8, "Preparing installation...", "Initializing installation settings.", cancellationToken);
+        await ShowSimulatedStepAsync(20, "Checking existing installation...", "Looking for files from an earlier version.", cancellationToken);
+        await ShowSimulatedStepAsync(64, "Deploying application files...", $"Writing files to {InstallationFolder}.", cancellationToken);
+        await ShowSimulatedStepAsync(90, "Registering application...", "Writing application information to the system.", cancellationToken);
+        await ShowSimulatedStepAsync(98, "Creating shortcuts...", "Creating application shortcuts.", cancellationToken);
+    }
+
+    private async Task ShowSimulatedStepAsync(double progress, string stepText, string detailText, CancellationToken cancellationToken)
+    {
+        InstallationProgress = progress;
+        CurrentStepText = stepText;
+        ProgressDetailText = detailText;
+        await Task.Delay(TimeSpan.FromMilliseconds(600), cancellationToken);
     }
 
     private void ShowCompletedState()
@@ -197,10 +182,7 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
         ProgressHeadline = "Installation Complete";
         InstallationProgress = 100;
         CurrentStepText = "DotNetCampus Installer was installed successfully.";
-        ComponentStatusText = "• Application components registered";
-        DesktopShortcutStatusText = "• Desktop shortcut created";
-        StartMenuShortcutStatusText = "• Start menu shortcut created";
-        RemainingTimeText = "Select Finish to close the setup wizard.";
+        ProgressDetailText = "Select Finish to close the setup wizard.";
     }
 
     private void SetStage(InstallerStage stage)
