@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Media;
 
 namespace DotNetCampus.Installer.AvaloniaClassic;
 
@@ -13,9 +14,19 @@ internal static class Program
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        return AppBuilder.Configure<App>()
+        var appBuilder = AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();
+
+        appBuilder.With(new FontManagerOptions()
+        {
+            DefaultFamilyName = "Microsoft YaHei UI",
+            FontFallbacks =
+            [
+                new FontFallback { FontFamily = "Microsoft YaHei" },
+            ],
+        });
+        return appBuilder;
     }
 }

@@ -11,8 +11,8 @@
             <Polygon Points="43,25 55,18 55,32 43,39" Fill="#88B1DD" Stroke="#3974AE" StrokeThickness="1.2" />
         </Canvas>
         <TextBlock Text="Welcome to the&#10;Installation Wizard"
-                   FontSize="19"
-                   LineHeight="22"
+                   FontSize="18"
+                   LineHeight="21"
                    TextAlignment="Center" />
     </StackPanel>
 </UserControl>

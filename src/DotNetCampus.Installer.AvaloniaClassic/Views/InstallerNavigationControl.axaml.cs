@@ -16,25 +16,42 @@ public partial class InstallerNavigationControl : UserControl
 
     public event EventHandler? NextRequested;
 
-    public event EventHandler? BackRequested;
-
     public event EventHandler? CancelRequested;
 
     public event EventHandler? FinishRequested;
 
+    public bool ShouldLaunchApplication => LaunchApplicationCheckBox.IsChecked == true;
+
     public void ShowPrepareState()
     {
-        InstallationFolderPanel.IsVisible = true;
-        BackButton.IsVisible = false;
+        InstallationFolderLabel.IsVisible = true;
+        InstallationFolderTextBox.IsVisible = true;
+        BrowseButton.IsVisible = true;
+        LaunchApplicationPanel.IsVisible = false;
         NextButton.IsVisible = true;
+        CancelButton.IsVisible = false;
         FinishButton.IsVisible = false;
     }
 
     public void ShowProgressState()
     {
-        InstallationFolderPanel.IsVisible = false;
-        BackButton.IsVisible = false;
+        InstallationFolderLabel.IsVisible = false;
+        InstallationFolderTextBox.IsVisible = false;
+        BrowseButton.IsVisible = false;
+        LaunchApplicationPanel.IsVisible = false;
         NextButton.IsVisible = false;
+        CancelButton.IsVisible = true;
+        FinishButton.IsVisible = false;
+    }
+
+    public void ShowCompletedState()
+    {
+        InstallationFolderLabel.IsVisible = false;
+        InstallationFolderTextBox.IsVisible = false;
+        BrowseButton.IsVisible = false;
+        LaunchApplicationPanel.IsVisible = true;
+        NextButton.IsVisible = false;
+        CancelButton.IsVisible = false;
         FinishButton.IsVisible = true;
     }
 
@@ -60,8 +77,6 @@ public partial class InstallerNavigationControl : UserControl
     }
 
     private void NextButton_OnClick(object? sender, RoutedEventArgs e) => NextRequested?.Invoke(this, EventArgs.Empty);
-
-    private void BackButton_OnClick(object? sender, RoutedEventArgs e) => BackRequested?.Invoke(this, EventArgs.Empty);
 
     private void CancelButton_OnClick(object? sender, RoutedEventArgs e) => CancelRequested?.Invoke(this, EventArgs.Empty);
 
