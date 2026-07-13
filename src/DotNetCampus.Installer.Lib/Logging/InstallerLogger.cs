@@ -7,10 +7,15 @@ using System.Threading.Tasks;
 
 namespace DotNetCampus.Installer.Lib.Logging;
 
+public interface IInstallerLogger
+{
+    void WriteLog(string message);
+}
+
 /// <summary>
 /// 安装器的日志记录器
 /// </summary>
-public class InstallerLogger
+public class InstallerLogger : IInstallerLogger
 {
     /// <summary>
     /// 日志文件

@@ -21,10 +21,12 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="dotnetCampus.Configurations" Version="1.9.1" />
   </ItemGroup>
 
   <ItemGroup>
     <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
     <SupportedPlatform Include="Windows" />
   </ItemGroup>
 </Project>

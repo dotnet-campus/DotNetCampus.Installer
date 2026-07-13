@@ -18,7 +18,7 @@ namespace DotNetCampus.Installer.Lib.Utils.PEOverlays;
 /// </summary>
 public class PEOverlayContentReader
 {
-    public async Task<OverlayInstallerContentInfo?> ReadOverlayInstallerContent(FileInfo peFile, InstallerLogger logger)
+    public async Task<OverlayInstallerContentInfo?> ReadOverlayInstallerContent(FileInfo peFile, IInstallerLogger logger)
     {
         var fileStream = new FileStream(peFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
