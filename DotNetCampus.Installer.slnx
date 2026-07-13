@@ -24,10 +24,7 @@
       <BuildDependency Project="src/InstallerCreateTool/InstallerCreateTool.csproj" />
       <Platform Solution="Debug|x86" Project="x86" />
     </Project>
-    <Project Path="src/DotNetCampus.Installer.Sample/DotNetCampus.Installer.Sample.csproj">
-      <Platform Solution="Debug|Any CPU" Project="x86" />
-      <Platform Solution="Debug|x86" Project="x86" />
-    </Project>
+    <Project Path="src/DotNetCampus.Installer.Sample/DotNetCampus.Installer.Sample.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="build/Version.props" />
