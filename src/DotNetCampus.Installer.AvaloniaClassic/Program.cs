@@ -19,6 +19,9 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
+using dotnetCampus.Configurations;
+using dotnetCampus.Configurations.Core;
+
 namespace DotNetCampus.Installer.AvaloniaClassic;
 
 internal static class Program
@@ -26,15 +29,23 @@ internal static class Program
     [STAThread]
     // 这里强行异步转同步，而不是 async 的原因是为了避免弄坏 STAThread 特性
     // https://github.com/dotnet/runtime/issues/73099
-    public static void Main(string[] args)
+    public static int Main(string[] args)
     {
-       
+        var installContext = InitAsync().Result;
+        var program = new ClassicInstallerProgram(installContext);
+
+        if (!program.CheckEnvironment())
+        {
+            return -1;
+        }
+
+        return RunAvalonia(args, program);
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         static int RunAvalonia(string[] args, ClassicInstallerProgram? installerProgram = null)
         {
-           return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
     }
 
@@ -56,7 +67,7 @@ internal static class Program
         return appBuilder;
     }
 
-    private static async Task InitAsync()
+    private static async Task<StandardInstallContext> InitAsync()
     {
         var directoryArchive = await GetDirectoryArchiveAsync();
 
@@ -70,6 +81,30 @@ internal static class Program
         await LoadNativeLibrary(directoryArchive, workingFolder, "libHarfBuzzSharp.dll");
 
         // 读取安装程序配置文件
+        var appConfigurator = await LoadInstallerConfigurationAsync(directoryArchive);
+        var installerConfiguration = appConfigurator.Of<StandardInstallerConfiguration>();
+        var installContext = installerConfiguration.CreateInstallContext(directoryArchive, new DirectoryInfo(workingFolder));
+        return installContext;
+    }
+
+    /// <summary>
+    /// 读取安装程序配置文件
+    /// </summary>
+    /// <param name="directoryArchive"></param>
+    /// <returns></returns>
+    private static async Task<IAppConfigurator> LoadInstallerConfigurationAsync(IDirectoryArchive directoryArchive)
+    {
+        IDirectoryArchiveEntryFile installerConfigurationEntryFile = directoryArchive.GetEntryFile("Installer.coin");
+        using var memoryStream = new MemoryStream();
+        await installerConfigurationEntryFile.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        using var streamReader = new StreamReader(memoryStream);
+        var text = await streamReader.ReadToEndAsync();
+        var configuration = CoinConfigurationSerializer.Deserialize(text);
+        var memoryConfigurationRepo = new MemoryConfigurationRepo(configuration);
+        var appConfigurator = memoryConfigurationRepo.CreateAppConfigurator();
+        return appConfigurator;
     }
 
     private static async Task<IDirectoryArchive> GetDirectoryArchiveAsync()
@@ -103,12 +138,12 @@ internal static class Program
         {
             var overlayInstallerContentStream = readOverlayInstallerContent.Value.ContentStream;
 
-           var directoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
-           return directoryArchive;
+            var directoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
+            return directoryArchive;
         }
     }
 
-    static async Task LoadNativeLibrary(IDirectoryArchive directoryArchive,string libFolder, string libraryName)
+    static async Task LoadNativeLibrary(IDirectoryArchive directoryArchive, string libFolder, string libraryName)
     {
         var libraryEntryFile = directoryArchive.GetEntryFile(libraryName);
         var libraryOutputPath = Path.Join(libFolder, libraryName);

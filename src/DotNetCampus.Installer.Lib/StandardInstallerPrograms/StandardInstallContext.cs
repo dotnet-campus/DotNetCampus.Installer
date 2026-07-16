@@ -83,7 +83,7 @@ public record StandardInstallContext
 
             return _workingFolder;
         }
-        set => _workingFolder = value;
+        init => _workingFolder = value;
     }
 
     private DirectoryInfo? _workingFolder;
