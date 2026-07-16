@@ -2,6 +2,7 @@
 
 using DotNetCampus.Installer.Lib.Hosts.Contexts;
 using DotNetCampus.Installer.Lib.Logging;
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms.DirectoryArchiveProviders;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -88,7 +89,7 @@ public record StandardInstallContext
     private DirectoryInfo? _workingFolder;
 
     /// <summary>
-    /// 安装内容的资源信息。如果安装内容比较大，十分推荐使用 Overlay 方式存放安装内容。这里存放的是放在嵌入资源里面的安装内容。由于 PE 文件限制，这里只能存放小于 2 GB 的安装内容
+    /// 安装内容的资源信息。如果安装内容比较大，十分推荐使用 Overlay 方式存放安装内容。这里存放的是放在嵌入资源里面的安装内容。由于 PE 文件限制，这里只能存放小于 2 GB 的安装内容。可为空
     /// </summary>
     /// <remarks>
     /// 如需获取 Overlay 内容，请使用 <see cref="GetOverlayDirectoryArchive"/> 方法获取
@@ -219,8 +220,10 @@ public record StandardInstallContext
         return Path.Join(MainInstallPath, relativePath);
     }
 
+    public IDirectoryArchiveProvider DirectoryArchiveProvider { get; init; } = new PEOverlayDirectoryArchiveProvider();
+
     /// <summary>
-    /// 将放在 PE 文件的 Overlay 部分的安装器内容作为目录归档读取出来
+    /// 将安装器内容作为目录归档读取出来
     /// </summary>
     /// <returns></returns>
     /// <remarks>
@@ -228,49 +231,10 @@ public record StandardInstallContext
     /// - 安装包里面的放入到最终安装路径的内容，应该是在 `Packing\` 相对路径下的内容 <br/>
     /// - 用完即丢的临时文件，应该是在 `Temp\` 相对路径下的内容 <br/>
     /// - 安装包本身需要依赖的运行时文件，直接放在根目录下。比如使用 Avalonia UI 的安装包，需要放置 Avalonia 相关的 DLL 文件在根目录下，如 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件 <br/>
-    /// <br/>
-    /// 注：此方法为上层封装，预设默认为 Overlay 内容为压缩的内容，如需进行更底层控制，请使用 <see cref="GetOverlayInstallerContentStream"/> 或 <see cref="GetOverlayInstallerContentStream"/> 方法
     /// </remarks>
-    public async Task<IDirectoryArchive?> GetOverlayDirectoryArchive()
+    public Task<IDirectoryArchive> GetOverlayDirectoryArchive()
     {
-        if (_directoryArchive != null)
-        {
-            return _directoryArchive;
-        }
-
-        var overlayInstallerContentStream = await GetOverlayInstallerContentStream();
-        if (overlayInstallerContentStream is null)
-        {
-            return null;
-        }
-
-        IDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
-        _directoryArchive = readOnlyDirectoryArchive;
-        return _directoryArchive;
-    }
-
-    private IDirectoryArchive? _directoryArchive;
-
-    /// <summary>
-    /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息。底层方法，上层为 <see cref="GetOverlayDirectoryArchive"/> 方法
-    /// </summary>
-    /// <returns></returns>
-    public async Task<Stream?> GetOverlayInstallerContentStream()
-    {
-        var overlayInstallerContentInfo = await GetOverlayInstallerContentInfo();
-        return overlayInstallerContentInfo?.ContentStream;
-    }
-
-    /// <summary>
-    /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息。最底层的方法，上层为 <see cref="GetOverlayDirectoryArchive"/> 方法
-    /// </summary>
-    /// <returns></returns>
-    public Task<OverlayInstallerContentInfo?> GetOverlayInstallerContentInfo()
-    {
-        var reader = new PEOverlayContentReader();
-        var processPath = Environment.ProcessPath;
-        Debug.Assert(processPath != null);
-        return reader.ReadOverlayInstallerContent(new FileInfo(processPath), Logger);
+        return DirectoryArchiveProvider.GetDirectoryArchiveAsync(Logger);
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using Avalonia.Media;
 
 using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 using DotNetCampus.Installer.Lib.Logging;
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -11,7 +12,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace DotNetCampus.Installer.AvaloniaClassic;
 
@@ -32,24 +38,6 @@ internal static class Program
         }
     }
 
-    private static async Task InitAsync()
-    {
-        var reader = new PEOverlayContentReader();
-        var processPath = Environment.ProcessPath;
-        Debug.Assert(processPath != null);
-        OverlayInstallerContentInfo? readOverlayInstallerContent = await reader.ReadOverlayInstallerContent(new FileInfo(processPath), new InstallerLogger());
-
-        if (readOverlayInstallerContent is null)
-        {
-            // 没有找到 OverlayInstallerContentInfo，说明不是 Overlay 安装器，但可以是在调试下，为了提升调试体验，是允许为空的情况，此时可以读取本地的某个文件夹路径
-        }
-
-        var overlayInstallerContentStream = readOverlayInstallerContent.Value.ContentStream;
-
-        IDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
-
-    }
-
     public static AppBuilder BuildAvaloniaApp()
     {
         var appBuilder = AppBuilder.Configure<App>()
@@ -66,5 +54,65 @@ internal static class Program
             ],
         });
         return appBuilder;
+    }
+
+    private static async Task InitAsync()
+    {
+        var directoryArchive = await GetDirectoryArchiveAsync();
+
+        // 创建工作文件夹路径
+        var tempPath = Path.GetTempPath();
+        var workingFolder = Path.Join(tempPath, $"Installer_{Path.GetRandomFileName()}");
+        Directory.CreateDirectory(workingFolder);
+
+        // 读取配置文件和 Avalonia 的所需文件
+        await LoadNativeLibrary(directoryArchive, workingFolder, "libSkiaSharp.dll");
+        await LoadNativeLibrary(directoryArchive, workingFolder, "libHarfBuzzSharp.dll");
+
+        // 读取安装程序配置文件
+    }
+
+    private static async Task<IDirectoryArchive> GetDirectoryArchiveAsync()
+    {
+        var reader = new PEOverlayContentReader();
+        var processPath = Environment.ProcessPath;
+        Debug.Assert(processPath != null);
+        OverlayInstallerContentInfo? readOverlayInstallerContent = await reader.ReadOverlayInstallerContent(new FileInfo(processPath), new InstallerLogger());
+
+        if (readOverlayInstallerContent is null)
+        {
+#if DEBUG
+            // 没有找到 OverlayInstallerContentInfo，说明不是 Overlay 安装器，但可以是在调试下，为了提升调试体验，是允许为空的情况，此时可以读取本地的某个文件夹路径
+            var debugInstallerContentFolder = Path.Join(AppContext.BaseDirectory, "DebugContent");
+            // 请将 debugInstallerContentFolder 替换为你自己的路径
+            if (!Directory.Exists(debugInstallerContentFolder))
+            {
+                // 提醒一下开发者设置
+                Debugger.Break();
+            }
+            else
+            {
+                var fakeDirectoryArchive = new FakeDirectoryArchive(new DirectoryInfo(debugInstallerContentFolder));
+                return fakeDirectoryArchive;
+            }
+#endif
+            PInvoke.MessageBox(HWND.Null, $"安装包内容损坏，无法获取到安装包内容", "安装包损坏", MESSAGEBOX_STYLE.MB_OK);
+            throw new InvalidOperationException($"安装包内容损坏，无法获取到安装包内容");
+        }
+        else
+        {
+            var overlayInstallerContentStream = readOverlayInstallerContent.Value.ContentStream;
+
+           var directoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
+           return directoryArchive;
+        }
+    }
+
+    static async Task LoadNativeLibrary(IDirectoryArchive directoryArchive,string libFolder, string libraryName)
+    {
+        var libraryEntryFile = directoryArchive.GetEntryFile(libraryName);
+        var libraryOutputPath = Path.Join(libFolder, libraryName);
+        await libraryEntryFile.SaveToFileAsync(new FileInfo(libraryOutputPath));
+        NativeLibrary.Load(libraryOutputPath);
     }
 }

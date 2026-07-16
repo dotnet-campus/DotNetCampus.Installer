@@ -5,10 +5,13 @@
 /// </summary>
 internal class ReadOnlyDirectoryArchive : IDirectoryArchive, IDisposable, IAsyncDisposable
 {
-    internal ReadOnlyDirectoryArchive(Stream archiveStream)
+    internal ReadOnlyDirectoryArchive(Stream archiveStream, bool leaveOpen)
     {
+        _leaveOpen = leaveOpen;
         ArchiveStream = archiveStream;
     }
+
+    private readonly bool _leaveOpen;
 
     internal Stream ArchiveStream { get; }
 
@@ -20,12 +23,18 @@ internal class ReadOnlyDirectoryArchive : IDirectoryArchive, IDisposable, IAsync
     /// <inheritdoc />
     public void Dispose()
     {
-        ArchiveStream.Dispose();
+        if (!_leaveOpen)
+        {
+            ArchiveStream.Dispose();
+        }
     }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await ArchiveStream.DisposeAsync();
+        if (!_leaveOpen)
+        {
+            await ArchiveStream.DisposeAsync();
+        }
     }
 }

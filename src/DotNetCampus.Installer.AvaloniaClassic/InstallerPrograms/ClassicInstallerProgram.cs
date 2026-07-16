@@ -14,6 +14,8 @@ internal class ClassicInstallerProgram : StandardInstallerProgram
     public ClassicInstallerProgram(StandardInstallContext context)
     {
         StandardInstallContext = context;
+
+        DeleteFolderDelayUntilReboot(context.WorkingFolder);
     }
 
     public override StandardInstallContext StandardInstallContext { get; }

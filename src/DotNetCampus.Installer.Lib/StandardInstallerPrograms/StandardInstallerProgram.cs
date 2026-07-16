@@ -677,6 +677,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
     protected bool DeleteFolderDelayUntilReboot(DirectoryInfo folder)
     {
+        // 这个方法是不对的，应该遍历，逆序遍历调用
         PInvoke.MoveFileEx(folder.FullName, null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
 
         if (!WindowsIdentityHelper.IsAdministratorRole())

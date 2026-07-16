@@ -630,8 +630,9 @@ public static partial class DirectoryArchive
     /// 打开读取存档文件
     /// </summary>
     /// <param name="archiveStream"></param>
+    /// <param name="leaveOpen"></param>
     /// <returns></returns>
-    public static async Task<IDirectoryArchive> OpenReadAsync(Stream archiveStream)
+    public static async Task<IDirectoryArchive> OpenReadAsync(Stream archiveStream, bool leaveOpen = false)
     {
         var header = await DecompressDirectoryArchiveHeaderAsync(archiveStream);
 
@@ -645,7 +646,7 @@ public static partial class DirectoryArchive
             };
         }
 
-        return new ReadOnlyDirectoryArchive(archiveStream)
+        return new ReadOnlyDirectoryArchive(archiveStream, leaveOpen)
         {
             EntryFileList = directoryArchiveEntryFiles
         };
