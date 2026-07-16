@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using dotnetCampus.Configurations;
+using DotNetCampus.Installer.Lib.Exceptions;
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms.DirectoryArchiveProviders;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 namespace DotNetCampus.Installer.Lib.StandardInstallerPrograms;
@@ -22,13 +24,14 @@ public class StandardInstallerConfiguration : Configuration
         get
         {
             var configurationString = GetString();
-            if (configurationString == null)
+            if (configurationString == null || !Guid.TryParse(configurationString, out var productCodeGuid))
             {
                 return Guid.Empty;
             }
 
-            return Guid.Parse(configurationString);
+            return productCodeGuid;
         }
+        set => SetValue(value.ToString("D"));
     }
 
     /// <summary>
@@ -146,8 +149,56 @@ public class StandardInstallerConfiguration : Configuration
         set => SetValue(value);
     }
 
+    /// <summary>
+    /// 根据安装包配置创建标准安装上下文。
+    /// </summary>
+    /// <param name="directoryArchive">安装包的目录归档。</param>
+    /// <param name="directoryInfo">安装过程使用的工作目录。</param>
+    /// <returns>填充完成的标准安装上下文。</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="directoryArchive"/> 或 <paramref name="directoryInfo"/> 为空。</exception>
+    /// <exception cref="InstallerConfigurationException">安装包缺少必填配置或必填配置无效。</exception>
     public StandardInstallContext CreateInstallContext(IDirectoryArchive directoryArchive, DirectoryInfo directoryInfo)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(directoryArchive);
+        ArgumentNullException.ThrowIfNull(directoryInfo);
+
+        var productCodeGuid = ProductCodeGuid;
+        if (productCodeGuid == Guid.Empty)
+        {
+            throw new InstallerConfigurationException($"安装包配置 {nameof(ProductCodeGuid)} 不能为空，且必须是有效的 GUID。");
+        }
+
+        var productName = ProductName;
+        if (string.IsNullOrWhiteSpace(productName))
+        {
+            throw new InstallerConfigurationException($"安装包配置 {nameof(ProductName)} 不能为空。");
+        }
+
+        var productFamily = ProductFamily;
+        if (string.IsNullOrWhiteSpace(productFamily))
+        {
+            throw new InstallerConfigurationException($"安装包配置 {nameof(ProductFamily)} 不能为空。");
+        }
+
+        return new StandardInstallContext
+        {
+            ProductCodeGuid = productCodeGuid,
+            ProductName = productName,
+            DisplayProductName = DisplayProductName,
+            ProductFamily = productFamily,
+            DisplayProductFamily = DisplayProductFamily,
+            AppVersion = AppVersion,
+            WorkingFolder = directoryInfo,
+            ContentResourceAssetsInfo = null,
+            SplashScreenResourceAssetsInfo = null,
+            LauncherExeRelativePath = LauncherExeRelativePath,
+            UninstallDisplayIconRelativePath = UninstallDisplayIconRelativePath,
+            UninstallDisplayName = UninstallDisplayName,
+            UninstallDisplayVersion = UninstallDisplayVersion,
+            UninstallEstimatedSize = UninstallEstimatedSize,
+            UninstallDisplayPublisher = UninstallDisplayPublisher,
+            UninstallerRelativePath = UninstallerRelativePath,
+            DirectoryArchiveProvider = new ManualDirectoryArchiveProvider(directoryArchive),
+        };
     }
 }

@@ -2,7 +2,11 @@ using Avalonia;
 using Avalonia.Logging;
 using Avalonia.Media;
 
+using dotnetCampus.Configurations;
+using dotnetCampus.Configurations.Core;
+
 using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
+using DotNetCampus.Installer.Lib.Exceptions;
 using DotNetCampus.Installer.Lib.Logging;
 using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 using DotNetCampus.Installer.Lib.Utils.PEOverlays;
@@ -18,9 +22,6 @@ using System.Threading.Tasks;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-
-using dotnetCampus.Configurations;
-using dotnetCampus.Configurations.Core;
 
 namespace DotNetCampus.Installer.AvaloniaClassic;
 
@@ -132,7 +133,7 @@ internal static class Program
             }
 #endif
             PInvoke.MessageBox(HWND.Null, $"安装包内容损坏，无法获取到安装包内容", "安装包损坏", MESSAGEBOX_STYLE.MB_OK);
-            throw new InvalidOperationException($"安装包内容损坏，无法获取到安装包内容");
+            throw new InstallerException($"安装包内容损坏，无法获取到安装包内容");
         }
         else
         {

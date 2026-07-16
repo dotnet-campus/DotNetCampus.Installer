@@ -405,6 +405,8 @@ public abstract class StandardInstallerProgram : IDisposable
                 // 没有任何加入到安装包里的内容
                 throw new InvalidOperationException();
             }
+
+            return;
         }
 
         var contentResourceAssetsInfo = StandardInstallContext.ContentResourceAssetsInfo;
