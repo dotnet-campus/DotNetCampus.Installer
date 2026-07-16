@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 
-internal class ClassicInstallerProgram : StandardInstallerProgram
+public class ClassicInstallerProgram : StandardInstallerProgram
 {
     public ClassicInstallerProgram(StandardInstallContext context)
     {

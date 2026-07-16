@@ -1,19 +1,22 @@
-using System.Linq;
-
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 
+using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 using DotNetCampus.Installer.AvaloniaClassic.ViewModels;
+
+using System.Linq;
 
 namespace DotNetCampus.Installer.AvaloniaClassic;
 
 public partial class MainWindow : Window
 {
-    private readonly MainWindowViewModel _viewModel;
-
-    public MainWindow()
+    public MainWindow():this(null)
     {
-        _viewModel = new MainWindowViewModel();
+    }
+
+    public MainWindow(ClassicInstallerProgram? installerProgram)
+    {
+        _viewModel = new MainWindowViewModel(installerProgram);
         DataContext = _viewModel;
         InitializeComponent();
 
@@ -21,6 +24,8 @@ public partial class MainWindow : Window
         _viewModel.BrowseInstallationFolderRequested += async (_, _) => await BrowseInstallationFolderAsync();
         Closed += (_, _) => _viewModel.Dispose();
     }
+
+    private readonly MainWindowViewModel _viewModel;
 
     private async System.Threading.Tasks.Task BrowseInstallationFolderAsync()
     {

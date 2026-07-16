@@ -42,17 +42,18 @@ internal static class Program
 
         return RunAvalonia(args, program);
 
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         static int RunAvalonia(string[] args, ClassicInstallerProgram? installerProgram = null)
         {
-            return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            return BuildAvaloniaApp(installerProgram).StartWithClassicDesktopLifetime(args);
         }
     }
 
-    public static AppBuilder BuildAvaloniaApp()
+    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(null);
+
+    public static AppBuilder BuildAvaloniaApp(ClassicInstallerProgram? installerProgram)
     {
-        var appBuilder = AppBuilder.Configure<App>()
+        var appBuilder = AppBuilder.Configure<App>(()=> new App(installerProgram))
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();

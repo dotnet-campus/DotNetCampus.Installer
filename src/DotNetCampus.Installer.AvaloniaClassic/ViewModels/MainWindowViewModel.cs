@@ -1,9 +1,10 @@
+using DotNetCampus.Installer.AvaloniaClassic.Infrastructure;
+using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
-using DotNetCampus.Installer.AvaloniaClassic.Infrastructure;
 
 namespace DotNetCampus.Installer.AvaloniaClassic.ViewModels;
 
@@ -19,7 +20,7 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private string _currentStepText = "Preparing installation files...";
     private string _progressDetailText = "Waiting for installation to begin.";
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(ClassicInstallerProgram? installerProgram)
     {
         StartInstallationCommand = new AsyncRelayCommand(StartInstallationAsync, () => HasAcceptedLicense && IsPreparing);
         CancelInstallationCommand = new RelayCommand(CancelInstallation, () => IsInstalling);
