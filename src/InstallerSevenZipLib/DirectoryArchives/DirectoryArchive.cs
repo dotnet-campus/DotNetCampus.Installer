@@ -619,7 +619,7 @@ public static partial class DirectoryArchive
     /// </summary>
     /// <param name="archiveFileInfo"></param>
     /// <returns></returns>
-    public static async Task<ReadOnlyDirectoryArchive> OpenReadAsync(FileInfo archiveFileInfo)
+    public static async Task<IDirectoryArchive> OpenReadAsync(FileInfo archiveFileInfo)
     {
         var archiveStream = archiveFileInfo.OpenRead();
         // 不能释放 archiveStream 对象，应该被 ReadOnlyDirectoryArchive 所释放
@@ -631,7 +631,7 @@ public static partial class DirectoryArchive
     /// </summary>
     /// <param name="archiveStream"></param>
     /// <returns></returns>
-    public static async Task<ReadOnlyDirectoryArchive> OpenReadAsync(Stream archiveStream)
+    public static async Task<IDirectoryArchive> OpenReadAsync(Stream archiveStream)
     {
         var header = await DecompressDirectoryArchiveHeaderAsync(archiveStream);
 

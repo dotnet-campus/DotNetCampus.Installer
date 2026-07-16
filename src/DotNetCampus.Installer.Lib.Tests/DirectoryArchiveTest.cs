@@ -52,7 +52,7 @@ public class DirectoryArchiveTest
 
         await DirectoryArchive.CompressAsync(inputFileList, outputFileInfo, workingFolder);
 
-        ReadOnlyDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
+        IDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
         Assert.HasCount(folderCount * fileCount, directoryArchive.EntryFileList);
 
         var hashSet = directoryArchive.EntryFileList.Select(t => t.RelativePath.RelativePath).ToImmutableHashSet();
@@ -99,7 +99,7 @@ public class DirectoryArchiveTest
 
         await DirectoryArchive.CompressAsync(inputFileList, outputFileInfo, workingFolder);
 
-        ReadOnlyDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
+        IDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
         Assert.HasCount(fileCount, directoryArchive.EntryFileList);
 
         var outputFolder = Path.Join(testFolder, "Output");
@@ -185,7 +185,7 @@ public class DirectoryArchiveTest
 
         await DirectoryArchive.CompressAsync(new DirectoryInfo(testInputFolder), outputFileInfo, workingFolder);
 
-        ReadOnlyDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
+        IDirectoryArchive directoryArchive = await DirectoryArchive.OpenReadAsync(outputFileInfo);
         Assert.HasCount(fileCount, directoryArchive.EntryFileList);
 
         var outputFolder = Path.Join(testFolder, "Output");

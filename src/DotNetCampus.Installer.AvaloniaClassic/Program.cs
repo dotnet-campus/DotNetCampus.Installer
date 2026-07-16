@@ -46,7 +46,7 @@ internal static class Program
 
         var overlayInstallerContentStream = readOverlayInstallerContent.Value.ContentStream;
 
-        ReadOnlyDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
+        IDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
 
     }
 

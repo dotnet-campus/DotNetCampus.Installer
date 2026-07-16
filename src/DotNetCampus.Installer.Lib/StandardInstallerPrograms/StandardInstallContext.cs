@@ -231,7 +231,7 @@ public record StandardInstallContext
     /// <br/>
     /// 注：此方法为上层封装，预设默认为 Overlay 内容为压缩的内容，如需进行更底层控制，请使用 <see cref="GetOverlayInstallerContentStream"/> 或 <see cref="GetOverlayInstallerContentStream"/> 方法
     /// </remarks>
-    public async Task<ReadOnlyDirectoryArchive?> GetOverlayDirectoryArchive()
+    public async Task<IDirectoryArchive?> GetOverlayDirectoryArchive()
     {
         if (_directoryArchive != null)
         {
@@ -244,12 +244,12 @@ public record StandardInstallContext
             return null;
         }
 
-        ReadOnlyDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
+        IDirectoryArchive readOnlyDirectoryArchive = await DirectoryArchive.OpenReadAsync(overlayInstallerContentStream);
         _directoryArchive = readOnlyDirectoryArchive;
         return _directoryArchive;
     }
 
-    private ReadOnlyDirectoryArchive? _directoryArchive;
+    private IDirectoryArchive? _directoryArchive;
 
     /// <summary>
     /// 获取放在 PE 文件的 Overlay 部分的安装器内容信息。底层方法，上层为 <see cref="GetOverlayDirectoryArchive"/> 方法
