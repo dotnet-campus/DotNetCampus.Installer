@@ -50,7 +50,7 @@
                                     Grid.ColumnSpan="2"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    IsVisible="{Binding IsCompleted}">
+                                    IsVisible="{Binding ShouldShowLaunchApplicationOption}">
                 <LayoutTransformControl.LayoutTransform>
                     <ScaleTransform ScaleX="0.82" ScaleY="0.82" />
                 </LayoutTransformControl.LayoutTransform>

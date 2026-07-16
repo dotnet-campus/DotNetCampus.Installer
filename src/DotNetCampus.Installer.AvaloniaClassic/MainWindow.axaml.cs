@@ -20,6 +20,7 @@ public partial class MainWindow : Window
         DataContext = _viewModel;
         InitializeComponent();
 
+        Loaded += (_, _) => SetInstallerWindowHandle(installerProgram);
         _viewModel.CloseRequested += (_, _) => Close();
         _viewModel.BrowseInstallationFolderRequested += async (_, _) => await BrowseInstallationFolderAsync();
         Closed += (_, _) => _viewModel.Dispose();
@@ -31,7 +32,7 @@ public partial class MainWindow : Window
     {
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Select Installation Folder",
+            Title = _viewModel.BrowseInstallationFolderTitle,
             AllowMultiple = false
         });
 
@@ -39,6 +40,14 @@ public partial class MainWindow : Window
         if (folder is not null)
         {
             _viewModel.SetInstallationFolder(folder.Path.LocalPath);
+        }
+    }
+
+    private void SetInstallerWindowHandle(ClassicInstallerProgram? installerProgram)
+    {
+        if (installerProgram is not null && TryGetPlatformHandle() is { } handle)
+        {
+            installerProgram.StandardInstallContext.InstallerUIWindowHandler = handle.Handle;
         }
     }
 }
