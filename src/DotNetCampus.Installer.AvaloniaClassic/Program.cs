@@ -32,8 +32,7 @@ internal static class Program
     // https://github.com/dotnet/runtime/issues/73099
     public static int Main(string[] args)
     {
-        var installContext = InitAsync().Result;
-        var program = new ClassicInstallerProgram(installContext);
+        var program = InitAsync().Result;
 
         if (!program.CheckEnvironment())
         {
@@ -69,7 +68,7 @@ internal static class Program
         return appBuilder;
     }
 
-    private static async Task<StandardInstallContext> InitAsync()
+    private static async Task<ClassicInstallerProgram> InitAsync()
     {
         var directoryArchive = await GetDirectoryArchiveAsync();
 
@@ -86,7 +85,7 @@ internal static class Program
         var appConfigurator = await LoadInstallerConfigurationAsync(directoryArchive);
         var installerConfiguration = appConfigurator.Of<StandardInstallerConfiguration>();
         var installContext = installerConfiguration.CreateInstallContext(directoryArchive, new DirectoryInfo(workingFolder));
-        return installContext;
+        return new ClassicInstallerProgram(installContext, appConfigurator);
     }
 
     /// <summary>
