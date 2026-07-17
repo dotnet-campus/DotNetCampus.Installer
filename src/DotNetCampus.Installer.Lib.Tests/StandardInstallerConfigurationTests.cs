@@ -3,6 +3,7 @@ using dotnetCampus.Configurations.Core;
 using DotNetCampus.Installer.Lib.Exceptions;
 using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
+using Microsoft.DotNet.Archive;
 
 namespace DotNetCampus.Installer.Lib.Tests;
 
@@ -85,6 +86,92 @@ public class StandardInstallerConfigurationTests
 
         var actual = await File.ReadAllTextAsync(Path.Join(context.MainInstallPath, "Content.txt"));
         Assert.AreEqual(expected, actual);
+    }
+
+    [TestMethod(DisplayName = "解压目录归档时应报告当前文件和聚合字节进度")]
+    [Timeout(10_000)]
+    public async Task WhenArchiveIsDecompressedThenCurrentFileAndAggregateByteProgressAreReported()
+    {
+        var testFolder = Directory.CreateDirectory(Path.Join(Path.GetTempPath(), Path.GetRandomFileName()));
+        IDirectoryArchiveEntryFile firstEntry = new TestDirectoryArchiveEntryFile(
+            @"Packing\First.txt",
+            [1, 2, 3],
+            [1]);
+        IDirectoryArchiveEntryFile secondEntry = new TestDirectoryArchiveEntryFile(
+            @"Packing\Nested\Second.txt",
+            [4, 5, 6, 7, 8],
+            [2]);
+        await using var directoryArchive = new FakeDirectoryArchive([firstEntry, secondEntry]);
+        var context = CreateValidConfiguration().CreateInstallContext(directoryArchive, testFolder);
+        context.MainInstallPath = Path.Join(testFolder.FullName, "Output");
+        using var installerProgram = new TestStandardInstallerProgram(context);
+        var actual = new List<(
+            string CurrentFileName,
+            long DecompressedBytes,
+            long TotalBytes,
+            double ProgressPercentage)>();
+        var progress = new InlineProgress<StandardInstallerDecompressProgress>(report => actual.Add((
+            report.CurrentFileName,
+            report.DecompressedBytes,
+            report.TotalBytes,
+            report.ProgressPercentage)));
+
+        await installerProgram.Decompress(progress, CancellationToken.None);
+
+        List<(
+            string CurrentFileName,
+            long DecompressedBytes,
+            long TotalBytes,
+            double ProgressPercentage)> expected =
+        [
+            ("First.txt", 0, 8, 0),
+            ("First.txt", 1, 8, 12.5),
+            ("First.txt", 3, 8, 37.5),
+            (@"Nested\Second.txt", 3, 8, 37.5),
+            (@"Nested\Second.txt", 5, 8, 62.5),
+            (@"Nested\Second.txt", 8, 8, 100)
+        ];
+        CollectionAssert.AreEqual(expected, actual);
+    }
+
+    [TestMethod(DisplayName = "解压开始前取消时应立即抛出取消异常")]
+    [Timeout(10_000)]
+    public async Task WhenCancellationIsRequestedBeforeDecompressionThenOperationCanceledExceptionIsThrown()
+    {
+        var testFolder = Directory.CreateDirectory(Path.Join(Path.GetTempPath(), Path.GetRandomFileName()));
+        IDirectoryArchiveEntryFile entry = new TestDirectoryArchiveEntryFile(
+            @"Packing\Content.txt",
+            [1, 2, 3],
+            [1]);
+        await using var directoryArchive = new FakeDirectoryArchive([entry]);
+        var context = CreateValidConfiguration().CreateInstallContext(directoryArchive, testFolder);
+        context.MainInstallPath = Path.Join(testFolder.FullName, "Output");
+        using var installerProgram = new TestStandardInstallerProgram(context);
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            installerProgram.Decompress(progress: null, cancellationTokenSource.Token));
+    }
+
+    [TestMethod(DisplayName = "解压过程中取消时应抛出取消异常")]
+    [Timeout(10_000)]
+    public async Task WhenCancellationIsRequestedDuringDecompressionThenOperationCanceledExceptionIsThrown()
+    {
+        var testFolder = Directory.CreateDirectory(Path.Join(Path.GetTempPath(), Path.GetRandomFileName()));
+        using var cancellationTokenSource = new CancellationTokenSource();
+        IDirectoryArchiveEntryFile entry = new TestDirectoryArchiveEntryFile(
+            @"Packing\Content.txt",
+            [1, 2, 3],
+            [1, 2],
+            cancellationTokenSource.Cancel);
+        await using var directoryArchive = new FakeDirectoryArchive([entry]);
+        var context = CreateValidConfiguration().CreateInstallContext(directoryArchive, testFolder);
+        context.MainInstallPath = Path.Join(testFolder.FullName, "Output");
+        using var installerProgram = new TestStandardInstallerProgram(context);
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            installerProgram.Decompress(progress: null, cancellationTokenSource.Token));
     }
 
     [TestMethod(DisplayName = "目录归档为空时应抛出参数为空异常")]
@@ -215,5 +302,45 @@ public class StandardInstallerConfigurationTests
     private sealed class TestStandardInstallerProgram(StandardInstallContext context) : StandardInstallerProgram
     {
         public override StandardInstallContext StandardInstallContext { get; } = context;
+    }
+
+    private sealed class TestDirectoryArchiveEntryFile(
+        string relativePath,
+        byte[] content,
+        IReadOnlyList<long> progressTicks,
+        Action? progressReported = null) : IDirectoryArchiveEntryFile
+    {
+        public DirectoryArchiveEntryRelativePath RelativePath { get; } = relativePath;
+
+        public long CompressedFileLength => content.Length;
+
+        public long OriginFileLength => content.Length;
+
+        public async Task CopyToAsync(Stream destinationStream, IProgress<ProgressReport>? progress = null)
+        {
+            ArgumentNullException.ThrowIfNull(destinationStream);
+
+            foreach (var ticks in progressTicks)
+            {
+                progress?.Report(new ProgressReport("Decompressing", ticks, content.Length));
+                progressReported?.Invoke();
+            }
+
+            await destinationStream.WriteAsync(content).ConfigureAwait(false);
+        }
+
+        public async Task SaveToFileAsync(FileInfo outputFile, IProgress<ProgressReport>? progress = null)
+        {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
+            outputFile.Directory?.Create();
+            await using var outputStream = outputFile.Create();
+            await CopyToAsync(outputStream, progress).ConfigureAwait(false);
+        }
+    }
+
+    private sealed class InlineProgress<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
     }
 }

@@ -2,6 +2,7 @@
 using DotNetCampus.Installer.Lib.SplashScreens;
 using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
+using Microsoft.DotNet.Archive;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -368,44 +369,51 @@ public abstract class StandardInstallerProgram : IDisposable
     /// <summary>
     /// 解压缩，将放在 Overlay 里的内容或 <see cref="StandardInstallContext.ContentResourceAssetsInfo"/> 内容解压缩到安装路径下
     /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
-    public virtual async Task Decompress()
+    /// <exception cref="InvalidOperationException">安装包中没有可解压缩的内容。</exception>
+    public virtual Task Decompress() => Decompress(progress: null, CancellationToken.None);
+
+    /// <summary>
+    /// 解压缩，将放在 Overlay 里的内容或 <see cref="StandardInstallContext.ContentResourceAssetsInfo"/> 内容解压缩到安装路径下
+    /// </summary>
+    /// <param name="progress">用于接收解压缩进度的对象。</param>
+    /// <param name="cancellationToken">用于取消解压缩操作的令牌。</param>
+    /// <exception cref="InvalidOperationException">安装包中没有可解压缩的内容。</exception>
+    /// <exception cref="OperationCanceledException">解压缩操作已取消。</exception>
+    public virtual async Task Decompress(IProgress<StandardInstallerDecompressProgress>? progress,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // 优先使用 Overlay 里的内容
         // 优势在于： 可以一次做好安装包，之后不需要重复构建，只需要每次在模版 exe 添加 Overlay 内容就可以了
         // 其次是可以突破 PE 文件的 2 GB 大小限制
         // 再次是可以减少工作集的大小，在 Windows 里面，不会加载 Overlay 里的内容到内存中
         // 但带来的缺点是杀毒软件会扫描更久一点，且最好是添加数字签名，否则杀毒软件会误报。数字签名将放在 Overlay 之后，因此需要先添加 Overlay 内容，让数字签名作为最后步骤
-        var directoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive();
+        var directoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (directoryArchive is not null)
         {
             Logger.WriteLog($"Decompress from Overlay to '{StandardInstallContext.MainInstallPath}'");
 
             // 按照约定，取 Packing\ 路径下的内容进行解压缩
-            bool anyPackingContent = false;
-            foreach (var directoryArchiveEntryFile in directoryArchive.EntryFileList)
-            {
-                const string packingPrefix = @"Packing\";
-                var entryRelativePath = directoryArchiveEntryFile.RelativePath.RelativePath;
-                if (entryRelativePath.StartsWith(packingPrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    var relativePath = entryRelativePath.Substring(packingPrefix.Length);
-                    var outputFile = new FileInfo(Path.Join(StandardInstallContext.MainInstallPath, relativePath));
-
-                    outputFile.Directory?.Create();
-
-                    await directoryArchiveEntryFile.SaveToFileAsync(outputFile);
-
-                    anyPackingContent = true;
-                }
-            }
-
-            if (!anyPackingContent)
+            const string packingPrefix = @"Packing\";
+            var entryList = directoryArchive.EntryFileList
+                .Where(file => file.RelativePath.RelativePath.StartsWith(
+                    packingPrefix,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (entryList.Count == 0)
             {
                 // 没有任何加入到安装包里的内容
                 throw new InvalidOperationException();
             }
 
+            await ExtractEntriesAsync(
+                entryList,
+                static relativePath => relativePath[packingPrefix.Length..],
+                progress,
+                cancellationToken).ConfigureAwait(false);
             return;
         }
 
@@ -415,10 +423,65 @@ public abstract class StandardInstallerProgram : IDisposable
             throw new InvalidOperationException();
         }
 
-        var mainInstallPath = StandardInstallContext.MainInstallPath;
         await using var stream = contentResourceAssetsInfo.Value.GetManifestResourceStream();
-        await DirectoryArchive.DecompressAsync(stream,
-            Directory.CreateDirectory(mainInstallPath));
+        await using var embeddedDirectoryArchive = await DirectoryArchive.OpenReadAsync(stream).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await ExtractEntriesAsync(
+            embeddedDirectoryArchive.EntryFileList,
+            static relativePath => relativePath,
+            progress,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task ExtractEntriesAsync(
+        IReadOnlyList<IDirectoryArchiveEntryFile> entryList,
+        Func<string, string> relativePathTransform,
+        IProgress<StandardInstallerDecompressProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        var totalPayloadBytes = entryList.Sum(static file => file.OriginFileLength);
+        long completedPayloadBytes = 0;
+
+        foreach (var entry in entryList)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var relativePath = relativePathTransform(entry.RelativePath.RelativePath);
+            var outputFile = new FileInfo(Path.Join(StandardInstallContext.MainInstallPath, relativePath));
+            outputFile.Directory?.Create();
+            IProgress<ProgressReport>? entryProgress = null;
+            if (progress is not null || cancellationToken.CanBeCanceled)
+            {
+                entryProgress = new InlineProgress<ProgressReport>(report =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var currentFileBytes = Math.Clamp(report.Ticks, 0, entry.OriginFileLength);
+                    progress?.Report(new StandardInstallerDecompressProgress(
+                        relativePath,
+                        completedPayloadBytes + currentFileBytes,
+                        totalPayloadBytes));
+                });
+            }
+
+            progress?.Report(new StandardInstallerDecompressProgress(
+                relativePath,
+                completedPayloadBytes,
+                totalPayloadBytes));
+            await entry.SaveToFileAsync(outputFile, entryProgress).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            completedPayloadBytes += entry.OriginFileLength;
+            progress?.Report(new StandardInstallerDecompressProgress(
+                relativePath,
+                completedPayloadBytes,
+                totalPayloadBytes));
+        }
+    }
+
+    private sealed class InlineProgress<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
     }
 
     #endregion

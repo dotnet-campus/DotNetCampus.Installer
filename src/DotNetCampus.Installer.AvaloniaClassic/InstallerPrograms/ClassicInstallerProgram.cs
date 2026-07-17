@@ -1,11 +1,7 @@
 ﻿using dotnetCampus.Configurations;
 using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
-using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
-using Microsoft.DotNet.Archive;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,7 +66,14 @@ public class ClassicInstallerProgram : StandardInstallerProgram
         Logger.SetLogFile(logFile);
 
         ReportProgress(DecompressStartProgress, ClassicInstallerProgressStage.DeployingApplicationFiles);
-        await DecompressAsync(cancellationToken).ConfigureAwait(false);
+        var decompressProgress = new InlineProgress<StandardInstallerDecompressProgress>(progress =>
+        {
+            ReportProgress(
+                CalculateDecompressProgress(progress.ProgressPercentage),
+                ClassicInstallerProgressStage.DeployingApplicationFiles,
+                progress.CurrentFileName);
+        });
+        await Decompress(decompressProgress, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         ReportProgress(RegisterProgress, ClassicInstallerProgressStage.RegisteringApplication);
@@ -84,9 +87,6 @@ public class ClassicInstallerProgram : StandardInstallerProgram
         ReportProgress(100, ClassicInstallerProgressStage.Completed);
     }
 
-    /// <inheritdoc />
-    public override Task Decompress() => DecompressAsync(CancellationToken.None);
-
     internal bool TryLaunchApplication()
     {
         var launcherExeFullPath = StandardInstallContext.GetLauncherExeFullPath();
@@ -99,80 +99,6 @@ public class ClassicInstallerProgram : StandardInstallerProgram
         return StartProcessWithShellProcessToken(launcherExeFullPath);
     }
 
-    private async Task DecompressAsync(CancellationToken cancellationToken)
-    {
-        var overlayDirectoryArchive = await StandardInstallContext.GetOverlayDirectoryArchive().ConfigureAwait(false);
-        if (overlayDirectoryArchive is not null)
-        {
-            const string packingPrefix = @"Packing\";
-            var overlayEntryList = overlayDirectoryArchive.EntryFileList
-                .Where(file => file.RelativePath.RelativePath.StartsWith(packingPrefix, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (overlayEntryList.Count == 0)
-            {
-                throw new InvalidOperationException();
-            }
-
-            await ExtractEntriesAsync(
-                overlayEntryList,
-                static relativePath => relativePath[packingPrefix.Length..],
-                cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
-        var contentResourceAssetsInfo = StandardInstallContext.ContentResourceAssetsInfo;
-        if (contentResourceAssetsInfo is null)
-        {
-            throw new InvalidOperationException();
-        }
-
-        await using var contentStream = contentResourceAssetsInfo.Value.GetManifestResourceStream();
-        await using var embeddedDirectoryArchive = await DirectoryArchive.OpenReadAsync(contentStream).ConfigureAwait(false);
-        await ExtractEntriesAsync(
-            embeddedDirectoryArchive.EntryFileList,
-            static relativePath => relativePath,
-            cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task ExtractEntriesAsync(
-        IReadOnlyList<IDirectoryArchiveEntryFile> entryList,
-        Func<string, string> relativePathTransform,
-        CancellationToken cancellationToken)
-    {
-        var totalPayloadBytes = entryList.Sum(static file => file.OriginFileLength);
-        long completedPayloadBytes = 0;
-
-        foreach (var entry in entryList)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var relativePath = relativePathTransform(entry.RelativePath.RelativePath);
-            var outputFile = new FileInfo(Path.Join(StandardInstallContext.MainInstallPath, relativePath));
-            var entryProgress = new InlineProgress<ProgressReport>(report =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var currentFileBytes = Math.Clamp(report.Ticks, 0, entry.OriginFileLength);
-                ReportProgress(
-                    CalculateDecompressProgress(completedPayloadBytes + currentFileBytes, totalPayloadBytes),
-                    ClassicInstallerProgressStage.DeployingApplicationFiles,
-                    relativePath);
-            });
-
-            ReportProgress(
-                CalculateDecompressProgress(completedPayloadBytes, totalPayloadBytes),
-                ClassicInstallerProgressStage.DeployingApplicationFiles,
-                relativePath);
-            await entry.SaveToFileAsync(outputFile, entryProgress).ConfigureAwait(false);
-
-            completedPayloadBytes += entry.OriginFileLength;
-            ReportProgress(
-                CalculateDecompressProgress(completedPayloadBytes, totalPayloadBytes),
-                ClassicInstallerProgressStage.DeployingApplicationFiles,
-                relativePath);
-        }
-    }
-
     private void ReportProgress(
         double progressPercentage,
         ClassicInstallerProgressStage stage,
@@ -183,16 +109,10 @@ public class ClassicInstallerProgram : StandardInstallerProgram
             new ClassicInstallerProgressChangedEventArgs(progressPercentage, stage, currentFileName));
     }
 
-    private static double CalculateDecompressProgress(long completedPayloadBytes, long totalPayloadBytes)
-    {
-        if (totalPayloadBytes <= 0)
-        {
-            return DecompressEndProgress;
-        }
-
-        var ratio = Math.Clamp(completedPayloadBytes / (double) totalPayloadBytes, 0, 1);
-        return DecompressStartProgress + (DecompressEndProgress - DecompressStartProgress) * ratio;
-    }
+    private static double CalculateDecompressProgress(double decompressProgressPercentage) =>
+        DecompressStartProgress
+        + (DecompressEndProgress - DecompressStartProgress)
+        * Math.Clamp(decompressProgressPercentage / 100, 0, 1);
 
     private sealed class InlineProgress<T>(Action<T> report) : IProgress<T>
     {
