@@ -73,7 +73,7 @@ public class ClassicInstallerProgram : StandardInstallerProgram
                 ClassicInstallerProgressStage.DeployingApplicationFiles,
                 progress.CurrentFileName);
         });
-        await Decompress(decompressProgress, cancellationToken).ConfigureAwait(false);
+        await Decompress(decompressProgress, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
 
         ReportProgress(RegisterProgress, ClassicInstallerProgressStage.RegisteringApplication);

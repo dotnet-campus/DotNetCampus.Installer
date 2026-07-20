@@ -170,11 +170,23 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void InstallerProgram_ProgressChanged(object? sender, InstallerProgressChangedEventArgs e)
     {
-        InstallProgress = e.ProgressPercentage;
-        InstallProgressText = $"{e.ProgressPercentage:0}%";
-        InstallStepText = e.StageText;
-        InstallDetailText = e.DetailText;
-        CurrentFileName = e.CurrentFileName ?? string.Empty;
+        void UpdateProgress()
+        {
+            InstallProgress = e.ProgressPercentage;
+            InstallProgressText = $"{e.ProgressPercentage:0}%";
+            InstallStepText = e.StageText;
+            InstallDetailText = e.DetailText;
+            CurrentFileName = e.CurrentFileName ?? string.Empty;
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            UpdateProgress();
+        }
+        else
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(UpdateProgress, DispatcherPriority.Send);
+        }
     }
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

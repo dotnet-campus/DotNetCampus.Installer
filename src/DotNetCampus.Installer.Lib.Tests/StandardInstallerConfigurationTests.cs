@@ -154,6 +154,59 @@ public class StandardInstallerConfigurationTests
             installerProgram.Decompress(progress: null, cancellationTokenSource.Token));
     }
 
+    [TestMethod(DisplayName = "调用解压时应在线程池执行归档条目释放")]
+    [Timeout(10_000)]
+    public async Task WhenDecompressIsCalledThenArchiveEntryIsExtractedOnThreadPool()
+    {
+        var testFolder = Directory.CreateDirectory(Path.Join(Path.GetTempPath(), Path.GetRandomFileName()));
+        var extractionThreadId = 0;
+        var extractionThreadIsThreadPoolThread = false;
+        IDirectoryArchiveEntryFile entry = new TestDirectoryArchiveEntryFile(
+            @"Packing\Content.txt",
+            [1, 2, 3],
+            [],
+            savingStarted: () =>
+            {
+                extractionThreadId = Environment.CurrentManagedThreadId;
+                extractionThreadIsThreadPoolThread = Thread.CurrentThread.IsThreadPoolThread;
+            });
+        await using var directoryArchive = new FakeDirectoryArchive([entry]);
+        var context = CreateValidConfiguration().CreateInstallContext(directoryArchive, testFolder);
+        context.MainInstallPath = Path.Join(testFolder.FullName, "Output");
+        using var installerProgram = new TestStandardInstallerProgram(context);
+        var completionSource = new TaskCompletionSource<(int CallerThreadId, int ExtractionThreadId, bool IsThreadPoolThread)>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var callerThread = new Thread(() =>
+        {
+            var callerThreadId = Environment.CurrentManagedThreadId;
+            var decompressTask = installerProgram.Decompress();
+            _ = ObserveDecompressionAsync(decompressTask, callerThreadId);
+
+            async Task ObserveDecompressionAsync(Task task, int threadId)
+            {
+                try
+                {
+                    await task.ConfigureAwait(false);
+                    completionSource.SetResult((threadId, extractionThreadId, extractionThreadIsThreadPoolThread));
+                }
+                catch (Exception exception)
+                {
+                    completionSource.SetException(exception);
+                }
+            }
+        })
+        {
+            IsBackground = true
+        };
+
+        callerThread.Start();
+        var actual = await completionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual(
+            (IsCallerThread: false, IsThreadPoolThread: true),
+            (IsCallerThread: actual.CallerThreadId == actual.ExtractionThreadId, actual.IsThreadPoolThread));
+    }
+
     [TestMethod(DisplayName = "解压过程中取消时应抛出取消异常")]
     [Timeout(10_000)]
     public async Task WhenCancellationIsRequestedDuringDecompressionThenOperationCanceledExceptionIsThrown()
@@ -308,7 +361,8 @@ public class StandardInstallerConfigurationTests
         string relativePath,
         byte[] content,
         IReadOnlyList<long> progressTicks,
-        Action? progressReported = null) : IDirectoryArchiveEntryFile
+        Action? progressReported = null,
+        Action? savingStarted = null) : IDirectoryArchiveEntryFile
     {
         public DirectoryArchiveEntryRelativePath RelativePath { get; } = relativePath;
 
@@ -333,6 +387,7 @@ public class StandardInstallerConfigurationTests
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
+            savingStarted?.Invoke();
             outputFile.Directory?.Create();
             await using var outputStream = outputFile.Create();
             await CopyToAsync(outputStream, progress).ConfigureAwait(false);

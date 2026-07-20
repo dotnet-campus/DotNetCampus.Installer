@@ -129,7 +129,7 @@ public class InstallerProgram : StandardInstallerProgram
             var outputFile = new FileInfo(Path.Join(installDirectory.FullName, relativePath));
             outputFile.Directory?.Create();
 
-            var progress = new Progress<ProgressReport>(report =>
+            var progress = new InlineProgress<ProgressReport>(report =>
             {
                 var percentage = CalculateProgress(completedPayloadBytes + report.Ticks, totalPayloadBytes);
                 ReportProgress(percentage, "部署安装文件", $"正在写入 {relativePath}", relativePath);
@@ -159,5 +159,10 @@ public class InstallerProgram : StandardInstallerProgram
 
         var ratio = Math.Clamp(completedPayloadBytes / (double) totalPayloadBytes, 0, 1);
         return DecompressStartProgress + (DecompressEndProgress - DecompressStartProgress) * ratio;
+    }
+
+    private sealed class InlineProgress<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
     }
 }

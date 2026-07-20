@@ -377,9 +377,23 @@ public abstract class StandardInstallerProgram : IDisposable
     /// </summary>
     /// <param name="progress">用于接收解压缩进度的对象。</param>
     /// <param name="cancellationToken">用于取消解压缩操作的令牌。</param>
+    /// <remarks>
+    /// 内置解压实现在线程池执行，进度回调可能从后台线程触发。UI 调用方应使用能够封送到 UI 上下文的
+    /// <see cref="Progress{T}"/>，或在回调中显式使用 UI 调度器。
+    /// </remarks>
     /// <exception cref="InvalidOperationException">安装包中没有可解压缩的内容。</exception>
     /// <exception cref="OperationCanceledException">解压缩操作已取消。</exception>
-    public virtual async Task Decompress(IProgress<StandardInstallerDecompressProgress>? progress,
+    public virtual Task Decompress(IProgress<StandardInstallerDecompressProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // 底层 LZMA 解压是同步 CPU 计算，必须在进入 InstallerSevenZipLib 前切换到线程池。
+        return Task.Run(() => DecompressCoreAsync(progress, cancellationToken));
+    }
+
+    private async Task DecompressCoreAsync(
+        IProgress<StandardInstallerDecompressProgress>? progress,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -50,21 +51,8 @@ public partial class MainWindow : Window
             ViewModel.InstallStatus = InstallStatus.Installing;
 
             // 点击了开始安装的按钮，现在开始安装
-            // 需要切换一下界面
-            await Task.Run(async () =>
-            {
-                try
-                {
-                    await InstallerProgram.InstallAsync();
-                }
-                catch (Exception exception)
-                {
-                    InstallerProgram.Logger.WriteLog($"[Error] Install Fail. {exception}");
-                    ViewModel.InstallStepText = "安装失败";
-                    ViewModel.InstallDetailText = exception.Message;
-                    ViewModel.InstallStatus = InstallStatus.Error;
-                }
-            });
+            // 安装过程包含同步 LZMA 解压，必须在后台线程执行。
+            await Task.Run(InstallerProgram.InstallAsync);
 
             if (ViewModel.InstallStatus == InstallStatus.Installing)
             {
@@ -73,8 +61,25 @@ public partial class MainWindow : Window
         }
         catch (Exception exception)
         {
-            // async void 捕获全部异常
-            Debug.WriteLine(exception);
+            // await 会回到 UI 线程，在这里统一更新界面状态。
+            try
+            {
+                InstallerProgram.Logger.WriteLog($"[Error] Install Fail. {exception}");
+            }
+            catch (IOException loggingException)
+            {
+                // 安装失败状态必须优先展示，不能让日志文件错误中断 UI 更新。
+                Trace.WriteLine(loggingException);
+            }
+            catch (UnauthorizedAccessException loggingException)
+            {
+                // 安装失败状态必须优先展示，不能让日志权限错误中断 UI 更新。
+                Trace.WriteLine(loggingException);
+            }
+
+            ViewModel.InstallStepText = "安装失败";
+            ViewModel.InstallDetailText = exception.Message;
+            ViewModel.InstallStatus = InstallStatus.Error;
         }
         finally
         {

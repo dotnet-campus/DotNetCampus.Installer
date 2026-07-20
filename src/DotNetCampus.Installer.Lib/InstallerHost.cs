@@ -139,7 +139,7 @@ public class InstallerHost
     /// <param name="context"></param>
     protected virtual async Task Install(InstallContext context)
     {
-        await InstallByIndependentInstallerProcess(context);
+        await InstallByIndependentInstallerProcess(context).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -162,7 +162,8 @@ public class InstallerHost
         else
 #endif
         {
-            installerApplicationFile = await ExtractInstallerAssets();
+            // 私有资源解压包含同步 LZMA 计算，不改变可重写 Install 方法的起始线程。
+            installerApplicationFile = await Task.Run(ExtractInstallerAssets).ConfigureAwait(false);
         }
 
         List<string> argumentList =
@@ -212,7 +213,7 @@ public class InstallerHost
         using var assetsStream = installerResourceAssetsInfo.GetManifestResourceStream();
         var resourceAssetsFolder = Directory.CreateDirectory(Path.Join(workingFolder.FullName, installerResourceAssetsInfo.ManifestResourceName));
 
-        await DirectoryArchive.DecompressAsync(assetsStream, resourceAssetsFolder);
+        await DirectoryArchive.DecompressAsync(assetsStream, resourceAssetsFolder).ConfigureAwait(false);
 
         // 带界面的安装包界面程序
         var installerApplicationFile = Path.Join(resourceAssetsFolder.FullName, _configuration.InstallerRelativePath);
