@@ -1,0 +1,27 @@
+﻿name: DotNetBuild
+
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          9.0.x
+          10.0.x
+
+    - name: Build
+      run: dotnet build -c release
+
+    - name: Test
+      run: dotnet test -c release -v:n --tl:off --no-build --logger:"console;verbosity=detailed"
+
+    - name: Pack
+      run: dotnet pack -c release --no-build

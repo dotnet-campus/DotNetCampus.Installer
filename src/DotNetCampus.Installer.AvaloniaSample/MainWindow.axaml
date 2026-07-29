@@ -1,0 +1,74 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
+        xmlns:views="clr-namespace:DotNetCampus.Installer.AvaloniaSample.Views"
+        mc:Ignorable="d"
+        d:DesignWidth="540"
+        d:DesignHeight="326"
+        x:Class="DotNetCampus.Installer.AvaloniaSample.MainWindow"
+        x:DataType="viewModels:MainViewModel"
+        Width="600"
+        Height="370"
+        CanResize="False"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        SystemDecorations="None"
+        Title="Installer">
+    <Border Margin="0 0 12 12" Classes="window-shell">
+        <Grid RowDefinitions="56,*,105">
+            <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_OnPointerPressed">
+                <Grid Margin="12,0,0,0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                    <Border Width="34" Height="34" CornerRadius="12" Background="{StaticResource InstallerAccentBrush}">
+                        <Grid>
+                            <Border Margin="8" CornerRadius="6" Background="#33FFFFFF"/>
+                            <Border Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="3" Background="White"/>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock FontSize="15" FontWeight="SemiBold" Text="{Binding ProductName}"/>
+                        <TextBlock Classes="caption" Text="现代化安装体验"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <Button Classes="icon-button" Click="MinimizeButton_OnClick">
+                            <Path Classes="window-action-icon" Margin="0,3,0,0" Height="NaN" VerticalAlignment="Center" Data="M1,10 L9,10 9,11 1,11 Z"/>
+                        </Button>
+                        <Button Classes="icon-button danger" Click="CloseButton_OnClick">
+                            <Path Classes="window-action-icon" Data="M1.5,2.2 2.2,1.5 5,4.3 7.8,1.5 8.5,2.2 5.7,5 8.5,7.8 7.8,8.5 5,5.7 2.2,8.5 1.5,7.8 4.3,5 Z"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="12,6,12,14" >
+                <Border Classes="card hero-panel" Padding="18 0 18 0">
+                    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+                        <Border Classes="badge" Margin="0 5 0 0" HorizontalAlignment="Left">
+                            <TextBlock Classes="caption" Foreground="White" Text="安装向导"/>
+                        </Border>
+
+                        <StackPanel Grid.Row="1" Spacing="6">
+                            <TextBlock Classes="hero-title" Text="{Binding InstallHeadline}"/>
+                            <TextBlock Classes="hero-subtitle" Text="{Binding InstallDescription}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2"  Spacing="4"
+                                    Orientation="Horizontal">
+                            <TextBlock Classes="caption" VerticalAlignment="Center" Margin="0,0,2,0" Text="版本" />
+                            <TextBlock Classes="metric-value" VerticalAlignment="Center" Text="{Binding AppVersion}" />
+                        </StackPanel>
+
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            <views:InstallBarUserControl x:Name="InstallBar" Grid.Row="2"/>
+            <views:InstallStatusUserControl x:Name="InstallStatusControl" Grid.Row="2" IsVisible="False"/>
+            <views:InstallFinishUserControl x:Name="InstallFinishControl" Grid.Row="2" IsVisible="False" OnFinish="InstallFinishControl_OnOnFinish"/>
+        </Grid>
+    </Border>
+</Window>
