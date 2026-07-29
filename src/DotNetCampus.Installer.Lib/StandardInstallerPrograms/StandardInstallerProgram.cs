@@ -754,7 +754,7 @@ public abstract class StandardInstallerProgram : IDisposable
     /// 此方法使用堆栈遍历目录，先登记删除所有文件，再从内向外登记删除文件夹。遇到目录重解析点时只登记删除重解析点本身，不遍历其目标目录。
     /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现。详细请参阅 [Win32 使用 MoveFileEx 延迟到重启后删除文件 - lindexi - 博客园](https://www.cnblogs.com/lindexi/p/19572306 )
     /// </remarks>
-    /// <returns>是否成功登记全部删除操作。由于实际删除发生在下次机器重启之后，返回 true 也不能代表最终删除成功</returns>
+    /// <returns>返回 <see langword="true"/> 表示成功加入到下次开机重启时删除文件夹</returns>
     protected bool DeleteFolderDelayUntilReboot(DirectoryInfo folder)
     {
         ArgumentNullException.ThrowIfNull(folder);
