@@ -1,4 +1,4 @@
-﻿using DotNetCampus.Installer.Lib.EnvironmentCheckers;
+using DotNetCampus.Installer.Lib.EnvironmentCheckers;
 using DotNetCampus.Installer.Lib.SplashScreens;
 using DotNetCampus.Installer.Lib.Utils;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
@@ -733,38 +733,72 @@ public abstract class StandardInstallerProgram : IDisposable
     /// <remarks>
     /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现。详细请参阅 [Win32 使用 MoveFileEx 延迟到重启后删除文件 - lindexi - 博客园](https://www.cnblogs.com/lindexi/p/19572306 )
     /// </remarks>
-    /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
+    /// <returns>是否成功登记删除操作。由于实际删除发生在下次机器重启之后，返回 true 也不能代表最终删除成功</returns>
     protected bool DeleteFileDelayUntilReboot(FileInfo file)
     {
-        PInvoke.MoveFileEx(file.FullName, null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
+        ArgumentNullException.ThrowIfNull(file);
 
         if (!WindowsIdentityHelper.IsAdministratorRole())
         {
             return false;
         }
 
-        return true;
+        return PInvoke.MoveFileEx(file.FullName, null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
     }
 
     /// <summary>
-    /// 延迟到下次开机启动之后删除空文件夹。要求删除到此文件夹时，此文件夹已经是空文件夹。如需删除非空文件夹，请先遍历子文件和子文件夹，逐一调用 <see cref="DeleteFileDelayUntilReboot"/> 和 <see cref="DeleteFolderDelayUntilReboot"/> 进行删除
+    /// 延迟到下次开机启动之后删除文件夹及其包含的所有文件和子文件夹
     /// </summary>
     /// <param name="folder"></param>
     /// <remarks>
+    /// 此方法使用堆栈遍历目录，先登记删除所有文件，再从内向外登记删除文件夹。遇到目录重解析点时只登记删除重解析点本身，不遍历其目标目录。
     /// 通过 KERNEL32.dll 的 MoveFileEx 传入 MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT 参数实现。详细请参阅 [Win32 使用 MoveFileEx 延迟到重启后删除文件 - lindexi - 博客园](https://www.cnblogs.com/lindexi/p/19572306 )
     /// </remarks>
-    /// <returns>由于实际删除发生在下次机器重启之后，此方法即使返回 true 也不能代表最终成功</returns>
+    /// <returns>是否成功登记全部删除操作。由于实际删除发生在下次机器重启之后，返回 true 也不能代表最终删除成功</returns>
     protected bool DeleteFolderDelayUntilReboot(DirectoryInfo folder)
     {
-        // 这个方法是不对的，应该遍历，逆序遍历调用
-        PInvoke.MoveFileEx(folder.FullName, null, MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
+        ArgumentNullException.ThrowIfNull(folder);
 
         if (!WindowsIdentityHelper.IsAdministratorRole())
         {
             return false;
         }
 
-        return true;
+        var foldersToVisit = new Stack<DirectoryInfo>();
+        var foldersToDelete = new Stack<DirectoryInfo>();
+        foldersToVisit.Push(folder);
+
+        var isSuccess = true;
+        while (foldersToVisit.Count > 0)
+        {
+            var currentFolder = foldersToVisit.Pop();
+            foldersToDelete.Push(currentFolder);
+
+            if ((currentFolder.Attributes & FileAttributes.ReparsePoint) != 0)
+            {
+                continue;
+            }
+
+            foreach (var file in currentFolder.EnumerateFiles())
+            {
+                isSuccess &= PInvoke.MoveFileEx(file.FullName, null,
+                    MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
+            }
+
+            foreach (var subFolder in currentFolder.EnumerateDirectories())
+            {
+                foldersToVisit.Push(subFolder);
+            }
+        }
+
+        while (foldersToDelete.Count > 0)
+        {
+            var currentFolder = foldersToDelete.Pop();
+            isSuccess &= PInvoke.MoveFileEx(currentFolder.FullName, null,
+                MOVE_FILE_FLAGS.MOVEFILE_DELAY_UNTIL_REBOOT);
+        }
+
+        return isSuccess;
     }
 
     #endregion
