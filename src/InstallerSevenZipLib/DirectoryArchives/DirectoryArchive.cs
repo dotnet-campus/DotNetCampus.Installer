@@ -1,4 +1,4 @@
-﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives.Exceptions;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives.Exceptions;
 
 using Microsoft.DotNet.Archive;
 
@@ -209,6 +209,10 @@ public static partial class DirectoryArchive
     // - RelativePath: String
     // - FileContentOffset: Int64
     // - CompressedFileLength 压缩后的文件长度: Int64
+    // - OriginFileLength 原始文件长度: Int64
+    // - CompressMode: Byte
+    // - CreationTimeUtc: Int64 (UTC ticks)
+    // - LastWriteTimeUtc: Int64 (UTC ticks)
     // 按照 FileBlock 顺序存放各个文件
     //
     // 压缩实现逻辑：
@@ -333,6 +337,8 @@ public static partial class DirectoryArchive
                 CompressedFileLength = compressedFileLength,
                 OriginFileLength = originFileLength,
                 CompressMode = compressProgressFile.FileInfo.CompressMode,
+                CreationTimeUtc = compressProgressFile.FileInfo.FileInfo.CreationTimeUtc,
+                LastWriteTimeUtc = compressProgressFile.FileInfo.FileInfo.LastWriteTimeUtc,
             };
 
             // 更新下一个文件的偏移量，应该相对于压缩后的内容
@@ -360,6 +366,8 @@ public static partial class DirectoryArchive
             writer.WriteInt64(fileBlock.CompressedFileLength);
             writer.WriteInt64(fileBlock.OriginFileLength);
             stream.WriteByte((byte) fileBlock.CompressMode);
+            writer.WriteInt64(fileBlock.CreationTimeUtc.GetValueOrDefault().Ticks);
+            writer.WriteInt64(fileBlock.LastWriteTimeUtc.GetValueOrDefault().Ticks);
         }
     }
 
@@ -394,6 +402,8 @@ public static partial class DirectoryArchive
                              + sizeof(long) // CompressedFileLength field
                              + sizeof(long) // OriginFileLength field
                              + sizeof(CompressMode) // CompressMode field
+                             + sizeof(long) // CreationTimeUtc ticks
+                             + sizeof(long) // LastWriteTimeUtc ticks
                              ;
                 return length;
             }
@@ -442,6 +452,10 @@ public static partial class DirectoryArchive
         /// 压缩模式
         /// </summary>
         public required CompressMode CompressMode { get; init; }
+
+        public DateTime? CreationTimeUtc { get; init; }
+
+        public DateTime? LastWriteTimeUtc { get; init; }
     }
 
     /// <summary>
@@ -469,51 +483,8 @@ public static partial class DirectoryArchive
     {
         progress ??= new DirectoryArchiveDecompressProgress(shouldIgnore: true);
 
-        var header = await DecompressDirectoryArchiveHeaderAsync(archiveFileStream);
-        var fileBlockList = header.FileBlockList;
-        var contentPosition = header.ContentPosition;
-
-        progress.Start(fileBlockList.Count);
-
-        for (var i = 0; i < fileBlockList.Count; i++)
-        {
-            var fileBlock = fileBlockList[i];
-            var outputFilePath = Path.Join(outputFolder.FullName, fileBlock.RelativePath);
-            var outputFileDirectory = Path.GetDirectoryName(outputFilePath);
-            if (outputFileDirectory is not null)
-            {
-                Directory.CreateDirectory(outputFileDirectory);
-            }
-            else
-            {
-                Debug.Fail($"预期肯定能拿到文件夹");
-            }
-
-            await using var outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-
-            var contentFileStartPosition = contentPosition + fileBlock.FileContentOffset;
-            await using var fileCompressedStream = new SliceStream(archiveFileStream, contentFileStartPosition,
-                fileBlock.CompressedFileLength, leaveOpen: true);
-
-            if (fileBlock.CompressMode == CompressMode.NoCompression)
-            {
-                // 无压缩，直接拷贝
-                // 此时的 fileCompressedStream 的压缩方式为无压缩，解压方式为直接拷贝
-                await fileCompressedStream.CopyToAsync(outputFileStream);
-            }
-            else if(fileBlock.CompressMode == CompressMode.LZMA)
-            {
-                CompressionUtility.Decompress(fileCompressedStream, outputFileStream, progress.UpdateCurrentDecompress(outputFilePath));
-            }
-            else
-            {
-                throw new NotSupportedException($"当前不支持 CompressMode 为 {fileBlock.CompressMode} 的方式");
-            }
-
-            progress.SetCurrentDecompressFinish();
-        }
-
-        progress.Finish();
+        await using var archive = await OpenReadAsync(archiveFileStream, leaveOpen: true).ConfigureAwait(false);
+        await archive.DecompressAsync(outputFolder, progress).ConfigureAwait(false);
     }
 
     private static async ValueTask<DecompressDirectoryArchiveHeader> DecompressDirectoryArchiveHeaderAsync(Stream archiveFileStream)
@@ -584,6 +555,20 @@ public static partial class DirectoryArchive
             CompressMode compressMode = (CompressMode) fileBlockStream.ReadByte();
 
             var expectedPosition = position + fileBlockLength;
+            DateTime? creationTimeUtc = null;
+            DateTime? lastWriteTimeUtc = null;
+            if (expectedPosition > fileBlockStream.Position)
+            {
+                if (expectedPosition - fileBlockStream.Position < 2 * sizeof(long)
+                    || expectedPosition > fileBlockStream.Length)
+                {
+                    throw new InvalidDataException();
+                }
+
+                creationTimeUtc = new DateTime(reader.ReadInt64(), DateTimeKind.Utc);
+                lastWriteTimeUtc = new DateTime(reader.ReadInt64(), DateTimeKind.Utc);
+            }
+
             if (fileBlockStream.Position != expectedPosition)
             {
                 fileBlockStream.Position = expectedPosition;
@@ -597,6 +582,8 @@ public static partial class DirectoryArchive
                 CompressedFileLength = compressedFileLength,
                 OriginFileLength = originFileLength,
                 CompressMode = compressMode,
+                CreationTimeUtc = creationTimeUtc,
+                LastWriteTimeUtc = lastWriteTimeUtc,
             };
         }
 
@@ -705,8 +692,20 @@ public static partial class DirectoryArchive
         {
             outputFile.Directory?.Create();
 
-            await using var outputFileStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None);
-            await CopyToAsync(outputFileStream, progress);
+            await using (var outputFileStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await CopyToAsync(outputFileStream, progress).ConfigureAwait(false);
+            }
+
+            if (FileBlock.CreationTimeUtc is { } creationTimeUtc)
+            {
+                File.SetCreationTimeUtc(outputFile.FullName, creationTimeUtc);
+            }
+
+            if (FileBlock.LastWriteTimeUtc is { } lastWriteTimeUtc)
+            {
+                File.SetLastWriteTimeUtc(outputFile.FullName, lastWriteTimeUtc);
+            }
         }
     }
 }

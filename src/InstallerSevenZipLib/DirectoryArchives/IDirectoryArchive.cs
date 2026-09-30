@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using DotNetCampus.InstallerSevenZipLib.DirectoryArchives.Exceptions;
 
@@ -71,8 +71,8 @@ public interface IDirectoryArchive : IDisposable, IAsyncDisposable
                 Debug.Fail($"预期肯定能拿到文件夹");
             }
 
-            await using var outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-            await entryFile.CopyToAsync(outputFileStream, progress.UpdateCurrentDecompress(outputFilePath));
+            await entryFile.SaveToFileAsync(new FileInfo(outputFilePath), progress.UpdateCurrentDecompress(outputFilePath))
+                .ConfigureAwait(false);
 
             progress.SetCurrentDecompressFinish();
         }

@@ -1,4 +1,4 @@
-﻿using Microsoft.DotNet.Archive;
+using Microsoft.DotNet.Archive;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
@@ -83,10 +83,17 @@ public class FakeDirectoryArchive : IDirectoryArchive
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
+            var creationTimeUtc = _fileInfo.CreationTimeUtc;
+            var lastWriteTimeUtc = _fileInfo.LastWriteTimeUtc;
             outputFile.Directory?.Create();
-            await using var outputFileStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write,
-                FileShare.None);
-            await CopyToAsync(outputFileStream, progress).ConfigureAwait(false);
+            await using (var outputFileStream = new FileStream(outputFile.FullName, FileMode.Create, FileAccess.Write,
+                FileShare.None))
+            {
+                await CopyToAsync(outputFileStream, progress).ConfigureAwait(false);
+            }
+
+            File.SetCreationTimeUtc(outputFile.FullName, creationTimeUtc);
+            File.SetLastWriteTimeUtc(outputFile.FullName, lastWriteTimeUtc);
         }
     }
 }
