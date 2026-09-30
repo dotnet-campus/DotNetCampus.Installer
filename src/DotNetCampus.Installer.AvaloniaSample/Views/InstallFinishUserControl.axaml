@@ -1,0 +1,26 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaSample.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="DotNetCampus.Installer.AvaloniaSample.Views.InstallFinishUserControl"
+             x:DataType="viewModels:MainViewModel">
+    <Border Classes="footer-panel" Margin="12,0,12,12" Padding="16,12">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+            <Border Width="40" Height="40" CornerRadius="12" Background="#263F6F">
+                <Grid>
+                    <Border Width="18" Height="18" CornerRadius="6" Background="#35C78A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="White" Text="✓"/>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                <TextBlock Classes="strong-label" FontSize="15" Text="{Binding InstallHeadline}"/>
+                <TextBlock Classes="caption" Text="{Binding InstallDescription}" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Button x:Name="FinishInstallButton" Grid.Column="2" Classes="primary" Click="FinishInstallButton_OnClick" Content="{Binding FinishButtonText}"/>
+        </Grid>
+    </Border>
+</UserControl>

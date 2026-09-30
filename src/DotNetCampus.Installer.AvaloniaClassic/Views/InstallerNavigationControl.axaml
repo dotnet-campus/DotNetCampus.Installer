@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.ViewModels"
+             x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.InstallerNavigationControl"
+             x:DataType="viewModels:MainWindowViewModel">
+    <UserControl.Styles>
+        <Style Selector="Button.navigation-button">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <Border BorderBrush="#CCD2D6" BorderThickness="0,1,0,0" Background="#F4F7F9">
+        <Grid Margin="20,6,20,8"
+              RowDefinitions="14,28"
+              ColumnDefinitions="325,78,*,90"
+              ColumnSpacing="10">
+            <TextBlock x:Name="InstallationFolderLabel"
+                       Grid.Row="0"
+                       Grid.Column="0"
+                       Text="{Binding InstallationFolderLabel}"
+                       FontSize="10"
+                       Margin="1,0,0,0"
+                       VerticalAlignment="Top"
+                       IsVisible="{Binding IsPreparing}" />
+
+            <TextBox x:Name="InstallationFolderTextBox"
+                     Grid.Row="1"
+                     Grid.Column="0"
+                     Height="28"
+                     Padding="6,2"
+                     FontSize="11"
+                     VerticalContentAlignment="Center"
+                     Text="{Binding InstallationFolder}"
+                     IsVisible="{Binding IsPreparing}" />
+
+            <Button x:Name="BrowseButton"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Classes="navigation-button"
+                    Content="{Binding BrowseButtonText}"
+                    Command="{Binding BrowseInstallationFolderCommand}"
+                    IsVisible="{Binding IsPreparing}" />
+
+            <LayoutTransformControl x:Name="LaunchApplicationPanel"
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding ShouldShowLaunchApplicationOption}">
+                <LayoutTransformControl.LayoutTransform>
+                    <ScaleTransform ScaleX="0.82" ScaleY="0.82" />
+                </LayoutTransformControl.LayoutTransform>
+                <CheckBox x:Name="LaunchApplicationCheckBox"
+                          IsChecked="{Binding ShouldLaunchApplication}"
+                          FontSize="14"
+                          VerticalContentAlignment="Center"
+                          Content="{Binding LaunchApplicationText}" />
+            </LayoutTransformControl>
+
+            <Button x:Name="NextButton"
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    Width="90"
+                    Classes="navigation-button primary"
+                    Content="{Binding NextButtonText}"
+                    Command="{Binding StartInstallationCommand}"
+                    IsVisible="{Binding IsPreparing}" />
+            <Button x:Name="CancelButton"
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    Width="90"
+                    Classes="navigation-button"
+                    Content="{Binding CancelButtonText}"
+                    Command="{Binding CancelInstallationCommand}"
+                    IsVisible="{Binding IsInstalling}" />
+            <Button x:Name="FinishButton"
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    Width="90"
+                    Classes="navigation-button"
+                    Content="{Binding FinishButtonText}"
+                    Command="{Binding FinishCommand}"
+                    IsVisible="{Binding IsCompleted}" />
+        </Grid>
+    </Border>
+</UserControl>

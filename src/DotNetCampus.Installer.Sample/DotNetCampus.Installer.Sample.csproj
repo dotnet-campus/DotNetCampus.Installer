@@ -11,7 +11,7 @@
     <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.CommandLine.Compiler</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.Cli.Compiler</InterceptorsNamespaces>
   </PropertyGroup>
 
   <ItemGroup>

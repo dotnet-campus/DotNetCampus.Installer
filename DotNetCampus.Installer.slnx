@@ -1,0 +1,41 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/GitHub Actions/">
+    <File Path="D:/lindexi/Code/dotnetcampus/DotNetCampus.Installer/.github/workflows/dotnet-build.yml" />
+    <File Path="D:/lindexi/Code/dotnetcampus/DotNetCampus.Installer/.github/workflows/nuget-tag-publish.yml" />
+  </Folder>
+  <Folder Name="/Lib/">
+    <Project Path="src/DotNetCampus.Installer.Lib.Tests/DotNetCampus.Installer.Lib.Tests.csproj" />
+    <Project Path="src/DotNetCampus.Installer.Lib/DotNetCampus.Installer.Lib.csproj" />
+    <Project Path="src/InstallerSevenZipLib/InstallerSevenZipLib.csproj" />
+  </Folder>
+  <Folder Name="/Pack/">
+    <Project Path="src/DotNetCampus.Installer.Packing/DotNetCampus.Installer.Packing.csproj" />
+  </Folder>
+  <Folder Name="/Sample/">
+    <Project Path="src/DotNetCampus.Installer.AvaloniaClassic/DotNetCampus.Installer.AvaloniaClassic.csproj">
+      <Platform Solution="*|x86" Project="x86" />
+    </Project>
+    <Project Path="src/DotNetCampus.Installer.AvaloniaSample/DotNetCampus.Installer.AvaloniaSample.csproj">
+      <BuildDependency Project="src/InstallerCreateTool/InstallerCreateTool.csproj" />
+      <Platform Solution="Debug|x86" Project="x86" />
+    </Project>
+    <Project Path="src/DotNetCampus.Installer.Sample/DotNetCampus.Installer.Sample.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="build/Version.props" />
+    <File Path="Directory.Build.props" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="README.zh-CN.md" />
+  </Folder>
+  <Folder Name="/Tool/">
+    <Project Path="src/InstallerCreateTool/InstallerCreateTool.csproj" />
+    <Project Path="src/InstallerSevenZipTool/InstallerSevenZipTool.csproj" />
+  </Folder>
+  <Project Path="src/DotNetCampus.Installer.Boost/DotNetCampus.Installer.Boost.csproj" />
+</Solution>

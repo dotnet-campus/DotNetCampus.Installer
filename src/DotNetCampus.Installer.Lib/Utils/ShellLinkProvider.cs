@@ -1,0 +1,29 @@
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+
+using Windows.Win32;
+using Windows.Win32.System.Com;
+using Windows.Win32.UI.Shell;
+
+namespace DotNetCampus.Installer.Lib.Utils;
+
+[SupportedOSPlatform("windows5.1.2600")]
+internal static class ShellLinkProvider
+{
+    public static unsafe IShellLinkW* CreateShellLink()
+    {
+        IShellLinkW* link = CreateCom<IShellLinkW>(CLSID_IShellLinkW);
+        return link;
+    }
+
+    private static readonly Guid CLSID_IShellLinkW = new Guid("00021401-0000-0000-C000-000000000046");
+
+    private static unsafe T* CreateCom<T>(in Guid clsid)
+        where T : unmanaged
+    {
+        var hr = PInvoke.CoCreateInstance<T>(in clsid, /* No aggregation */ null, CLSCTX.CLSCTX_INPROC_SERVER, out var ptr);
+        hr.ThrowOnFailure();
+
+        return ptr;
+    }
+}

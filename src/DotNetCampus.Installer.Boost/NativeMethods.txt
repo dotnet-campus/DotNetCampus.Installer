@@ -1,3 +1,0 @@
-﻿LoadLibrary
-GetProcAddress
-MessageBox

@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.ViewModels"
+             x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.PrepareInstallControl"
+             x:DataType="viewModels:MainWindowViewModel">
+    <Border Classes="content-card" Padding="22,18">
+        <Grid RowDefinitions="Auto,Auto,150,Auto" RowSpacing="10">
+            <TextBlock Text="{Binding PreparationHeadline}" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Grid.Row="1"
+                       Text="{Binding PreparationDescription}"
+                       FontSize="12"
+                       LineHeight="15"
+                       TextWrapping="Wrap" />
+            <TextBox Grid.Row="2"
+                     Text="{Binding LicenseText}"
+                     FontSize="11"
+                     Padding="7,5"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            <CheckBox Grid.Row="3"
+                      x:Name="AgreementCheckBox"
+                      IsChecked="{Binding HasAcceptedLicense}"
+                      Content="{Binding LicenseAgreementText}"
+                      FontSize="11"
+                      VerticalAlignment="Center" />
+        </Grid>
+    </Border>
+</UserControl>

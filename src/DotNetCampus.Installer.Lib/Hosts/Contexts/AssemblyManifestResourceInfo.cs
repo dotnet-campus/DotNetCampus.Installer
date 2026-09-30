@@ -9,6 +9,11 @@ namespace DotNetCampus.Installer.Lib.Hosts.Contexts;
 /// <param name="ManifestResourceName"></param>
 public readonly record struct AssemblyManifestResourceInfo(Assembly Assembly, string ManifestResourceName)
 {
+    /// <summary>
+    /// 获取资源内容
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public Stream GetManifestResourceStream()
     {
         var resourceInfo = this;
