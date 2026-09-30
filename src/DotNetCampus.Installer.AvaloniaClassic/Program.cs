@@ -132,8 +132,8 @@ internal static class Program
                 return fakeDirectoryArchive;
             }
 #endif
-            PInvoke.MessageBox(HWND.Null, $"安装包内容损坏，无法获取到安装包内容", "安装包损坏", MESSAGEBOX_STYLE.MB_OK);
-            throw new InstallerException($"安装包内容损坏，无法获取到安装包内容");
+            PInvoke.MessageBox(HWND.Null, LocalizedText.Current.CorruptedPackageMessage, LocalizedText.Current.CorruptedPackageTitle, MESSAGEBOX_STYLE.MB_OK);
+            throw new InstallerException(LocalizedText.Current.CorruptedPackageMessage);
         }
         else
         {

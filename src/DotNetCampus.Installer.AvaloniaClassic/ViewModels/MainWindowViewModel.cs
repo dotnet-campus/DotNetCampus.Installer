@@ -24,9 +24,9 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private bool _shouldLaunchApplication = true;
     private bool _installationSucceeded;
     private double _installationProgress;
-    private string _progressHeadline = "Installing DotNetCampus Installer...";
-    private string _currentStepText = "Preparing installation files...";
-    private string _progressDetailText = "Waiting for installation to begin.";
+    private string _progressHeadline = LocalizedText.Current.InstallingHeadline.ToString("DotNetCampus Installer");
+    private string _currentStepText = LocalizedText.Current.PreparingFilesText;
+    private string _progressDetailText = LocalizedText.Current.WaitingText;
 
     public MainWindowViewModel(ClassicInstallerProgram? installerProgram)
     {
@@ -49,36 +49,36 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
 
     public event EventHandler? BrowseInstallationFolderRequested;
 
-    public string WindowTitle { get; private set; } = "DotNetCampus Installer Setup";
+    public string WindowTitle { get; private set; } = LocalizedText.Current.WindowTitle.ToString("DotNetCampus Installer");
 
     public string ProductName { get; private set; } = "DotNetCampus Installer";
 
-    public string WelcomeText { get; private set; } = "Welcome to the\nDotNetCampus Installer Setup";
+    public string WelcomeText { get; private set; } = LocalizedText.Current.WelcomeText.ToString("DotNetCampus Installer");
 
-    public string PreparationHeadline { get; private set; } = "Ready to Install";
+    public string PreparationHeadline { get; private set; } = LocalizedText.Current.PreparationHeadline;
 
-    public string PreparationDescription { get; private set; } = "Setup is ready to install DotNetCampus Installer on your computer. Close other applications before continuing, then select Next to begin.";
+    public string PreparationDescription { get; private set; } = LocalizedText.Current.PreparationDescription.ToString("DotNetCampus Installer");
 
-    public string LicenseText { get; private set; } = "DotNetCampus Installer is a deployment tool for packaging and installing .NET desktop applications. Before continuing, review the selected installation folder and confirm that you accept the applicable license terms. The installer will copy the required files, register application components, and create the selected shortcuts. You can cancel setup while installation is in progress.";
+    public string LicenseText { get; private set; } = LocalizedText.Current.LicenseText.ToString("DotNetCampus Installer");
 
-    public string LicenseAgreementText { get; private set; } = "I have read and accept the license agreement";
+    public string LicenseAgreementText { get; private set; } = LocalizedText.Current.LicenseAgreementText;
 
-    public string InstallationFolderLabel { get; private set; } = "Installation Folder";
+    public string InstallationFolderLabel { get; private set; } = LocalizedText.Current.InstallationFolderLabel;
 
     /// <summary>
     /// 获取安装目录选择窗口的标题。
     /// </summary>
-    public string BrowseInstallationFolderTitle { get; private set; } = "Select Installation Folder";
+    public string BrowseInstallationFolderTitle { get; private set; } = LocalizedText.Current.BrowseInstallationFolderTitle;
 
-    public string BrowseButtonText { get; private set; } = "Browse...";
+    public string BrowseButtonText { get; private set; } = LocalizedText.Current.BrowseButtonText;
 
-    public string NextButtonText { get; private set; } = "Next >";
+    public string NextButtonText { get; private set; } = LocalizedText.Current.NextButtonText;
 
-    public string CancelButtonText { get; private set; } = "Cancel";
+    public string CancelButtonText { get; private set; } = LocalizedText.Current.CancelButtonText;
 
-    public string FinishButtonText { get; private set; } = "Finish";
+    public string FinishButtonText { get; private set; } = LocalizedText.Current.FinishButtonText;
 
-    public string LaunchApplicationText { get; private set; } = "Launch the application when setup finishes";
+    public string LaunchApplicationText { get; private set; } = LocalizedText.Current.LaunchApplicationText.ToString("DotNetCampus Installer");
 
     /// <summary>
     /// 获取安装完成后是否有可启动的应用程序。
@@ -178,31 +178,28 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
         var productName = context.DisplayProductName;
 
         ProductName = productName;
-        WindowTitle = GetConfiguredText(configuration.WindowTitle, $"{productName} Setup");
-        WelcomeText = GetConfiguredText(configuration.WelcomeText, $"Welcome to the\n{productName} Setup");
-        PreparationHeadline = GetConfiguredText(configuration.PreparationHeadline, "Ready to Install");
-        PreparationDescription = GetConfiguredText(
-            configuration.PreparationDescription,
-            $"Setup is ready to install {productName} on your computer. Close other applications before continuing, then select Next to begin.");
-        LicenseText = GetConfiguredText(
-            configuration.LicenseText,
-            $"Before installing {productName}, review the selected installation folder and confirm that you accept the applicable license terms. Setup will copy the required files, register application components, and create the available shortcuts. You can cancel setup while installation is in progress.");
-        LicenseAgreementText = GetConfiguredText(configuration.LicenseAgreementText, "I have read and accept the license agreement");
-        InstallationFolderLabel = GetConfiguredText(configuration.InstallationFolderLabel, "Installation Folder");
-        BrowseInstallationFolderTitle = GetConfiguredText(configuration.BrowseInstallationFolderTitle, "Select Installation Folder");
-        BrowseButtonText = GetConfiguredText(configuration.BrowseButtonText, "Browse...");
-        NextButtonText = GetConfiguredText(configuration.NextButtonText, "Next >");
-        CancelButtonText = GetConfiguredText(configuration.CancelButtonText, "Cancel");
-        FinishButtonText = GetConfiguredText(configuration.FinishButtonText, "Finish");
-        LaunchApplicationText = GetConfiguredText(configuration.LaunchApplicationText, $"Launch {productName} when setup finishes");
+        var text = LocalizedText.Current;
+        WindowTitle = GetConfiguredText(configuration.WindowTitle, text.WindowTitle.ToString(productName));
+        WelcomeText = GetConfiguredText(configuration.WelcomeText, text.WelcomeText.ToString(productName));
+        PreparationHeadline = GetConfiguredText(configuration.PreparationHeadline, text.PreparationHeadline);
+        PreparationDescription = GetConfiguredText(configuration.PreparationDescription, text.PreparationDescription.ToString(productName));
+        LicenseText = GetConfiguredText(configuration.LicenseText, text.LicenseText.ToString(productName));
+        LicenseAgreementText = GetConfiguredText(configuration.LicenseAgreementText, text.LicenseAgreementText);
+        InstallationFolderLabel = GetConfiguredText(configuration.InstallationFolderLabel, text.InstallationFolderLabel);
+        BrowseInstallationFolderTitle = GetConfiguredText(configuration.BrowseInstallationFolderTitle, text.BrowseInstallationFolderTitle);
+        BrowseButtonText = GetConfiguredText(configuration.BrowseButtonText, text.BrowseButtonText);
+        NextButtonText = GetConfiguredText(configuration.NextButtonText, text.NextButtonText);
+        CancelButtonText = GetConfiguredText(configuration.CancelButtonText, text.CancelButtonText);
+        FinishButtonText = GetConfiguredText(configuration.FinishButtonText, text.FinishButtonText);
+        LaunchApplicationText = GetConfiguredText(configuration.LaunchApplicationText, text.LaunchApplicationText.ToString(productName));
 
         _installationFolder = context.InstallRootPath;
         _hasAcceptedLicense = configuration.HasAcceptedLicenseByDefault ?? false;
         _shouldLaunchApplication = installerProgram.CanLaunchApplication
             && (configuration.ShouldLaunchApplicationByDefault ?? true);
-        _progressHeadline = GetConfiguredText(configuration.InstallingHeadline, $"Installing {productName}...");
-        _currentStepText = GetConfiguredText(configuration.PreparingInstallationStepText, "Preparing installation files...");
-        _progressDetailText = GetConfiguredText(configuration.PreparingInstallationDetailText, "Waiting for installation to begin.");
+        _progressHeadline = GetConfiguredText(configuration.InstallingHeadline, text.InstallingHeadline.ToString(productName));
+        _currentStepText = GetConfiguredText(configuration.PreparingInstallationStepText, text.PreparingFilesText);
+        _progressDetailText = GetConfiguredText(configuration.PreparingInstallationDetailText, text.WaitingText);
     }
 
     private static string GetConfiguredText(string? configuredText, string fallbackText)
@@ -321,26 +318,27 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private (string StepText, string DetailText) GetProgressText(ClassicInstallerProgressChangedEventArgs e)
     {
         var configuration = _classicInstallerConfiguration;
+        var text = LocalizedText.Current;
         return e.Stage switch
         {
             ClassicInstallerProgressStage.PreparingInstallation =>
-                (GetConfiguredText(configuration?.PreparingInstallationStepText, "Preparing installation..."),
-                    GetConfiguredText(configuration?.PreparingInstallationDetailText, "Initializing installation settings.")),
+                (GetConfiguredText(configuration?.PreparingInstallationStepText, text.PreparingInstallationStepText),
+                    GetConfiguredText(configuration?.PreparingInstallationDetailText, text.PreparingInstallationDetailText)),
             ClassicInstallerProgressStage.CheckingExistingInstallation =>
-                (GetConfiguredText(configuration?.CheckingExistingInstallationStepText, "Checking existing installation..."),
-                    GetConfiguredText(configuration?.CheckingExistingInstallationDetailText, "Looking for files from an earlier version.")),
+                (GetConfiguredText(configuration?.CheckingExistingInstallationStepText, text.CheckingExistingInstallationStepText),
+                    GetConfiguredText(configuration?.CheckingExistingInstallationDetailText, text.CheckingExistingInstallationDetailText)),
             ClassicInstallerProgressStage.DeployingApplicationFiles =>
-                (GetConfiguredText(configuration?.DeployingApplicationFilesStepText, "Deploying application files..."),
+                (GetConfiguredText(configuration?.DeployingApplicationFilesStepText, text.DeployingApplicationFilesStepText),
                     GetConfiguredText(configuration?.DeployingApplicationFilesDetailText, GetDeployingDetailText(e.CurrentFileName))),
             ClassicInstallerProgressStage.RegisteringApplication =>
-                (GetConfiguredText(configuration?.RegisteringApplicationStepText, "Registering application..."),
-                    GetConfiguredText(configuration?.RegisteringApplicationDetailText, "Writing application information to the system.")),
+                (GetConfiguredText(configuration?.RegisteringApplicationStepText, text.RegisteringApplicationStepText),
+                    GetConfiguredText(configuration?.RegisteringApplicationDetailText, text.RegisteringApplicationDetailText)),
             ClassicInstallerProgressStage.CreatingShortcuts =>
-                (GetConfiguredText(configuration?.CreatingShortcutsStepText, "Creating shortcuts..."),
-                    GetConfiguredText(configuration?.CreatingShortcutsDetailText, "Creating application shortcuts.")),
+                (GetConfiguredText(configuration?.CreatingShortcutsStepText, text.CreatingShortcutsStepText),
+                    GetConfiguredText(configuration?.CreatingShortcutsDetailText, text.CreatingShortcutsDetailText)),
             ClassicInstallerProgressStage.Completed =>
-                (GetConfiguredText(configuration?.InstallationSucceededStepText, $"{ProductName} was installed successfully."),
-                    GetConfiguredText(configuration?.InstallationCompleteDetailText, "Select Finish to close the setup wizard.")),
+                (GetConfiguredText(configuration?.InstallationSucceededStepText, text.InstallationSucceededStepText.ToString(ProductName)),
+                    GetConfiguredText(configuration?.InstallationCompleteDetailText, text.InstallationCompleteDetailText)),
             _ => (CurrentStepText, ProgressDetailText)
         };
     }
@@ -348,18 +346,19 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private string GetDeployingDetailText(string? currentFileName)
     {
         return string.IsNullOrWhiteSpace(currentFileName)
-            ? $"Writing files to {InstallationFolder}."
-            : $"Writing {currentFileName} to {InstallationFolder}.";
+            ? LocalizedText.Current.WritingFilesText.ToString(InstallationFolder)
+            : LocalizedText.Current.WritingFileText.ToString(currentFileName, InstallationFolder);
     }
 
     private async Task ShowSimulatedInstallationAsync(CancellationToken cancellationToken)
     {
-        ProgressHeadline = "Installing DotNetCampus Installer...";
-        await ShowSimulatedStepAsync(8, "Preparing installation...", "Initializing installation settings.", cancellationToken);
-        await ShowSimulatedStepAsync(20, "Checking existing installation...", "Looking for files from an earlier version.", cancellationToken);
-        await ShowSimulatedStepAsync(64, "Deploying application files...", $"Writing files to {InstallationFolder}.", cancellationToken);
-        await ShowSimulatedStepAsync(90, "Registering application...", "Writing application information to the system.", cancellationToken);
-        await ShowSimulatedStepAsync(98, "Creating shortcuts...", "Creating application shortcuts.", cancellationToken);
+        var text = LocalizedText.Current;
+        ProgressHeadline = text.InstallingHeadline.ToString(ProductName);
+        await ShowSimulatedStepAsync(8, text.PreparingInstallationStepText, text.PreparingInstallationDetailText, cancellationToken);
+        await ShowSimulatedStepAsync(20, text.CheckingExistingInstallationStepText, text.CheckingExistingInstallationDetailText, cancellationToken);
+        await ShowSimulatedStepAsync(64, text.DeployingApplicationFilesStepText, text.WritingFilesText.ToString(InstallationFolder), cancellationToken);
+        await ShowSimulatedStepAsync(90, text.RegisteringApplicationStepText, text.RegisteringApplicationDetailText, cancellationToken);
+        await ShowSimulatedStepAsync(98, text.CreatingShortcutsStepText, text.CreatingShortcutsDetailText, cancellationToken);
     }
 
     private async Task ShowSimulatedStepAsync(double progress, string stepText, string detailText, CancellationToken cancellationToken)
@@ -373,24 +372,24 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
     private void ShowCompletedState()
     {
         var configuration = _classicInstallerConfiguration;
-        ProgressHeadline = GetConfiguredText(configuration?.InstallationCompleteHeadline, "Installation Complete");
+        ProgressHeadline = GetConfiguredText(configuration?.InstallationCompleteHeadline, LocalizedText.Current.InstallationCompleteHeadline);
         InstallationProgress = 100;
         CurrentStepText = GetConfiguredText(
             configuration?.InstallationSucceededStepText,
-            $"{ProductName} was installed successfully.");
+            LocalizedText.Current.InstallationSucceededStepText.ToString(ProductName));
         ProgressDetailText = GetConfiguredText(
             configuration?.InstallationCompleteDetailText,
-            "Select Finish to close the setup wizard.");
+            LocalizedText.Current.InstallationCompleteDetailText);
     }
 
     private void ShowFailedState()
     {
         var configuration = _classicInstallerConfiguration;
-        ProgressHeadline = GetConfiguredText(configuration?.InstallationFailedHeadline, "Installation Failed");
-        CurrentStepText = GetConfiguredText(configuration?.InstallationFailedStepText, $"{ProductName} could not be installed.");
+        ProgressHeadline = GetConfiguredText(configuration?.InstallationFailedHeadline, LocalizedText.Current.InstallationFailedHeadline);
+        CurrentStepText = GetConfiguredText(configuration?.InstallationFailedStepText, LocalizedText.Current.InstallationFailedStepText.ToString(ProductName));
         ProgressDetailText = GetConfiguredText(
             configuration?.InstallationFailedDetailText,
-            "Setup encountered an unexpected error. See the installation log for details.");
+            LocalizedText.Current.InstallationFailedDetailText);
     }
 
     private void SetStage(InstallerStage stage)

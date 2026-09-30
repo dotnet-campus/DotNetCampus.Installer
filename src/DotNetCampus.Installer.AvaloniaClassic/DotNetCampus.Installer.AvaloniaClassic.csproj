@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -22,6 +22,7 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="dotnetCampus.Configurations" Version="1.9.1" />
+    <PackageReference Include="DotNetCampus.SourceLocalizations" Version="0.1.1-alpha.6" />
     <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" Version="0.3.264" />
   </ItemGroup>
 
