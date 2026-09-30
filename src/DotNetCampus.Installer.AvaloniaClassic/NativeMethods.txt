@@ -1,11 +1,7 @@
-﻿LoadLibrary
+LoadLibrary
 GetProcAddress
 MessageBox
 
-IShellLinkW
-IPersistFile
-
-CoCreateInstance
 OpenProcess
 OpenProcessToken
 GetExitCodeProcess
