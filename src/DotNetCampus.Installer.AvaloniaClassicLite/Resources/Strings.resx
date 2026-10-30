@@ -1,0 +1,16 @@
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Options" xml:space="preserve"><value>Setup Options</value></data>
+  <data name="Progress" xml:space="preserve"><value>Setup Progress</value></data>
+  <data name="Completed" xml:space="preserve"><value>Installation Successfully Completed</value></data>
+  <data name="Location" xml:space="preserve"><value>Install location:</value></data>
+  <data name="Processing" xml:space="preserve"><value>Processing:</value></data>
+  <data name="Agreement" xml:space="preserve"><value>I agree to the license terms and conditions</value></data>
+  <data name="OptionsButton" xml:space="preserve"><value>_Options</value></data>
+  <data name="InstallButton" xml:space="preserve"><value>_Install</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>_Cancel</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>_Close</value></data>
+  <data name="BrowseButton" xml:space="preserve"><value>_Browse</value></data>
+  <data name="OkButton" xml:space="preserve"><value>_OK</value></data>
+</root>

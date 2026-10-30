@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><IsTestProject>true</IsTestProject><IsPackable>false</IsPackable></PropertyGroup>
+ <ItemGroup>
+  <Content Include="../../../Docs/视觉稿/Install*.png" Link="Designs/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  <PackageReference Include="MSTest" Version="4.0.1" />
+  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+  <PackageReference Include="Avalonia.Headless" Version="11.3.9" />
+  <ProjectReference Include="../DotNetCampus.Installer.AvaloniaClassicLite/DotNetCampus.Installer.AvaloniaClassicLite.csproj" />
+ </ItemGroup>
+</Project>
