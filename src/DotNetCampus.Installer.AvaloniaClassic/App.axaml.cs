@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 
 namespace DotNetCampus.Installer.AvaloniaClassic;
 

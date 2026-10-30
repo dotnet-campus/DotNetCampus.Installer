@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <StartupObject>DotNetCampus.Installer.AvaloniaClassicSimple.Tests.ScreenshotRunner</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.1" />
+    <PackageReference Include="Avalonia.Headless" Version="11.3.9" />
+    <ProjectReference Include="..\DotNetCampus.Installer.AvaloniaClassicSimple\DotNetCampus.Installer.AvaloniaClassicSimple.csproj" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+</Project>

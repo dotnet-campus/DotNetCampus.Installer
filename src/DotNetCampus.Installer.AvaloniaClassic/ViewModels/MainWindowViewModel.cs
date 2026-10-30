@@ -1,5 +1,5 @@
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
 using DotNetCampus.Installer.AvaloniaClassic.Infrastructure;
-using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 
 using Avalonia.Threading;
 using dotnetCampus.Configurations;
