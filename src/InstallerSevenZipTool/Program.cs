@@ -22,7 +22,7 @@ var outputFile = Path.GetFullPath(options.OutputFile);
 
 Console.WriteLine($"开始制作安装包资产文件。输入文件夹： '{inputDirectory}' 输出文件： '{outputFile}'");
 
-DirectoryArchive.Compress(new DirectoryInfo(inputDirectory), new FileInfo(outputFile));
+await DirectoryArchive.CompressAsync(new DirectoryInfo(inputDirectory), new FileInfo(outputFile));
 
 if (options.IgnoreChecksum is not true)
 {
@@ -30,7 +30,7 @@ if (options.IgnoreChecksum is not true)
     // 测试的方法就是解压缩到临时目录，然后检查文件是否完整
     var workingFolder = Path.Join(Path.GetTempPath(), $"Installer_{Path.GetRandomFileName()}");
 
-    DirectoryArchive.Decompress(new FileInfo(outputFile), Directory.CreateDirectory(workingFolder));
+    await DirectoryArchive.DecompressAsync(new FileInfo(outputFile), Directory.CreateDirectory(workingFolder));
 
     // 解压缩完成之后，执行文件对比
     foreach (var originFile in Directory.GetFiles(inputDirectory, "*", SearchOption.AllDirectories))

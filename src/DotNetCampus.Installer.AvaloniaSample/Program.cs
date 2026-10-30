@@ -1,0 +1,139 @@
+﻿using Avalonia;
+
+using DotNetCampus.Installer.AvaloniaSample.StandardInstallerPrograms;
+using DotNetCampus.Installer.Lib.Hosts.Contexts;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
+
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
+using Path = System.IO.Path;
+
+namespace DotNetCampus.Installer.AvaloniaSample;
+
+// 可作为 AOT Lib 被使用，这样可以进行二次压缩，将 14MB 的空安装器，压缩到 6MB 左右
+// 但一旦作为 AOT Lib 被使用，就需要有一定的通讯才能实现 Content Resource 的传递。但额外好处是不需要管 libSkiaSharp.dll 和 libHarfBuzzSharp.dll 的加载问题
+
+internal class Program
+{
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
+    [STAThread]
+    public static int Main(string[] args)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            // 仅支持 Windows 系统运行
+            return -1;
+        }
+
+        using var installerProgram = new InstallerProgram();
+
+        var checkEnvironmentSuccess = installerProgram.CheckEnvironment();
+        if (!checkEnvironmentSuccess)
+        {
+            // 环境不满足安装要求，直接退出
+            return -1;
+        }
+
+        var runResult = installerProgram.RunDefaultCommandLine(args)
+            .Result;
+        if (runResult.ShouldExitsInstallerProcess)
+        {
+            // 如果跑了默认命令行，发现应该结束了，那就结束
+            return runResult.ExitCode;
+        }
+
+        StandardInstallContext context = installerProgram.StandardInstallContext;
+        LoadNativeLibrary(context);
+
+        var returnResult = RunAvalonia(args, installerProgram);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static int RunAvalonia(string[] args, InstallerProgram? installerProgram = null)
+        {
+            return BuildAvaloniaAppInner(installerProgram)
+                 .StartWithClassicDesktopLifetime(args);
+        }
+
+        // 尝试删除垃圾文件
+        return returnResult;
+    }
+
+    private static void LoadNativeLibrary(StandardInstallContext context)
+    {
+        // 先解压缩资产文件，确保在 Avalonia 初始化前完成
+        // 解压 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件。不需要加载 av_libglesv2.dll 库，原因是开了软渲染
+
+        // 以下是采用嵌入程序集的方式存放。这样的方式的缺点在于需要使用先使用 InstallerSevenZipTool 工具压缩的 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件的资源
+        //var assemblyManifestResourceInfo = new AssemblyManifestResourceInfo(Assembly.GetExecutingAssembly(), "DotNetCampus.Installer.AvaloniaSample.Assets.SkiaX86.assets");
+        //using (var stream = assemblyManifestResourceInfo.GetManifestResourceStream())
+        //{
+        //    var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
+
+        //    DirectoryArchive.Decompress(stream, Directory.CreateDirectory(libFolder));
+
+        //    var libSkiaSharpFile = Path.Join(libFolder, "libSkiaSharp.dll");
+        //    var libHarfBuzzSharpFile = Path.Join(libFolder, "libHarfBuzzSharp.dll");
+
+        //    NativeLibrary.Load(libSkiaSharpFile);
+        //    NativeLibrary.Load(libHarfBuzzSharpFile);
+        //}
+
+        // 以下是从 PE 的 Overlay 中解压缩文件的方式
+        // 调试下，可先通过 InstallerCreateTool 工具，将 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件写入 Overlay 中
+        var directoryArchive = context.GetOverlayDirectoryArchive()
+            // 这里强行异步转同步，而不是 async 的原因是为了避免弄坏 STAThread 特性
+            // https://github.com/dotnet/runtime/issues/73099
+            .Result;
+        if (directoryArchive is null)
+        {
+#if DEBUG
+            // 调试下，只是设计界面等逻辑而已，那就不要纠结，直接返回
+            return;
+#endif
+
+            throw new InvalidOperationException($"未能从 PE 文件读取到 Overlay 内容，请确保打包工具正确写入文件");
+        }
+
+        var libFolder = Path.Join(context.WorkingFolder.FullName, "Lib");
+
+        LoadNativeLibrary("libSkiaSharp.dll");
+        LoadNativeLibrary("libHarfBuzzSharp.dll");
+
+        void LoadNativeLibrary(string libraryName)
+        {
+            var libraryEntryFile = directoryArchive.GetEntryFile(libraryName);
+            var libraryOutputPath = Path.Join(libFolder, libraryName);
+            libraryEntryFile.SaveToFileAsync(new FileInfo(libraryOutputPath))
+                // 强行异步转同步，而不是 async 的原因是为了避免弄坏 STAThread 特性
+                .Wait();
+            NativeLibrary.Load(libraryOutputPath);
+        }
+    }
+
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+        => BuildAvaloniaAppInner();
+
+    private static AppBuilder BuildAvaloniaAppInner(InstallerProgram? installerProgram = null)
+    {
+        return AppBuilder.Configure<App>(() => new App(installerProgram))
+            .UsePlatformDetect()
+            .WithInterFont()
+            .With(new Win32PlatformOptions()
+            {
+                RenderingMode =
+                [
+                    // 明确设置使用软渲染，这样可以不加载 5MB 的 av_libglesv2.dll 库
+                    Win32RenderingMode.Software
+                ]
+            })
+            .LogToTrace();
+    }
+}

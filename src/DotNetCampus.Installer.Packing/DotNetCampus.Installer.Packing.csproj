@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>DotNetCampus.Installer</PackageId>
+
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <!-- 暂时还是空白的项目 -->
+    <!-- <GeneratePackageOnBuild>True</GeneratePackageOnBuild> -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
+    <ProjectReference Include="..\InstallerCreateTool\InstallerCreateTool.csproj">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Assets\Package.targets" Pack="True" PackagePath="\build\$(PackageId).targets" />
+  </ItemGroup>
+
+</Project>

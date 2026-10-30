@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
@@ -103,10 +104,11 @@ class DirectoryArchiveProxyOutputStream : Stream
 
         while (count > 0)
         {
+            Debug.Assert(_currentFileStream != null, nameof(_currentFileStream) + " != null");
             var position = _currentFileStream.Position;
             var remindLength = _currentFileLength - position;
 
-            var writeCount = Math.Min(count, (int) remindLength);
+            var writeCount = (int) Math.Min(int.MaxValue, Math.Min(count, remindLength));
             _currentFileStream.Write(buffer, offset, writeCount);
 
             if (writeCount == remindLength)
