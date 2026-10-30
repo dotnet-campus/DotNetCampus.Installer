@@ -39,6 +39,12 @@ internal static class Program
             return -1;
         }
 
+        var runResult = program.RunDefaultCommandLine(args).Result;
+        if (runResult.ShouldExitsInstallerProcess)
+        {
+            return runResult.ExitCode;
+        }
+
         return RunAvalonia(args, program);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
