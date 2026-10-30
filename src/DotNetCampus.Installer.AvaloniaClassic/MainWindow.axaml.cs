@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 
-using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
+using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 using DotNetCampus.Installer.AvaloniaClassic.ViewModels;
 
 using System.Linq;

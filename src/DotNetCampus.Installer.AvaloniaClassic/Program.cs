@@ -5,6 +5,7 @@ using Avalonia.Media;
 using dotnetCampus.Configurations;
 using dotnetCampus.Configurations.Core;
 
+using DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 using DotNetCampus.Installer.Lib.Exceptions;
 using DotNetCampus.Installer.Lib.Logging;
 using DotNetCampus.Installer.Lib.StandardInstallerPrograms;
