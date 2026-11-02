@@ -1,4 +1,5 @@
 using System;
+using dotnetCampus.Configurations;
 using System.ComponentModel;
 using System.Linq;
 using System.Resources;
@@ -24,13 +25,16 @@ public partial class MainWindow : Window
     private readonly MainWindowViewModel _viewModel;
     private readonly ResourceManager _strings = new("DotNetCampus.Installer.AvaloniaClassicLite.Resources.Strings", typeof(MainWindow).Assembly);
     private InstallerPage _page;
+    private readonly bool _hasLicense;
     /// <summary>创建预览窗口。</summary>
     public MainWindow() : this(null) { }
     /// <summary>创建使用实际安装程序的窗口。</summary>
     public MainWindow(ClassicInstallerProgram? installerProgram)
     {
         _viewModel = new MainWindowViewModel(installerProgram);
-        _viewModel.HasAcceptedLicense = false;
+        _hasLicense = installerProgram is null || !string.IsNullOrWhiteSpace(
+            installerProgram.AppConfigurator.Of<ClassicInstallerConfiguration>().LicenseText);
+        _viewModel.HasAcceptedLicense = !_hasLicense;
         _viewModel.ShouldLaunchApplication = true;
         InitializeComponent();
         var product = _viewModel.ProductName;
@@ -54,6 +58,8 @@ public partial class MainWindow : Window
         OkButton.Content = Text("OkButton");
         CancelButton.Content = Text("CancelButton");
         Location.Text = _viewModel.InstallationFolder;
+        InstallButton.IsEnabled = _viewModel.StartInstallationCommand.CanExecute(null);
+        ShowPage(_hasLicense ? InstallerPage.License : InstallerPage.Options);
         _viewModel.CloseRequested += CloseRequested;
         _viewModel.PropertyChanged += ViewModelChanged;
         Loaded += (_, _) =>
@@ -86,8 +92,9 @@ public partial class MainWindow : Window
         OptionsPage.IsVisible = page == InstallerPage.Options;
         ProgressPage.IsVisible = page == InstallerPage.Progress;
         CompletionHeading.IsVisible = page == InstallerPage.Completed;
-        OptionsButton.IsVisible = InstallButton.IsVisible = page == InstallerPage.License;
-        OkButton.IsVisible = page == InstallerPage.Options;
+        OptionsButton.IsVisible = page == InstallerPage.License;
+        InstallButton.IsVisible = page == InstallerPage.License || (!_hasLicense && page == InstallerPage.Options);
+        OkButton.IsVisible = _hasLicense && page == InstallerPage.Options;
         CancelButton.Content = Text(page == InstallerPage.Completed ? "CloseButton" : "CancelButton");
     }
 
@@ -106,7 +113,7 @@ public partial class MainWindow : Window
     }
     private void AgreementChanged(object? sender, RoutedEventArgs e)
     {
-        _viewModel.HasAcceptedLicense = Agreement.IsChecked == true;
+        _viewModel.HasAcceptedLicense = !_hasLicense || Agreement.IsChecked == true;
         InstallButton.IsEnabled = _viewModel.StartInstallationCommand.CanExecute(null);
     }
     private void OptionsClicked(object? sender, RoutedEventArgs e)
@@ -129,13 +136,18 @@ public partial class MainWindow : Window
     }
     private void InstallClicked(object? sender, RoutedEventArgs e)
     {
+        if (!_hasLicense && _page == InstallerPage.Options)
+        {
+            if (string.IsNullOrWhiteSpace(Location.Text)) return;
+            _viewModel.SetInstallationFolder(Location.Text);
+        }
         if (!_viewModel.StartInstallationCommand.CanExecute(null)) return;
         ShowPage(InstallerPage.Progress);
         _viewModel.StartInstallationCommand.Execute(null);
     }
     private void CancelClicked(object? sender, RoutedEventArgs e)
     {
-        if (_page == InstallerPage.Options) ShowPage(InstallerPage.License);
+        if (_hasLicense && _page == InstallerPage.Options) ShowPage(InstallerPage.License);
         else if (_viewModel.IsInstalling) _viewModel.CancelInstallationCommand.Execute(null);
         else Close();
     }
