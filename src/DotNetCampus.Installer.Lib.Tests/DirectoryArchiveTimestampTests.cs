@@ -8,6 +8,7 @@ public class DirectoryArchiveTimestampTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]
+    [Timeout(15_000)]
     [DataRow(CompressMode.NoCompression, 0, "content")]
     [DataRow(CompressMode.NoCompression, 1, "content")]
     [DataRow(CompressMode.NoCompression, 2, "content")]
@@ -39,6 +40,7 @@ public class DirectoryArchiveTimestampTests
     }
 
     [TestMethod]
+    [Timeout(15_000)]
     public async Task WhenExtractingLocalFolderThenSourceTimestampsAreRestored()
     {
         var folder = CreateTestFolder();

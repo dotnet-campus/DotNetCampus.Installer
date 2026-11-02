@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using DotNetCampus.Installer.Lib.Utils;
@@ -9,6 +9,7 @@ namespace DotNetCampus.Installer.Lib.Tests;
 public class FileSizeFormatterTest
 {
     [DataTestMethod]
+    [Timeout(10_000)]
     [DataRow(10 * 1024, "10.00KB")]
     [DataRow(10 * 1024 * 1024, "10.00MB")]
     [DataRow(1024 * 1024 * 1024, "1.00GB")]

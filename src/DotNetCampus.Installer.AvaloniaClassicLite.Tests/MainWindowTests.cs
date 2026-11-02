@@ -29,17 +29,22 @@ public class MainWindowTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestInitialize]
+    [Timeout(15_000)]
     public void Initialize() => _session = HeadlessUnitTestSession.StartNew(typeof(TestApplication));
     [TestCleanup]
-    public void Cleanup() => _session.Dispose();
+    [Timeout(15_000)]
+    public void Cleanup() => _session?.Dispose();
 
     [TestMethod]
+    [Timeout(15_000)]
     [DataRow(InstallerPage.License, "Install1")]
     [DataRow(InstallerPage.Options, "InstallOptions")]
     [DataRow(InstallerPage.Progress, "InstallProgress")]
     [DataRow(InstallerPage.Completed, "InstallFinish")]
     public async Task WhenPageIsRenderedThenScreenshotHasDesignDimensions(InstallerPage page, string name)
     {
+        // Headless 11.3.9 会内联完成延续；必须异步传播成功和异常，避免 MSTest 清理在 UI 线程等待自身。
+        // ContinueWith 不使用 ExecuteSynchronously；此处 GetResult 只读取已完成任务，不阻塞等待。
         await _session.Dispatch(() =>
         {
             var window = new MainWindow();
@@ -82,10 +87,12 @@ public class MainWindowTests
                 }
             }
             finally { window.Close(); }
-        }, CancellationToken.None);
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
     }
 
     [TestMethod]
+    [Timeout(15_000)]
     [DataRow(false)]
     [DataRow(true)]
     public async Task WhenLicenseAcceptanceChangesThenInstallAvailabilityMatches(bool accepted)
@@ -99,10 +106,12 @@ public class MainWindowTests
                 Assert.AreEqual(accepted, window.FindControl<Button>("InstallButton")!.IsEnabled);
             }
             finally { window.Close(); }
-        }, CancellationToken.None);
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
     }
 
     [TestMethod]
+    [Timeout(15_000)]
     public async Task WhenOptionsAreCancelledThenLicensePageIsRestored()
     {
         await _session.Dispatch(() =>
@@ -115,10 +124,12 @@ public class MainWindowTests
                 Assert.IsTrue(window.FindControl<Canvas>("LicensePage")!.IsVisible);
             }
             finally { window.Close(); }
-        }, CancellationToken.None);
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
     }
 
     [TestMethod]
+    [Timeout(15_000)]
     [DataRow("ProductText", 120d, 57d)]
     [DataRow("CancelButton", 599d, 437d)]
     [DataRow("LicensePage", 17d, 158d)]
@@ -135,6 +146,7 @@ public class MainWindowTests
                 Assert.AreEqual(new Point(x, y), control.Bounds.Position);
             }
             finally { window.Close(); }
-        }, CancellationToken.None);
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
     }
 }

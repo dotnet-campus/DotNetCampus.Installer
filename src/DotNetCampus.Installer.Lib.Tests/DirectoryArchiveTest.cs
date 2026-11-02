@@ -1,4 +1,4 @@
-﻿using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
+using DotNetCampus.InstallerSevenZipLib.DirectoryArchives;
 
 using Microsoft.DotNet.Archive;
 
@@ -14,6 +14,7 @@ namespace DotNetCampus.Installer.Lib.Tests;
 public class DirectoryArchiveTest
 {
     [TestMethod]
+    [Timeout(120_000)]
     public async Task TestRelativePathCompression1()
     {
         var testFolder = Path.Join(AppContext.BaseDirectory, $"Test_{Path.GetRandomFileName()}");
@@ -67,6 +68,7 @@ public class DirectoryArchiveTest
     }
 
     [TestMethod]
+    [Timeout(120_000)]
     public async Task TestNoCompressionMethod1()
     {
         var testFolder = Path.Join(AppContext.BaseDirectory, $"Test_{Path.GetRandomFileName()}");
@@ -146,6 +148,7 @@ public class DirectoryArchiveTest
     }
 
     [TestMethod]
+    [Timeout(120_000)]
     public async Task TestMethod3()
     {
         // 先尝试制造垃圾
@@ -214,6 +217,7 @@ public class DirectoryArchiveTest
     }
 
     [TestMethod]
+    [Timeout(1_800_000)]
     public async Task TestMethod2()
     {
         // 先尝试制造垃圾

@@ -10,6 +10,7 @@ namespace DotNetCampus.Installer.AvaloniaClassicLite.Tests;
 public class DebugContentTests
 {
     [TestMethod]
+    [Timeout(15_000)]
     public async Task WhenDebugConfigurationIsLoadedThenInstallContextHasSampleProduct()
     {
         var folder = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "DebugContent"));
@@ -21,6 +22,7 @@ public class DebugContentTests
     }
 
     [TestMethod]
+    [Timeout(15_000)]
     [DataRow("libSkiaSharp.dll")]
     [DataRow("libHarfBuzzSharp.dll")]
     [DataRow("Sample/readme.txt")]
