@@ -1,14 +1,15 @@
-<Solution>
+﻿<Solution>
   <Configurations>
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/GitHub Actions/">
-    <File Path="D:/lindexi/Code/dotnetcampus/DotNetCampus.Installer/.github/workflows/dotnet-build.yml" />
-    <File Path="D:/lindexi/Code/dotnetcampus/DotNetCampus.Installer/.github/workflows/nuget-tag-publish.yml" />
+    <File Path="dotnet-build.yml" />
+    <File Path="nuget-tag-publish.yml" />
   </Folder>
   <Folder Name="/Lib/">
+    <Project Path="src/DotNetCampus.Installer.AvaloniaShared/DotNetCampus.Installer.AvaloniaShared.csproj" />
     <Project Path="src/DotNetCampus.Installer.Lib.Tests/DotNetCampus.Installer.Lib.Tests.csproj" />
     <Project Path="src/DotNetCampus.Installer.Lib/DotNetCampus.Installer.Lib.csproj" />
     <Project Path="src/InstallerSevenZipLib/InstallerSevenZipLib.csproj" />

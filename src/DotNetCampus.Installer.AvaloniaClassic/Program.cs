@@ -138,8 +138,8 @@ internal static class Program
                 return fakeDirectoryArchive;
             }
 #endif
-            PInvoke.MessageBox(HWND.Null, LocalizedText.Current.CorruptedPackageMessage, LocalizedText.Current.CorruptedPackageTitle, MESSAGEBOX_STYLE.MB_OK);
-            throw new InstallerException(LocalizedText.Current.CorruptedPackageMessage);
+            PInvoke.MessageBox(HWND.Null, InstallerMessages.CorruptedPackageMessage, InstallerMessages.CorruptedPackageTitle, MESSAGEBOX_STYLE.MB_OK);
+            throw new InstallerException(InstallerMessages.CorruptedPackageMessage);
         }
         else
         {

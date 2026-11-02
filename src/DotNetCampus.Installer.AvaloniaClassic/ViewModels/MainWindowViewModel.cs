@@ -91,6 +91,9 @@ public sealed class MainWindowViewModel : ObservableObject, IDisposable
 
     public bool IsCompleted => _stage == InstallerStage.Completed;
 
+    /// <summary>获取安装是否已成功完成。</summary>
+    public bool InstallationSucceeded => IsCompleted && _installationSucceeded;
+
     public bool ShouldShowLaunchApplicationOption => IsCompleted && _installationSucceeded && CanLaunchApplication;
 
     public string InstallationFolder

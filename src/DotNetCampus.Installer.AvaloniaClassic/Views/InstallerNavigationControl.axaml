@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.ViewModels"
+             xmlns:viewModels="clr-namespace:DotNetCampus.Installer.AvaloniaClassic.ViewModels;assembly=DotNetCampus.Installer.AvaloniaShared"
              x:Class="DotNetCampus.Installer.AvaloniaClassic.Views.InstallerNavigationControl"
              x:DataType="viewModels:MainWindowViewModel">
     <UserControl.Styles>

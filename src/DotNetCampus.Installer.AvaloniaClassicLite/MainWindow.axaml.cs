@@ -99,7 +99,7 @@ public partial class MainWindow : Window
             ProgressFill.Width = 692 * _viewModel.InstallationProgress / 100;
         if (e.PropertyName == nameof(MainWindowViewModel.IsCompleted) && _viewModel.IsCompleted)
         {
-            CompletionHeading.Text = _viewModel.ProgressHeadline == LocalizedText.Current.InstallationCompleteHeadline
+            CompletionHeading.Text = _viewModel.InstallationSucceeded
                 ? Text("Completed") : _viewModel.ProgressHeadline;
             ShowPage(InstallerPage.Completed);
         }
