@@ -1,4 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -29,7 +31,6 @@
 
   <ItemGroup>
     <SupportedPlatform Remove="@(SupportedPlatform)" />
-    <Compile Remove="Infrastructure/**/*.cs;InstallerPrograms/**/*.cs;ViewModels/**/*.cs;LocalizedText.cs" />
     <ProjectReference Include="../DotNetCampus.Installer.AvaloniaShared/DotNetCampus.Installer.AvaloniaShared.csproj" />
     <AdditionalFiles Include="NativeMethods.txt" />
     <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />

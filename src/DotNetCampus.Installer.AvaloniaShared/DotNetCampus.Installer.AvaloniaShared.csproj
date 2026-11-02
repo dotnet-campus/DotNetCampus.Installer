@@ -1,3 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -9,10 +11,5 @@
     <PackageReference Include="dotnetCampus.Configurations" Version="1.9.1" />
     <PackageReference Include="DotNetCampus.SourceLocalizations" Version="0.1.1-alpha.6" />
     <ProjectReference Include="../DotNetCampus.Installer.Lib/DotNetCampus.Installer.Lib.csproj" />
-    <Compile Include="../DotNetCampus.Installer.AvaloniaClassic/Infrastructure/*.cs" Link="Infrastructure/%(Filename)%(Extension)" />
-    <Compile Include="../DotNetCampus.Installer.AvaloniaClassic/InstallerPrograms/*.cs" Link="InstallerPrograms/%(Filename)%(Extension)" />
-    <Compile Include="../DotNetCampus.Installer.AvaloniaClassic/ViewModels/*.cs" Link="ViewModels/%(Filename)%(Extension)" />
-    <Compile Include="../DotNetCampus.Installer.AvaloniaClassic/LocalizedText.cs" Link="LocalizedText.cs" />
-    <AdditionalFiles Include="../DotNetCampus.Installer.AvaloniaClassic/Localizations/*.toml" Link="Localizations/%(Filename)%(Extension)" SourceItemGroup="DotNetCampusLocalization" />
   </ItemGroup>
 </Project>
