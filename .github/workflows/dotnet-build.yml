@@ -1,4 +1,4 @@
-﻿name: DotNetBuild
+name: DotNetBuild
 
 on: [pull_request]
 
@@ -21,7 +21,15 @@ jobs:
       run: dotnet build -c release
 
     - name: Test
-      run: dotnet test -c release -v:n --tl:off --no-build --logger:"console;verbosity=detailed"
+      run: dotnet test -c release -v:n --tl:off --no-build --logger:"console;verbosity=detailed" --logger:trx --results-directory TestResults
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: '**/TestResults/**'
+        if-no-files-found: ignore
 
     - name: Pack
       run: dotnet pack -c release --no-build
