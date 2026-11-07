@@ -1,0 +1,17 @@
+LoadLibrary
+GetProcAddress
+MessageBox
+
+OpenProcess
+OpenProcessToken
+GetExitCodeProcess
+CloseHandle
+DuplicateTokenEx
+CreateProcessWithToken
+GetShellWindow
+GetWindowThreadProcessId
+
+AllocConsole
+FreeConsole
+
+MoveFileExW

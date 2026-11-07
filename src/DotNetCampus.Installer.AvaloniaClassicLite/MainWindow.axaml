@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="DotNetCampus.Installer.AvaloniaClassic.MainWindow"
+        Width="732" Height="492" CanResize="False" SystemDecorations="None" Background="Transparent" TransparencyLevelHint="Transparent" x:CompileBindings="False">
+ <Border Background="White" BorderBrush="#555555" BorderThickness="2" CornerRadius="11" ClipToBounds="True">
+  <Canvas>
+   <Border Width="728" Height="38" Background="#F1F3F9" PointerPressed="TitleBarPressed"/>
+   <ContentControl x:Name="SmallIcon" Canvas.Left="12" Canvas.Top="7" Width="22" Height="23"/>
+   <TextBlock x:Name="TitleText" Canvas.Left="43" Canvas.Top="6" FontSize="18"/>
+   <Button Classes="chrome" Canvas.Left="551" Canvas.Top="0" Content="─" Click="MinimizeClicked"/>
+   <Button Classes="chrome" Canvas.Left="610" Canvas.Top="0" Content="□" IsEnabled="False"/>
+   <Button Classes="chrome" Canvas.Left="669" Canvas.Top="0" Content="╳" Click="CancelClicked"/>
+   <ContentControl x:Name="ProductIcon" Canvas.Left="19" Canvas.Top="57" Width="92" Height="92"/>
+   <TextBlock x:Name="ProductText" Canvas.Left="120" Canvas.Top="57" FontSize="36"/>
+   <Canvas x:Name="LicensePage" Canvas.Left="17" Canvas.Top="158" Width="694" Height="270">
+    <Border Width="694" Height="225" BorderBrush="#777777" BorderThickness="2,2,1,1">
+     <ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+      <StackPanel Margin="2,14,16,0" Spacing="27">
+       <TextBlock x:Name="LicenseTitle" FontSize="20" FontWeight="Bold"/>
+       <TextBlock x:Name="LicenseText" FontSize="20" LineHeight="28" TextWrapping="Wrap"/>
+      </StackPanel>
+     </ScrollViewer>
+    </Border>
+    <CheckBox x:Name="Agreement" Canvas.Left="304" Canvas.Top="239" IsChecked="False" IsCheckedChanged="AgreementChanged"/>
+   </Canvas>
+   <Canvas x:Name="OptionsPage" IsVisible="False" Canvas.Left="17" Canvas.Top="158">
+    <TextBlock x:Name="OptionsHeading" FontSize="32" Foreground="#707070"/>
+    <TextBlock x:Name="LocationLabel" Canvas.Top="63"/>
+    <TextBox x:Name="Location" Canvas.Top="95" Width="574" Height="32" MinHeight="0" Padding="7,0" FontSize="18" VerticalContentAlignment="Center"/>
+    <Button x:Name="Browse" Canvas.Left="582" Canvas.Top="94" Click="BrowseClicked"/>
+   </Canvas>
+   <Canvas x:Name="ProgressPage" IsVisible="False" Canvas.Left="17" Canvas.Top="158">
+    <TextBlock x:Name="ProgressHeading" FontSize="32" Foreground="#707070"/>
+    <TextBlock x:Name="ProcessingLabel" Canvas.Top="63"/>
+    <TextBlock x:Name="ProcessingText" Canvas.Left="111" Canvas.Top="63"/>
+    <Border Canvas.Top="95" Width="694" Height="23" BorderThickness="1" BorderBrush="#BBBBBB" Background="#E6E6E6">
+     <Border x:Name="ProgressFill" Width="123" HorizontalAlignment="Left" Background="#008000"/>
+    </Border>
+   </Canvas>
+   <TextBlock x:Name="CompletionHeading" IsVisible="False" Canvas.Left="17" Canvas.Top="158" FontSize="32" Foreground="#707070"/>
+   <Button x:Name="OptionsButton" Canvas.Left="359" Canvas.Top="437" Click="OptionsClicked"/>
+   <Button x:Name="InstallButton" Canvas.Left="479" Canvas.Top="437" IsEnabled="False" Click="InstallClicked"/>
+   <Button x:Name="OkButton" Canvas.Left="479" Canvas.Top="437" IsVisible="False" Click="OkClicked"/>
+   <Button x:Name="CancelButton" Canvas.Left="599" Canvas.Top="437" Click="CancelClicked"/>
+  </Canvas>
+ </Border>
+</Window>

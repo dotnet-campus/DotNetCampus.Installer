@@ -1,0 +1,17 @@
+<Application xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="DotNetCampus.Installer.AvaloniaClassic.App" RequestedThemeVariant="Light">
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window"><Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="FontSize" Value="18"/></Style>
+    <Style Selector="Button">
+      <Setter Property="Width" Value="111"/><Setter Property="Height" Value="33"/>
+      <Setter Property="MinHeight" Value="0"/><Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Background" Value="#FDFDFD"/><Setter Property="BorderBrush" Value="#CCCCCC"/>
+      <Setter Property="BorderThickness" Value="1"/><Setter Property="CornerRadius" Value="3"/>
+    </Style>
+    <Style Selector="Button.chrome"><Setter Property="Width" Value="59"/><Setter Property="Height" Value="36"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Background" Value="Transparent"/><Setter Property="CornerRadius" Value="0"/></Style>
+    <Style Selector="Button:disabled /template/ ContentPresenter"><Setter Property="Background" Value="#F9F9F9"/><Setter Property="BorderBrush" Value="#E5E5E5"/></Style>
+    <Style Selector="Button.chrome:disabled /template/ ContentPresenter"><Setter Property="Background" Value="Transparent"/></Style>
+    <Style Selector="CheckBox"><Setter Property="FontSize" Value="18"/><Setter Property="MinHeight" Value="20"/><Setter Property="Padding" Value="0"/></Style>
+  </Application.Styles>
+</Application>

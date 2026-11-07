@@ -41,19 +41,26 @@ public class InstallerHostBuilder
         }
 
         var assemblyManifestResourceInfo = _installerResourceAssetsInfo;
-        if (assemblyManifestResourceInfo is null)
-        {
-            throw new InvalidOperationException();
-        }
 
         var configuration = new InstallerHostConfiguration()
         {
             WorkingFolder = workingFolder,
             SplashScreenFile = splashScreenFile,
-            InstallerResourceAssetsInfo = assemblyManifestResourceInfo.Value,
+            InstallerResourceAssetsInfo = assemblyManifestResourceInfo,
             InstallerRelativePath = _installerRelativePath,
             InstallerProcessStartConfigAction = _installerProcessStartConfigAction,
+            ContentResourceAssetsInfo = _contentResourceAssetsInfo
         };
+
+        if (InstallerHostCreator is { } creator)
+        {
+            return creator(configuration);
+        }
+
+        if (assemblyManifestResourceInfo is null)
+        {
+            throw new InvalidOperationException();
+        }
 
         return new InstallerHost(configuration);
     }
@@ -111,6 +118,20 @@ public class InstallerHostBuilder
     private AssemblyManifestResourceInfo? _installerResourceAssetsInfo;
 
     /// <summary>
+    /// 配置安装内容的所在资源包
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <param name="manifestResourceName"></param>
+    /// <returns></returns>
+    public InstallerHostBuilder ConfigContentResourceAssets(Assembly assembly, string manifestResourceName)
+    {
+        _contentResourceAssetsInfo = new AssemblyManifestResourceInfo(assembly, manifestResourceName);
+        return this;
+    }
+
+    private AssemblyManifestResourceInfo? _contentResourceAssetsInfo;
+
+    /// <summary>
     /// 配置安装器的 Installer.exe 文件的相对路径，可用于自定义里层带界面的安装器的文件名
     /// </summary>
     /// <param name="relativePath"></param>
@@ -135,4 +156,12 @@ public class InstallerHostBuilder
     }
 
     private Action<ProcessStartInfoConfigurationContext>? _installerProcessStartConfigAction;
+
+    private Func<InstallerHostConfiguration, InstallerHost>? InstallerHostCreator { get; set; }
+
+    public InstallerHostBuilder UseCustomInstallerHost(Func<InstallerHostConfiguration, InstallerHost> creator)
+    {
+        InstallerHostCreator = creator;
+        return this;
+    }
 }

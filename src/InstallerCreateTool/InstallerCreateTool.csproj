@@ -6,7 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.CommandLine.Compiler</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);DotNetCampus.Cli.Compiler</InterceptorsNamespaces>
+
+    <!--设置自动回滚，如果开发者有安装更新版本的，就自动使用新版本 -->
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>

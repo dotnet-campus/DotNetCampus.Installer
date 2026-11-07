@@ -1,0 +1,10 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:Avalonia.Themes.Fluent;assembly=Avalonia.Themes.Fluent"
+             x:Class="DotNetCampus.Installer.AvaloniaSample.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <themes:FluentTheme/>
+        <StyleInclude Source="avares://DotNetCampus.Installer.AvaloniaSample/Themes/InstallerTheme.axaml"/>
+    </Application.Styles>
+</Application>

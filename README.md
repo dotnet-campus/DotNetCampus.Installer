@@ -1,4 +1,6 @@
-# 安装器
+# DotNetCampus.Installer
+
+[中文文档](./README.zh-CN.md)
 
 安装包、安装器
 

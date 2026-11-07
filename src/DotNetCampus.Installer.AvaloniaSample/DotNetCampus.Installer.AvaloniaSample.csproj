@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <SupportedOSPlatformVersion>5.1</SupportedOSPlatformVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <Platforms>AnyCPU;x86</Platforms>
+
+    <PublishAot>true</PublishAot>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- 这里存放的是用 InstallerSevenZipTool 工具压缩的 libHarfBuzzSharp.dll 和 libSkiaSharp.dll 文件的资源。比直接嵌入程序集 7MB 多，能节省一半 -->
+    <SkiaResourceAssetsPath>C:\lindexi\Work\SkiaX86.assets</SkiaResourceAssetsPath>
+    <ContentResourceAssetsPath>C:\lindexi\Work\Resource.assets</ContentResourceAssetsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(SkiaResourceAssetsPath)" Condition="Exists('$(SkiaResourceAssetsPath)')"
+                      Link="Assets\SkiaX86.assets" />
+
+    <EmbeddedResource Include="$(ContentResourceAssetsPath)" Condition="Exists('$(ContentResourceAssetsPath)')"
+                      Link="Assets\ContentResource.assets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.9" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.9" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.9">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="DotNetCampus.CommandLine" Version="4.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="VC-LTL" Version="5.3.1" />
+    <PackageReference Include="YY-Thunks" Version="1.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetCampus.Installer.Lib\DotNetCampus.Installer.Lib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- By default, any projects supports Windows, Linux, MacOS platforms. -->
+    <!-- To properly support analyzers, we need to re-set this value -->
+    <!-- https://github.com/dotnet/sdk/blob/v8.0.403/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.SupportedPlatforms.props -->
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="Windows" />
+  </ItemGroup>
+
+</Project>

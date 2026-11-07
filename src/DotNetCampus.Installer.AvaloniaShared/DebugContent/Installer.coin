@@ -1,0 +1,30 @@
+> Debug installer configuration
+StandardInstaller.ProductCodeGuid
+92c05ea5-76b0-4e47-9c51-a10e3c9f93bc
+>
+StandardInstaller.ProductName
+DotNetCampusInstallerDebug
+>
+StandardInstaller.DisplayProductName
+DotNetCampus Installer (Debug)
+>
+StandardInstaller.ProductFamily
+dotnet-campus
+>
+StandardInstaller.DisplayProductFamily
+DotNet Campus
+>
+StandardInstaller.AppVersion
+1.0.0.0
+>
+ClassicInstaller.LicenseText
+This is the DotNetCampus Installer debug package.
+Use this package to debug the Classic and ClassicLite installer interfaces with local sample files.
+Selecting Install performs a real installation of the sample content and writes installation registration information.
+>
+ClassicInstaller.HasAcceptedLicenseByDefault
+false
+>
+ClassicInstaller.ShouldLaunchApplicationByDefault
+false
+>
