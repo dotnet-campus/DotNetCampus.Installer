@@ -1,9 +1,16 @@
-﻿using dotnetCampus.Configurations;
+using dotnetCampus.Configurations;
 
 namespace DotNetCampus.Installer.AvaloniaClassic.InstallerPrograms;
 
 public sealed class ClassicInstallerConfiguration() : Configuration("ClassicInstaller")
 {
+    /// <summary>安装界面图标在安装包归档中的相对路径（ICO 或 PNG）。未配置时使用默认安装器图标。</summary>
+    public string? IconRelativePath
+    {
+        get => GetString();
+        set => SetValue(value);
+    }
+
     public string? WindowTitle
     {
         get => GetString();
