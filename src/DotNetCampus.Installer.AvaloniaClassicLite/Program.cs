@@ -60,6 +60,13 @@ internal static class Program
         var appConfigurator = await LoadInstallerConfigurationAsync(directoryArchive);
         var installerConfiguration = appConfigurator.Of<StandardInstallerConfiguration>();
         var installContext = installerConfiguration.CreateInstallContext(directoryArchive, new DirectoryInfo(workingFolder));
+        var iconRelativePath = appConfigurator.Of<ClassicInstallerConfiguration>().IconRelativePath;
+        if (!string.IsNullOrWhiteSpace(iconRelativePath))
+        {
+            // 使用固定临时文件名，避免将配置中的归档路径用作磁盘输出路径。
+            var iconEntry = directoryArchive.GetEntryFile(iconRelativePath);
+            await iconEntry.SaveToFileAsync(new FileInfo(Path.Join(workingFolder, "InstallerIcon")));
+        }
         return new ClassicInstallerProgram(installContext, appConfigurator);
     }
 

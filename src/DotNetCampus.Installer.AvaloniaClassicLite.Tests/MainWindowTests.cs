@@ -39,6 +39,58 @@ public class MainWindowTests
     public void Cleanup() => _session?.Dispose();
 
     [TestMethod]
+    [Timeout(15_000, CooperativeCancellation = true)]
+    [DataRow(InstallerPage.License, "Install1")]
+    [DataRow(InstallerPage.Options, "InstallOptions")]
+    [DataRow(InstallerPage.Progress, "InstallProgress")]
+    [DataRow(InstallerPage.Completed, "InstallFinish")]
+    public async Task WhenPageIsRenderedThenScreenshotHasDesignDimensions(InstallerPage page, string name)
+    {
+        await _session.Dispatch(() =>
+        {
+            var window = new MainWindow();
+            try
+            {
+                window.ShowPage(page);
+                window.Show();
+                window.UpdateLayout();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                using var screenshot = window.CaptureRenderedFrame();
+                Assert.IsNotNull(screenshot, "The headless renderer did not produce a frame.");
+                var folder = Path.Combine(TestContext.TestRunResultsDirectory!, Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(folder);
+                var path = Path.Combine(folder, name + ".png");
+                screenshot.Save(path);
+                TestContext.AddResultFile(path);
+                Assert.AreEqual(new PixelSize(732, 492), screenshot.PixelSize);
+            }
+            finally { window.Close(); }
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
+    }
+
+    [TestMethod]
+    [Timeout(15_000, CooperativeCancellation = true)]
+    [DataRow("SmallIcon")]
+    [DataRow("ProductIcon")]
+    public async Task WhenIconIsNotConfiguredThenClassicInstallerArtworkIsUsed(string controlName)
+    {
+        await _session.Dispatch(() =>
+        {
+            var window = new MainWindow();
+            try
+            {
+                var content = window.FindControl<ContentControl>(controlName)!.Content;
+                Assert.IsInstanceOfType<Viewbox>(content);
+                var canvas = (Canvas)((Viewbox)content).Child!;
+                Assert.AreEqual(6, canvas.Children.OfType<Avalonia.Controls.Shapes.Polygon>().Count());
+            }
+            finally { window.Close(); }
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
+    }
+
+    [TestMethod]
     [Timeout(15_000)]
     [DataRow(false)]
     [DataRow(true)]
@@ -143,10 +195,35 @@ public class MainWindowTests
             CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
     }
 
-    private static MainWindow CreateWindow(string? license)
+    [TestMethod]
+    [Timeout(15_000, CooperativeCancellation = true)]
+    [DataRow("SmallIcon")]
+    [DataRow("ProductIcon")]
+    public async Task WhenIconIsConfiguredThenProductImageIsUsed(string controlName)
+    {
+        await _session.Dispatch(() =>
+        {
+            var folder = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+            folder.Create();
+            TestContext.WriteLine(folder.FullName);
+            using (var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(32, 32)))
+                bitmap.Save(Path.Combine(folder.FullName, "InstallerIcon"));
+            var window = CreateWindow(null, folder);
+            try
+            {
+                var image = window.FindControl<ContentControl>(controlName)!.Content as Image;
+                Assert.IsNotNull(image?.Source);
+            }
+            finally { window.Close(); }
+        }, TestContext.CancellationToken).ContinueWith(task => task.GetAwaiter().GetResult(),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).ConfigureAwait(false);
+    }
+
+    private static MainWindow CreateWindow(string? license, DirectoryInfo? iconFolder = null)
     {
         var configurator = new MemoryConfigurationRepo().CreateAppConfigurator();
         configurator.Of<ClassicInstallerConfiguration>().LicenseText = license;
+        configurator.Of<ClassicInstallerConfiguration>().IconRelativePath = iconFolder is null ? null : "Temp/Product.png";
         var context = new StandardInstallContext
         {
             ProductCodeGuid = Guid.NewGuid(),
@@ -154,7 +231,7 @@ public class MainWindowTests
             ProductFamily = "TestFamily",
             ContentResourceAssetsInfo = null,
             SplashScreenResourceAssetsInfo = null,
-            WorkingFolder = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")))
+            WorkingFolder = iconFolder ?? new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")))
         };
         return new MainWindow(new ClassicInstallerProgram(context, configurator));
     }

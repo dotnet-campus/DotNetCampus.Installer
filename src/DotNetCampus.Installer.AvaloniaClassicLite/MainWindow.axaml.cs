@@ -1,6 +1,9 @@
 using System;
 using dotnetCampus.Configurations;
 using System.ComponentModel;
+using System.IO;
+using Avalonia.Media.Imaging;
+using Polygon = Avalonia.Controls.Shapes.Polygon;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
@@ -26,6 +29,7 @@ public partial class MainWindow : Window
     private readonly ResourceManager _strings = new("DotNetCampus.Installer.AvaloniaClassicLite.Resources.Strings", typeof(MainWindow).Assembly);
     private InstallerPage _page;
     private readonly bool _hasLicense;
+    private readonly Bitmap? _productIcon;
     /// <summary>创建预览窗口。</summary>
     public MainWindow() : this(null) { }
     /// <summary>创建使用实际安装程序的窗口。</summary>
@@ -41,6 +45,13 @@ public partial class MainWindow : Window
         Title = _viewModel.WindowTitle;
         TitleText.Text = Title;
         ProductText.Text = product;
+        if (installerProgram is not null && !string.IsNullOrWhiteSpace(
+            installerProgram.AppConfigurator.Of<ClassicInstallerConfiguration>().IconRelativePath))
+        {
+            var iconPath = Path.Join(installerProgram.StandardInstallContext.WorkingFolder.FullName, "InstallerIcon");
+            _productIcon = new Bitmap(iconPath);
+            Icon = new WindowIcon(iconPath);
+        }
         SmallIcon.Content = CreateIcon(22, 23);
         ProductIcon.Content = CreateIcon(92, 92);
         LicenseTitle.IsVisible = false;
@@ -81,6 +92,7 @@ public partial class MainWindow : Window
             _viewModel.CloseRequested -= CloseRequested;
             _viewModel.PropertyChanged -= ViewModelChanged;
             _viewModel.Dispose();
+            _productIcon?.Dispose();
         };
     }
 
@@ -156,23 +168,29 @@ public partial class MainWindow : Window
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) BeginMoveDrag(e);
     }
-    private static Control CreateIcon(double width, double height)
+    private Control CreateIcon(double width, double height)
     {
-        var canvas = new Canvas { Width = 92, Height = 92 };
-        canvas.Children.Add(new Border { Width = 90, Height = 90, Background = Brush.Parse("#D6CBAA"), BorderBrush = Brush.Parse("#EEE5CF"), BorderThickness = new Thickness(4), CornerRadius = new CornerRadius(2) });
-        var face = new Border { Width = 73, Height = 74, Background = Brush.Parse("#606361"), BorderBrush = Brush.Parse("#A19D8C"), BorderThickness = new Thickness(3) };
-        Canvas.SetLeft(face, 9); Canvas.SetTop(face, 9); canvas.Children.Add(face);
-        string[] colors = ["#F26810", "#FFE419", "#76D216", "#12AFDF"];
-        for (var i = 0; i < colors.Length; i++)
-        {
-            var stripe = new Border { Width = 15, Height = 40, Background = Brush.Parse(colors[i]) };
-            Canvas.SetLeft(stripe, 16 + i * 15); Canvas.SetTop(stripe, 16); canvas.Children.Add(stripe);
-        }
-        for (var i = 0; i < 3; i++)
-        {
-            var key = new Border { Width = 13, Height = 13, Background = Brush.Parse("#E9DFC2"), BorderBrush = Brush.Parse("#ADA890"), BorderThickness = new Thickness(1) };
-            Canvas.SetLeft(key, 16 + i * 24); Canvas.SetTop(key, 65); canvas.Children.Add(key);
-        }
+        if (_productIcon is not null)
+            return new Image { Width = width, Height = height, Source = _productIcon, Stretch = Stretch.Uniform };
+
+        // 与经典安装器 InstallerBrandingControl 的默认图形保持一致。
+        var canvas = new Canvas { Width = 86, Height = 78 };
+        AddFace("18,34 43,20 68,34 43,49", "#A8C9ED", 1.3);
+        AddFace("18,34 43,49 43,69 18,54", "#8EB7E3", 1.3);
+        AddFace("43,49 68,34 68,54 43,69", "#6F9FD0", 1.3);
+        AddFace("31,18 43,11 55,18 43,25", "#D4E5F7", 1.2);
+        AddFace("31,18 43,25 43,39 31,32", "#AECDEC", 1.2);
+        AddFace("43,25 55,18 55,32 43,39", "#88B1DD", 1.2);
         return new Viewbox { Width = width, Height = height, Child = canvas };
+
+        void AddFace(string points, string fill, double thickness) => canvas.Children.Add(new Polygon
+        {
+            Points = new Points(points.Split(' ').Select(pair =>
+            {
+                var coordinates = pair.Split(',');
+                return new Point(int.Parse(coordinates[0]), int.Parse(coordinates[1]));
+            })), Fill = Brush.Parse(fill),
+            Stroke = Brush.Parse("#3974AE"), StrokeThickness = thickness
+        });
     }
 }
